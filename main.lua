@@ -1,26 +1,30 @@
 local Gamestate = require "gamestate"
 
-s_mainmenu = require "mainmenu"
-s_game = require "game"
+s_mainmenu = require "st_mainmenu"
+s_game = require "st_game"
 
-timers = {
+local timers = {
   frame = {0,0},
   events = {0,0},
   update = {0,0},
   draw = {0,0},
 }
 
-max_timers = {
+local max_timers = {
   frame = 0,
   events = 0,
   update = 0,
   draw = 0
 }
+
+local debugY = 20
+local function addDebugLine(col1, col2, col3)
+  if col1 ~= nil then love.graphics.print(col1, 10, debugY) end
+  if col2 ~= nil then love.graphics.print(col2, 90, debugY) end
+  if col3 ~= nil then love.graphics.print(col3, 130, debugY) end
+  debugY = debugY + 20
+end
   
--- Strict = require "Strict"
-
-
--- Strict.declareGlobal('game_err')
 function game_err(msg)
   s_mainmenu.error = msg
   Gamestate.switch(s_mainmenu)
@@ -92,11 +96,11 @@ function love.run()
       timers.draw[2] = love.timer.getTime() - timers.draw[1]
 		end
     
+    collectgarbage("step")
+    
     timers.frame[2] = love.timer.getTime() - timers.frame[1]
-    max_timers.frame = math.max(max_timers.frame, timers.frame[2])
     
     if love.timer then love.timer.sleep(0.001) end
-    collectgarbage("step")
     
     if love.keyboard.isDown("delete") then
       for i, v in pairs(max_timers) do
@@ -112,32 +116,12 @@ function love.run()
 end
 
 function love.draw()
-  local y = 20
-  local x1 = 10
-  local x2 = 90
-  local x3 = 130
-  love.graphics.print("FPS:", x1, y)
-  love.graphics.print(love.timer.getFPS(), x2, y)
-  y = y + 20
-  love.graphics.print("Garbage:", x1, y)
-  love.graphics.print(collectgarbage("count") * 1024, x2, y)
-  y = y + 20
-  love.graphics.print("Time (Max Time - del to reset) ", x1, y)
-  y = y + 20
-  love.graphics.print("Frame:", x1, y)
-  love.graphics.print(string.format("%.2f", timers.frame[2] * 1000), x2, y)
-  love.graphics.print(string.format("(%.2f)", max_timers.frame * 1000), x3, y)
-  y = y + 20
-  love.graphics.print("Events:", x1, y)
-  love.graphics.print(string.format("%.2f", timers.events[2] * 1000), x2, y)
-  love.graphics.print(string.format("(%.2f)", max_timers.events * 1000), x3, y)
-  y = y + 20
-  love.graphics.print("Update:", x1, y)
-  love.graphics.print(string.format("%.2f", timers.update[2] * 1000), x2, y)
-  love.graphics.print(string.format("(%.2f)", max_timers.update * 1000), x3, y)
-  y = y + 20
-  love.graphics.print("Draw:", x1, y)
-  love.graphics.print(string.format("%.2f", timers.draw[2] * 1000), x2, y)
-  love.graphics.print(string.format("(%.2f)", max_timers.draw * 1000), x3, y)
-  y = y + 20
+  debugY = 20
+  addDebugLine("FPS:", love.timer.getFPS())
+  addDebugLine("Garbage:", collectgarbage("count") * 1024)
+  addDebugLine("Time (Max Time - del to reset)")
+  addDebugLine("Frame:", string.format("%.1f", timers.frame[2] * 1000), string.format("(%.2f)", max_timers.frame * 1000))
+  addDebugLine("Events:", string.format("%.1f", timers.events[2] * 1000), string.format("(%.2f)", max_timers.events * 1000))
+  addDebugLine("Update:", string.format("%.1f", timers.update[2] * 1000), string.format("(%.2f)", max_timers.update * 1000))
+  addDebugLine("Draw:", string.format("%.1f", timers.draw[2] * 1000), string.format("(%.2f)", max_timers.draw * 1000))
 end

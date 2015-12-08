@@ -17,10 +17,8 @@ local min   = math.min
 local t   = setmetatable({startzero = nil},{__call = function(self,...) return self.new(...) end})
 t.__index = t
 
------------------------------------------------------------
--- example collision callback, return true if tile/slope is collidable
-local function isResolvable(side,value,x,y)
-end
+local gx, gy, gx2, gy2
+
 -----------------------------------------------------------
 local function getTileRange(tw,th,x,y,w,h)
 	gx,gy   = floor(x/tw)+1,floor(y/th)+1
@@ -45,7 +43,7 @@ function t.new(getTile,tileWidth,tileHeight,isResolvable,heightmaps,startzero)
 	return setmetatable(o,t)
 end
 -----------------------------------------------------------
-function t:rightResolve(x,y,w,h)
+function t:rightResolve(state,x,y,w,h)
 	local tw,th        = self.tileWidth,self.tileHeight
 	local gx,gy,gx2,gy2= getTileRange(tw,th,x,y,w,h)
 	local newx         = x
@@ -55,7 +53,7 @@ function t:rightResolve(x,y,w,h)
 	for tx = gx,gx2 do
 		for ty = gy,gy2 do 
 			local actualtx,actualty = getActualCoord(self,tx,ty)
-			local tile = getTile(actualtx,actualty)
+			local tile = getTile(state,actualtx,actualty)
 			if tile then
 				local hmap = heightmaps[tile] and heightmaps[tile].horizontal
 				if hmap then
@@ -64,10 +62,10 @@ function t:rightResolve(x,y,w,h)
 					ti         = ti > th and th or ti < 1 and 1 or ti
 					bi         = bi > th and th or bi < 1 and 1 or bi
 					local minx = min(x,tx*tw-w-hmap[ti],tx*tw-w-hmap[bi])
-					if minx ~= x and isResolvable('right',tile,actualtx,actualty) then
+					if minx ~= x and isResolvable(state,'right',tile,actualtx,actualty) then
 						newx = min(minx,newx)
 					end
-				elseif isResolvable('right',tile,actualtx,actualty) then
+				elseif isResolvable(state,'right',tile,actualtx,actualty) then
 					newx = min(newx,(tx-1)*tw-w)
 				end
 			end
@@ -77,7 +75,7 @@ function t:rightResolve(x,y,w,h)
 	return newx, newx ~= x
 end
 -----------------------------------------------------------
-function t:leftResolve(x,y,w,h)
+function t:leftResolve(state,x,y,w,h)
 	local tw,th        = self.tileWidth,self.tileHeight
 	local gx,gy,gx2,gy2= getTileRange(tw,th,x,y,w,h)
 	local newx         = x
@@ -87,7 +85,7 @@ function t:leftResolve(x,y,w,h)
 	for tx = gx2,gx,-1 do
 		for ty = gy,gy2 do 
 			local actualtx,actualty = getActualCoord(self,tx,ty)
-			local tile = getTile(actualtx,actualty)
+			local tile = getTile(state,actualtx,actualty)
 			if tile then
 				local hmap = heightmaps[tile] and heightmaps[tile].horizontal
 				if hmap then
@@ -96,10 +94,10 @@ function t:leftResolve(x,y,w,h)
 					ti         = ti > th and th or ti < 1 and 1 or ti
 					bi         = bi > th and th or bi < 1 and 1 or bi
 					local maxx = max(x,(tx-1)*tw+hmap[ti],(tx-1)*tw+hmap[bi])
-					if maxx ~= x and isResolvable('left',tile,actualtx,actualty) then
+					if maxx ~= x and isResolvable(state,'left',tile,actualtx,actualty) then
 						newx = max(maxx,newx)
 					end
-				elseif isResolvable('left',tile,actualtx,actualty) then
+				elseif isResolvable(state,'left',tile,actualtx,actualty) then
 					newx = max(newx,tx*tw)
 				end
 			end
@@ -109,7 +107,7 @@ function t:leftResolve(x,y,w,h)
 	return newx, newx ~= x
 end
 -----------------------------------------------------------
-function t:bottomResolve(x,y,w,h)
+function t:bottomResolve(state,x,y,w,h)
 	local tw,th        = self.tileWidth,self.tileHeight
 	local gx,gy,gx2,gy2= getTileRange(tw,th,x,y,w,h)
 	local newy         = y
@@ -119,7 +117,7 @@ function t:bottomResolve(x,y,w,h)
 	for ty = gy,gy2 do
 		for tx = gx,gx2 do 
 			local actualtx,actualty = getActualCoord(self,tx,ty)
-			local tile = getTile(actualtx,actualty)
+			local tile = getTile(state,actualtx,actualty)
 			if tile then
 				local hmap = heightmaps[tile] and heightmaps[tile].vertical
 				if hmap then
@@ -128,10 +126,10 @@ function t:bottomResolve(x,y,w,h)
 					li         = li > tw and tw or li < 1 and 1 or li
 					ri         = ri > tw and tw or ri < 1 and 1 or ri
 					local miny = min(y,ty*th-h-hmap[li],ty*th-h-hmap[ri])
-					if miny ~= y and isResolvable('bottom',tile,actualtx,actualty) then
+					if miny ~= y and isResolvable(state,'bottom',tile,actualtx,actualty) then
 						newy = min(miny,newy)
 					end
-				elseif isResolvable('bottom',tile,actualtx,actualty) then
+				elseif isResolvable(state,'bottom',tile,actualtx,actualty) then
 					newy = min(newy,(ty-1)*th-h)
 				end
 			end
@@ -141,7 +139,7 @@ function t:bottomResolve(x,y,w,h)
 	return newy, newy ~= y
 end
 -----------------------------------------------------------
-function t:topResolve(x,y,w,h)
+function t:topResolve(state,x,y,w,h)
 	local tw,th        = self.tileWidth,self.tileHeight
 	local gx,gy,gx2,gy2= getTileRange(tw,th,x,y,w,h)
 	local newy         = y
@@ -151,7 +149,7 @@ function t:topResolve(x,y,w,h)
 	for ty = gy2,gy,-1 do
 		for tx = gx,gx2 do
 			local actualtx,actualty = getActualCoord(self,tx,ty) 
-			local tile = getTile(actualtx,actualty)
+			local tile = getTile(state,actualtx,actualty)
 			if tile then
 				local hmap = heightmaps[tile] and heightmaps[tile].vertical
 				if hmap then
@@ -160,10 +158,10 @@ function t:topResolve(x,y,w,h)
 					li         = li > tw and tw or li < 1 and 1 or li
 					ri         = ri > tw and tw or ri < 1 and 1 or ri
 					local maxy = max(y,(ty-1)*th+hmap[li],(ty-1)*th+hmap[ri])
-					if maxy ~= y and isResolvable('top',tile,actualtx,actualty) then
+					if maxy ~= y and isResolvable(state,'top',tile,actualtx,actualty) then
 						newy = max(maxy,newy)
 					end
-				elseif isResolvable('top',tile,actualtx,actualty) then
+				elseif isResolvable(state,'top',tile,actualtx,actualty) then
 					newy = max(newy,ty*th)
 				end
 			end
