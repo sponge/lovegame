@@ -7,6 +7,7 @@ local spritebatches = {}
 local tileInfo = {}
 
 local gs = {}
+local playerNum = nil
 
 function gs:enter()
   local err = nil
@@ -24,6 +25,8 @@ function gs:enter()
       tileInfo[i+1] = { name = v.name, quad = love.graphics.newQuad(i * v.tilewidth % v.imagewidth, math.floor(i * v.tilewidth / v.imagewidth) * v.tileheight, v.tilewidth, v.tileheight, v.imagewidth, v.imageheight) }
     end
   end
+  
+  playerNum = GameFSM.spawnPlayer(lc)
 
 end
 
@@ -32,13 +35,24 @@ function gs:keyreleased(key)
 end
 
 function gs:update(dt)
+  -- add commands before stepping
+  local usercmd = { left = 0, right = 0, up = 0, down = 0, button1 = false, button2 = false, button3 = false }
+  usercmd.button1 = love.keyboard.isDown("z") -- jump
+  usercmd.button2 = love.keyboard.isDown("x") -- run
+  usercmd.button3 = love.keyboard.isDown("c") -- shoot
+  usercmd.left = love.keyboard.isDown("left") and 255 or 0
+  usercmd.right = love.keyboard.isDown("right") and 255 or 0
+  usercmd.up = love.keyboard.isDown("up") and 255 or 0
+  usercmd.down = love.keyboard.isDown("down") and 255 or 0
+  
+  GameFSM.addCommand(lc, playerNum, usercmd)
   GameFSM.step(lc, dt)
 end
 
 function gs:draw()
   
-  lc.cam:lookAt(lc.s.entities[lc.playerEnt].x, lc.s.entities[lc.playerEnt].y)
-
+  lc.cam:lookAt(lc.s.entities[playerNum].x, lc.s.entities[playerNum].y)
+  
   love.graphics.setColor(168,168,168,255)
   local width, height = love.graphics.getDimensions()
   love.graphics.rectangle("fill", 0, 0, width, height)

@@ -42,10 +42,9 @@ local function init(str_level)
 
   local lc = {
     s = {entities = {}, worldLayer = nil}, -- serializable state (network?)
-    playerEnt = nil,
     camera = nil,
     l = nil, -- level
-    col = nil -- tilecollider
+    col = nil, -- tilecollider
   }
 
   lc.l, _, err = json.decode(str_level, 1, nil)
@@ -55,8 +54,6 @@ local function init(str_level)
     game_err("Error while loading map json")
     return
   end
-  
-  local spawnPoint = nil
   
   for _, layer in ipairs(lc.l.layers) do
     if layer.name == "world" and layer.type == "tilelayer" then
@@ -69,19 +66,9 @@ local function init(str_level)
         ent.think = map_funcs[obj.properties.think] or ent_funcs[obj.type].think
         ent.draw = map_funcs[obj.properties.draw] or ent_funcs[obj.type].draw
         table.insert(lc.s.entities, ent)
-        if ent.className == "player_start" then
-          spawnPoint = ent
-        end
       end
     end
   end
-  
-  local player = Entity.new("player", spawnPoint.x, spawnPoint.y, 16, 32)
-  player.think = ent_funcs[player.className].think
-  player.draw = ent_funcs[player.className].draw
-  table.insert(lc.s.entities, player)
-  lc.playerEnt = #lc.s.entities
-  lc.cam:lookAt(spawnPoint.x, spawnPoint.y)
   
   lc.col = TileCollider(g, lc.l.tilewidth, lc.l.tileheight, c, nil, false)
 
@@ -98,5 +85,31 @@ local function step(state, dt)
   end
 end
 
+local function addCommand(state, num, command)
+  --if num == nil then return end
+  --state.commands[num] = command
+  state.s.entities[num].command = command
+end
+
+local function spawnPlayer(state)
+  local spawnPoint = nil
+  for _, ent in ipairs(state.s.entities) do
+    if ent.className == "player_start" then
+      spawnPoint = ent
+      break
+    end
+  end
+  
+  local ent = Entity.new("player", spawnPoint.x, spawnPoint.y, 16, 32)
+  ent.number = #state.s.entities
+  ent.think = ent_funcs[ent.className].think
+  ent.draw = ent_funcs[ent.className].draw
+  ent.number = #state.s.entities
+  state.s.entities[ent.number] = ent
+  state.cam:lookAt(spawnPoint.x, spawnPoint.y)  
+  
+  return ent.number
+end
+
 -- the module
-return { init = init, step = step }
+return { init = init, step = step, addCommand = addCommand, spawnPlayer = spawnPlayer }

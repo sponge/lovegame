@@ -6,6 +6,7 @@ local function new(className, x, y, w, h)
 	className = className or "default"
 
 	return setmetatable({
+      number = nil,
       className = className,
       x = x,
       y = y,
@@ -14,7 +15,8 @@ local function new(className, x, y, w, h)
       w = w,
       h = h,
       think = nil,
-      draw = nil
+      draw = nil,
+      command = {}
     }, entity)
 end
 

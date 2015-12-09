@@ -2,14 +2,14 @@ local can_jump = false
 
 local function player_think(ent, s, dt)
   
-  if love.keyboard.isDown("z") and can_jump == true then
+  if ent.command.button1 == true and can_jump == true then
     ent.dy = -1
     can_jump = false
   end
   
-  if love.keyboard.isDown("left") then
+  if ent.command.left > 0 then
     ent.dx = ent.dx - (2 * dt)
-  elseif love.keyboard.isDown("right") then
+  elseif ent.command.right > 0 then
     ent.dx = ent.dx + (2 * dt)
   else
     if ent.dx < 0 then
