@@ -1,4 +1,4 @@
-local GameFSM = require 'gamefsm'
+local GameFSM = require 'game/gamefsm'
 
 local lc = {}
 

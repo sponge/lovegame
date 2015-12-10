@@ -1,6 +1,16 @@
 local can_jump = false
+local on_ground = false
 
 local function player_think(ent, s, dt)
+  _, on_ground = s.col:bottomResolve(s, ent, ent.x, ent.y + 1, ent.w, ent.h, 0, 1)
+  
+  -- gravity
+  if on_ground then
+    can_jump = true
+  else
+    ent.dy = ent.dy + (400*dt)
+    can_jump = false
+  end
   
   if ent.command.button1 == true and can_jump == true then
     ent.dy = -200
@@ -23,17 +33,14 @@ local function player_think(ent, s, dt)
     end
   end
   
-  -- gravity
-  ent.dy = ent.dy + (400*dt)
-  
   ent.dx = math.max(-200, math.min(200, ent.dx))
   ent.dy = math.min(300, ent.dy)
   
   local collided = false
   if ent.dx > 0 then
-    ent.x, collided = s.col:rightResolve(s, ent.x + (ent.dx*dt), ent.y, ent.w, ent.h)
+    ent.x, collided = s.col:rightResolve(s, ent, ent.x + (ent.dx*dt), ent.y, ent.w, ent.h, ent.dx*dt, 0)
   elseif ent.dx < 0 then
-    ent.x, collided = s.col:leftResolve(s, ent.x + (ent.dx*dt), ent.y, ent.w, ent.h)
+    ent.x, collided = s.col:leftResolve(s, ent, ent.x + (ent.dx*dt), ent.y, ent.w, ent.h, ent.dx*dt, 0)
   end
   
   if collided then
@@ -42,15 +49,12 @@ local function player_think(ent, s, dt)
   
   collided = false
   if ent.dy > 0 then
-    ent.y, collided = s.col:bottomResolve(s, ent.x, ent.y + (ent.dy*dt), ent.w, ent.h)
+    ent.y, collided = s.col:bottomResolve(s, ent, ent.x, ent.y + (ent.dy*dt), ent.w, ent.h, 0, ent.dy*dt)
     if collided then
-      can_jump = true
       ent.dy = 0
-    else
-      can_jump = false
     end
   elseif ent.dy < 0 then
-    ent.y, collided = s.col:topResolve(s, ent.x, ent.y + (ent.dy*dt), ent.w, ent.h)
+    ent.y, collided = s.col:topResolve(s, ent, ent.x, ent.y + (ent.dy*dt), ent.w, ent.h, 0, ent.dy*dt)
   end
 
 end
@@ -59,6 +63,8 @@ local function player_draw(ent)
   love.graphics.setColor(255,0,0,255)
   love.graphics.rectangle("fill", ent.x, ent.y, 16, 32)
   love.graphics.setColor(255,255,255,255)
+  love.graphics.print(ent.dx, ent.x, ent.y)
+  love.graphics.print(ent.dy, ent.x, ent.y + 10)
 end
 
 return { think = player_think, draw = player_draw }

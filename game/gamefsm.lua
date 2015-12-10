@@ -1,7 +1,8 @@
-local json = require "dkjson"
-local Camera = require "camera"
-local TileCollider = require "tilecollider"
-local Entity = require "entity"
+local JSON = require "game/dkjson"
+local Camera = require "game/camera"
+local TileCollider = require "game/tilecollider"
+local Entity = require "game/entity"
+local TileTypes = require "game/tiletypes"
 
 -- Collision detection function.
 -- Checks if a and b overlap.
@@ -16,7 +17,7 @@ local map_funcs = {
 }
 
 local ent_funcs = {
-  player = require 'ent_player',
+  player = require 'game/ent_player',
   
   player_start = {
     think = nil,
@@ -26,15 +27,15 @@ local ent_funcs = {
 
 -- tilecollider functions
 local g = function(state, x, y)
-  return state.s.worldLayer.data[(y-1)*state.l.width+x]
+  return TileTypes[ state.s.worldLayer.data[(y-1)*state.l.width+x] ]
 end
 
-local c = function(state, side, tile, x, y)
-  if tile > 0 then
-    return true
+local c = function(state, ent, side, tile, x, y, dx, dy)
+  if tile.platform then
+    return side == 'bottom' and ent.y <= (y-3)*state.l.tileheight and ent.y + dy > (y-3)*state.l.tileheight
   end
   
-  return false
+  return tile.solid
 end
 
 local function init(str_level)
@@ -45,13 +46,14 @@ local function init(str_level)
     camera = nil,
     l = nil, -- level
     col = nil, -- tilecollider
+    dt = nil,
   }
 
-  lc.l, _, err = json.decode(str_level, 1, nil)
+  lc.l, _, err = JSON.decode(str_level, 1, nil)
   lc.cam = Camera(0, 0, 4)
   
   if err ~= nil then
-    game_err("Error while loading map json")
+    game_err("Error while loading map JSON")
     return
   end
   
@@ -76,6 +78,8 @@ local function init(str_level)
 end
 
 local function step(state, dt)
+  state.dt = dt
+  
   local ent = nil
   for i = 1, #state.s.entities do
     ent = state.s.entities[i]
@@ -86,8 +90,6 @@ local function step(state, dt)
 end
 
 local function addCommand(state, num, command)
-  --if num == nil then return end
-  --state.commands[num] = command
   state.s.entities[num].command = command
 end
 
