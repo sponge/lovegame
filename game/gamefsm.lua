@@ -20,6 +20,7 @@ local ent_funcs = {
   player = require 'game/ent_player',
   
   player_start = {
+    spawn = nil,
     think = nil,
     draw = nil
   }
@@ -65,9 +66,11 @@ local function init(str_level)
     if layer.type == "objectgroup" then
       for _, obj in ipairs(layer.objects) do
         local ent = Entity.new(obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
+        ent.number = #lc.s.entities
         ent.think = map_funcs[obj.properties.think] or ent_funcs[obj.type].think
         ent.draw = map_funcs[obj.properties.draw] or ent_funcs[obj.type].draw
         table.insert(lc.s.entities, ent)
+        if ent_funcs[obj.type].spawn then ent_funcs[obj.type].spawn(ent, lc) end
       end
     end
   end
@@ -106,8 +109,9 @@ local function spawnPlayer(state)
   ent.number = #state.s.entities
   ent.think = ent_funcs[ent.className].think
   ent.draw = ent_funcs[ent.className].draw
-  ent.number = #state.s.entities
   state.s.entities[ent.number] = ent
+  if ent_funcs[ent.className].spawn then ent_funcs[ent.className].spawn(ent, state) end
+  
   state.cam:lookAt(spawnPoint.x, spawnPoint.y)  
   
   return ent.number

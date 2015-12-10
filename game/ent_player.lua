@@ -1,20 +1,31 @@
-local can_jump = false
-local on_ground = false
+local function player_spawn(ent, s)
+  ent.on_ground = false
+  ent.can_jump = false
+  ent.jump_held = false
+end
 
 local function player_think(ent, s, dt)
-  _, on_ground = s.col:bottomResolve(s, ent, ent.x, ent.y + 1, ent.w, ent.h, 0, 1)
+  _, ent.on_ground = s.col:bottomResolve(s, ent, ent.x, ent.y + 1, ent.w, ent.h, 0, 1)
   
   -- gravity
-  if on_ground then
-    can_jump = true
+  if ent.on_ground then
+    ent.can_jump = true
   else
     ent.dy = ent.dy + (400*dt)
-    can_jump = false
+    ent.can_jump = false
   end
   
-  if ent.command.button1 == true and can_jump == true then
+  if ent.command.button1 == false and ent.jump_held == true then
+    ent.jump_held = false
+    if ent.dy < 0 then
+      ent.dy = math.floor(ent.dy * 0.75)
+    end
+  end
+  
+  if ent.command.button1 == true and ent.can_jump == true and ent.jump_held == false then
     ent.dy = -200
-    can_jump = false
+    ent.can_jump = false
+    ent.jump_held = true
   end
   
   if ent.command.left > 0 then
@@ -67,4 +78,4 @@ local function player_draw(ent)
   love.graphics.print(ent.dy, ent.x, ent.y + 10)
 end
 
-return { think = player_think, draw = player_draw }
+return { spawn = player_spawn, think = player_think, draw = player_draw }

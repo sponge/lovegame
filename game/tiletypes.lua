@@ -9,7 +9,25 @@ local ti = {
     num = 180,
     solid = false,
     platform = true
-  }
+  },
+  
+  [226] = {
+    num = 226,
+    solid = false,
+    platform = true
+  },
+  
+  [227] = {
+    num = 227,
+    solid = false,
+    platform = true
+  },
+  
+  [228] = {
+    num = 228,
+    solid = false,
+    platform = true
+  },
 }
 
 local mt = {}
