@@ -18,7 +18,7 @@ local function player_think(ent, s, dt)
   if ent.command.button1 == false and ent.jump_held == true then
     ent.jump_held = false
     if ent.dy < 0 then
-      ent.dy = math.floor(ent.dy * 0.75)
+      ent.dy = math.floor(ent.dy * 0.6)
     end
   end
   

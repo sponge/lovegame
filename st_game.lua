@@ -22,7 +22,7 @@ function gs:enter()
     spritebatches[v.name] = love.graphics.newSpriteBatch(media[v.name], 1024)
     local lastgid = v.firstgid + v.tilecount
     for i = v.firstgid, lastgid do
-      tileInfo[i+1] = { name = v.name, quad = love.graphics.newQuad(i * v.tilewidth % v.imagewidth, math.floor(i * v.tilewidth / v.imagewidth) * v.tileheight, v.tilewidth, v.tileheight, v.imagewidth, v.imageheight) }
+      tileInfo[i+1] = { name = v.name, quad = love.graphics.newQuad((i-v.firstgid+1) * v.tilewidth % v.imagewidth, math.floor((i-v.firstgid+1) * v.tilewidth / v.imagewidth) * v.tileheight, v.tilewidth, v.tileheight, v.imagewidth, v.imageheight) }
     end
   end
   
