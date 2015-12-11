@@ -1,4 +1,5 @@
 local GameFSM = require 'game/gamefsm'
+local Camera = require "game/camera"
 
 local lc = {}
 
@@ -8,6 +9,7 @@ local tileInfo = {}
 
 local gs = {}
 local playerNum = nil
+local camLockY = nil
 
 function gs:enter()
   local err = nil
@@ -27,6 +29,9 @@ function gs:enter()
   end
   
   playerNum = GameFSM.spawnPlayer(lc)
+  
+  lc.cam:lookAt(lc.s.entities[playerNum].x, lc.s.entities[playerNum].y)
+  camLockY = lc.cam.y
 
 end
 
@@ -49,12 +54,22 @@ function gs:update(dt)
   GameFSM.step(lc, dt)
 end
 
+local smoothFunc = Camera.smooth.damped(10)
+
 function gs:draw()
+  local width, height = love.graphics.getDimensions()
   
-  lc.cam:lookAt(lc.s.entities[playerNum].x, lc.s.entities[playerNum].y)
+  local player = lc.s.entities[playerNum]
+  
+  if player.on_ground and player.dy == 0 then
+    camLockY = player.y
+  end
+  
+  lc.cam:lockX(player.x + math.floor(player.dx/4), smoothFunc)
+  lc.cam:lockY(camLockY, smoothFunc)
+  lc.cam:lockWindow(player.x, player.y, width/2 - 100, width/2 + 100, 150, height - 300)
   
   love.graphics.setColor(168,168,168,255)
-  local width, height = love.graphics.getDimensions()
   love.graphics.rectangle("fill", 0, 0, width, height)
   
   love.graphics.setColor(255,255,255,255)

@@ -7,6 +7,10 @@ end
 local function player_think(ent, s, dt)
   _, ent.on_ground = s.col:bottomResolve(s, ent, ent.x, ent.y + 1, ent.w, ent.h, 0, 1)
   
+  if ent.dy ~= 0 then
+    on_ground = false
+  end
+  
   -- gravity
   if ent.on_ground then
     ent.can_jump = true
