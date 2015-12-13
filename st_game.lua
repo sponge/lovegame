@@ -66,8 +66,8 @@ function scene:draw()
   
   gs.cam:lockX(player.x + math.floor(player.dx/2), smoothFunc)
   gs.cam:lockY(camLockY, smoothFunc)
-  gs.cam:lockWindow(player.x, player.y, width/2 - 100, width/2 + 100, 100, height - 300)
-  
+  gs.cam:lockWindow(player.x, player.y, width/2 - 100, width/2 + 100, 200, height - 300)
+    
   love.graphics.setColor(168,168,168,255)
   love.graphics.rectangle("fill", 0, 0, width, height)
   
@@ -85,7 +85,7 @@ function scene:draw()
   if cminy <= 0 then
     gs.cam:move(0, math.abs(cminy))
   elseif cmaxy > gs.l.height * gs.l.tileheight then
-    gs.cam:move(0, 0 - (cmaxy - (gs.l.height * gs.l.tileheight)), 0)
+    gs.cam:move(0, 0 - (cmaxy - (gs.l.height * gs.l.tileheight)))
   end
   
   cminx, cminy = gs.cam:worldCoords(0,0)
