@@ -1,11 +1,40 @@
-local function player_spawn(ent, s)
+local Entity = require 'game/entity'
+
+local function player_init(s)
+  if not love.graphics then return end
+  
+  s.media.player = love.graphics.newImage("base/player.png")
+  s.media.player:setFilter("nearest", "nearest")
+
+  local w, h = s.media.player:getDimensions()
+  s.media.player_frames = {
+    stand = love.graphics.newQuad(0, 0, 16, h, w, h),
+    run1 = 1,
+    run2 = 2,
+    run3 = 3,
+    prejump1 = 4,
+    prejump2 = 5,
+    prejump3 = 6,
+    prejump4 = 7,
+    jump = 8,
+    shoot = 9,
+    pogojump = 10,
+    pogocharge = 11
+  }
+end
+
+local function player_spawn(s, ent)    
+  ent.animFrame = "stand"
+  ent.animMirror = false
   ent.on_ground = false
   ent.can_jump = false
   ent.jump_held = false
+  ent.drawx = 3
+  ent.drawy = -2
 end
 
-local function player_think(ent, s, dt)
-  _, ent.on_ground = s.col:bottomResolve(s, ent, ent.x, ent.y + 1, ent.w, ent.h, 0, 1)
+local function player_think(s, ent, dt)
+  _, ent.on_ground = s.col:bottomResolve(s, ent, ent.x, ent.y+1, ent.w, ent.h, 0, 1)
   
   if ent.dy ~= 0 then
     on_ground = false
@@ -34,8 +63,10 @@ local function player_think(ent, s, dt)
   
   if ent.command.left > 0 then
     ent.dx = ent.dx - (200*dt)
+    ent.animMirror = true
   elseif ent.command.right > 0 then
     ent.dx = ent.dx + (200*dt)
+    ent.animMirror = false
   else
     if ent.dx < 0 then
       ent.dx = ent.dx + (200*dt)
@@ -74,12 +105,22 @@ local function player_think(ent, s, dt)
 
 end
 
-local function player_draw(ent)
+local function player_draw(s, ent)
+  local x = nil
+  local sx = 1
+  
+  if ent.animMirror then
+    x = ent.x + ent.w + ent.drawx
+    sx = sx * -1
+  else
+    x = ent.x - ent.drawx
+  end
+    
   love.graphics.setColor(255,0,0,255)
-  love.graphics.rectangle("fill", ent.x, ent.y, 16, 32)
+  love.graphics.rectangle("fill", ent.x, ent.y, ent.w, ent.h)
   love.graphics.setColor(255,255,255,255)
-  love.graphics.print(ent.dx, ent.x, ent.y)
-  love.graphics.print(ent.dy, ent.x, ent.y + 10)
+    
+  love.graphics.draw(s.media.player, s.media.player_frames[ent.animFrame], x, ent.y + ent.drawy, 0, sx, 1)
 end
 
-return { spawn = player_spawn, think = player_think, draw = player_draw }
+return { init = player_init, spawn = player_spawn, think = player_think, draw = player_draw }

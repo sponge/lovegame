@@ -20,6 +20,7 @@ local ent_funcs = {
   player = require 'game/ent_player',
   
   player_start = {
+    init = nil,
     spawn = nil,
     think = nil,
     draw = nil
@@ -33,7 +34,7 @@ end
 
 local c = function(state, ent, side, tile, x, y, dx, dy)
   if tile.platform then
-    return side == 'bottom' and ent.y <= (y-3)*state.l.tileheight and ent.y + dy > (y-3)*state.l.tileheight
+    return side == 'bottom' and ent.y+ent.h <= (y-1)*state.l.tileheight and ent.y+ent.h+dy > (y-1)*state.l.tileheight
   end
   
   return tile.solid
@@ -42,42 +43,45 @@ end
 local function init(str_level)
   local err
 
-  local lc = {
+  local state = {
     s = {entities = {}, worldLayer = nil}, -- serializable state (network?)
     camera = nil,
     l = nil, -- level
     col = nil, -- tilecollider
     dt = nil,
+    media = {},
   }
 
-  lc.l, _, err = JSON.decode(str_level, 1, nil)
-  lc.cam = Camera(0, 0, 4)
+  state.l, _, err = JSON.decode(str_level, 1, nil)
+  state.cam = Camera(0, 0, 4)
   
   if err ~= nil then
     game_err("Error while loading map JSON")
     return
   end
   
-  for _, layer in ipairs(lc.l.layers) do
+  ent_funcs.player.init(state)
+  
+  for _, layer in ipairs(state.l.layers) do
     if layer.name == "world" and layer.type == "tilelayer" then
-      lc.s.worldLayer = layer
+      state.s.worldLayer = layer
     end
     
     if layer.type == "objectgroup" then
       for _, obj in ipairs(layer.objects) do
         local ent = Entity.new(obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
-        ent.number = #lc.s.entities
+        ent.number = #state.s.entities
         ent.think = map_funcs[obj.properties.think] or ent_funcs[obj.type].think
         ent.draw = map_funcs[obj.properties.draw] or ent_funcs[obj.type].draw
-        table.insert(lc.s.entities, ent)
-        if ent_funcs[obj.type].spawn then ent_funcs[obj.type].spawn(ent, lc) end
+        table.insert(state.s.entities, ent)
+        if ent_funcs[obj.type].spawn then ent_funcs[obj.type].spawn(state, ent) end
       end
     end
   end
   
-  lc.col = TileCollider(g, lc.l.tilewidth, lc.l.tileheight, c, nil, false)
+  state.col = TileCollider(g, state.l.tilewidth, state.l.tileheight, c, nil, false)
 
-  return lc
+  return state
 end
 
 local function step(state, dt)
@@ -87,7 +91,7 @@ local function step(state, dt)
   for i = 1, #state.s.entities do
     ent = state.s.entities[i]
     if ent.think ~= nil then
-      ent.think(ent, state, dt)
+      ent.think(state, ent, dt)
     end
   end
 end
@@ -105,12 +109,12 @@ local function spawnPlayer(state)
     end
   end
   
-  local ent = Entity.new("player", spawnPoint.x, spawnPoint.y, 16, 32)
+  local ent = Entity.new("player", spawnPoint.x, spawnPoint.y, 10, 22)
   ent.number = #state.s.entities
   ent.think = ent_funcs[ent.className].think
   ent.draw = ent_funcs[ent.className].draw
   state.s.entities[ent.number] = ent
-  if ent_funcs[ent.className].spawn then ent_funcs[ent.className].spawn(ent, state) end
+  if ent_funcs[ent.className].spawn then ent_funcs[ent.className].spawn(state, ent) end
   
   state.cam:lookAt(spawnPoint.x, spawnPoint.y)  
   

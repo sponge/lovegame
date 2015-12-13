@@ -14,6 +14,8 @@ local function new(className, x, y, w, h)
       dy = 0,
       w = w,
       h = h,
+      drawx = 0,
+      drawy = 0,
       think = nil,
       draw = nil,
       command = {}

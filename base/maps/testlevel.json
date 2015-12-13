@@ -63,7 +63,7 @@
  "tilesets":[
         {
          "firstgid":1,
-         "image":"..\/keen1.png",
+         "image":"base\/keen1.png",
          "imageheight":752,
          "imagewidth":208,
          "margin":0,
@@ -79,7 +79,7 @@
         }, 
         {
          "firstgid":612,
-         "image":"..\/keen3.png",
+         "image":"base\/keen3.png",
          "imageheight":768,
          "imagewidth":208,
          "margin":0,
