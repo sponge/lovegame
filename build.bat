@@ -7,3 +7,4 @@ del dist\game.love
 cd dist
 "c:\Program Files\7-Zip\7z.exe" a -tzip game.zip *
 cd ..
+pause
