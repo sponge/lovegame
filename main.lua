@@ -8,13 +8,15 @@ local timers = {
   events = {0,0},
   update = {0,0},
   draw = {0,0},
+  gc = {0,0},
 }
 
 local max_timers = {
   frame = 0,
   events = 0,
   update = 0,
-  draw = 0
+  draw = 0,
+  gc = 0
 }
 
 local debugY = 20
@@ -96,7 +98,10 @@ function love.run()
       timers.draw[2] = love.timer.getTime() - timers.draw[1]
 		end
     
+    timers.gc[1] = love.timer.getTime()
     collectgarbage("step")
+    timers.gc[2] = love.timer.getTime() - timers.gc[1]
+
     
     timers.frame[2] = love.timer.getTime() - timers.frame[1]
     
@@ -124,4 +129,6 @@ function love.draw()
   addDebugLine("Events:", string.format("%.1f", timers.events[2] * 1000), string.format("(%.2f)", max_timers.events * 1000))
   addDebugLine("Update:", string.format("%.1f", timers.update[2] * 1000), string.format("(%.2f)", max_timers.update * 1000))
   addDebugLine("Draw:", string.format("%.1f", timers.draw[2] * 1000), string.format("(%.2f)", max_timers.draw * 1000))
+  addDebugLine("GC:", string.format("%.1f", timers.gc[2] * 1000), string.format("(%.2f)", max_timers.gc * 1000))
+
 end

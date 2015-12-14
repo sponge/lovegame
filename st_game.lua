@@ -10,9 +10,9 @@ local scene = {}
 local playerNum = nil
 local camLockY = nil
 
-function scene:enter()
+function scene:enter(current, mapname)
   local err = nil
-  local level_json, _ = love.filesystem.read("base/maps/testlevel.json")
+  local level_json, _ = love.filesystem.read(mapname)
   
   gs = GameFSM.init(level_json)
   
@@ -34,10 +34,12 @@ function scene:enter()
 
 end
 
-function scene:keyreleased(key)
-
+function scene:keypressed(key)
+  if key == 'escape' then
+    game_err('Game exited')
+    return
+  end
 end
-
 function scene:update(dt)
   -- add commands before stepping
   local usercmd = { left = 0, right = 0, up = 0, down = 0, button1 = false, button2 = false, button3 = false }
@@ -66,7 +68,7 @@ function scene:draw()
   
   gs.cam:lockX(player.x + math.floor(player.dx/2), smoothFunc)
   gs.cam:lockY(camLockY, smoothFunc)
-  gs.cam:lockWindow(player.x, player.y, width/2 - 100, width/2 + 100, 200, height - 300)
+  gs.cam:lockWindow(player.x, player.y, width/2 - 100, width/2 + 100, 100, height - 300)
     
   love.graphics.setColor(168,168,168,255)
   love.graphics.rectangle("fill", 0, 0, width, height)

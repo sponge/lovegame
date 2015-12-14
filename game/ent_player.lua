@@ -1,5 +1,32 @@
 local Entity = require 'game/entity'
 
+local GRAVITY = 400
+
+local MAX_SPEED = 180
+local TERMINAL_VELOCITY = 300
+
+local ACCEL = 275
+local SKID_ACCEL = 400
+local AIR_ACCEL = 250
+
+local GROUND_FRICTION = 250
+
+local JUMP_HEIGHT = -205
+local POGO_JUMP_HEIGHT = -245
+local DOUBLE_JUMP_HEIGHT = -155
+local EARLY_JUMP_END_MODIFIER = 0.6
+local HEAD_BUMP_MODIFIER = 0.5
+
+local function getAccel(ent, dir)
+  if not ent.on_ground then
+    return AIR_ACCEL
+  elseif (dir == 'left' and ent.dx > 0) or (dir == 'right' and ent.dx < 0) then
+    return SKID_ACCEL
+  else
+    return ACCEL
+  end
+end
+
 local function player_init(s)
   if not love.graphics then return end
   
@@ -28,6 +55,7 @@ local function player_spawn(s, ent)
   ent.animMirror = false
   ent.on_ground = false
   ent.can_jump = false
+  ent.can_double_jump = false
   ent.jump_held = false
   ent.will_pogo = false
   ent.drawx = 3
@@ -43,14 +71,15 @@ local function player_think(s, ent, dt)
   
   -- gravity
   if ent.on_ground then
-    if ent.command.down > 0 and ent.will_pogo then
-      ent.dy = -225
+    if ent.command.down > 0 and ent.will_pogo and ent.dy >= 0 then
+      ent.dy = POGO_JUMP_HEIGHT
     else 
      ent.can_jump = true
+     ent.can_double_jump = false
      ent.will_pogo = false
     end
   else
-    ent.dy = ent.dy + (400*dt)
+    ent.dy = ent.dy + (GRAVITY*dt)
     ent.can_jump = false
     ent.will_pogo = ent.command.down > 0
   end
@@ -58,36 +87,43 @@ local function player_think(s, ent, dt)
   if ent.command.button1 == false and ent.jump_held == true then
     ent.jump_held = false
     if ent.dy < 0 then
-      ent.dy = math.floor(ent.dy * 0.6)
+      ent.dy = math.floor(ent.dy * EARLY_JUMP_END_MODIFIER)
     end
   end
   
   if ent.command.button1 == true and ent.can_jump == true and ent.jump_held == false then
-    ent.dy = -200
+    ent.dy = JUMP_HEIGHT
     ent.can_jump = false
+    ent.jump_held = true
+    ent.can_double_jump = true
+  end
+      
+  if ent.command.button1 == true and ent.can_double_jump == true and ent.jump_held == false then
+    ent.dy = DOUBLE_JUMP_HEIGHT
+    ent.can_double_jump = false
     ent.jump_held = true
   end
   
   if ent.command.left > 0 then
-    ent.dx = ent.dx - (200*dt)
+    ent.dx = ent.dx - (getAccel(ent,'left')*dt)
     ent.animMirror = true
   elseif ent.command.right > 0 then
-    ent.dx = ent.dx + (200*dt)
+    ent.dx = ent.dx + (getAccel(ent,'right')*dt)
     ent.animMirror = false
   else
     if ent.dx < 0 then
-      ent.dx = ent.dx + (200*dt)
+      ent.dx = ent.dx + (GROUND_FRICTION*dt)
     elseif ent.dx > 0 then
-      ent.dx = ent.dx - (200*dt)
+      ent.dx = ent.dx - (GROUND_FRICTION*dt)
     end
     
-    if ent.dx ~= 0 and math.abs(ent.dx) < 0.1 then
+    if ent.dx ~= 0 and math.abs(ent.dx) < 0.25 then
       ent.dx = 0
     end
   end
   
-  ent.dx = math.max(-200, math.min(200, ent.dx))
-  ent.dy = math.min(300, ent.dy)
+  ent.dx = math.max(-MAX_SPEED, math.min(MAX_SPEED, ent.dx))
+  ent.dy = math.min(TERMINAL_VELOCITY, ent.dy)
   
   local collided = false
   if ent.dx > 0 then
@@ -109,7 +145,7 @@ local function player_think(s, ent, dt)
   elseif ent.dy < 0 then
     ent.y, collided = s.col:topResolve(s, ent, ent.x, ent.y + (ent.dy*dt), ent.w, ent.h, 0, ent.dy*dt)
     if collided then
-      ent.dy = ent.dy / 2
+      ent.dy = ent.dy * HEAD_BUMP_MODIFIER
     end
   end
 
@@ -131,12 +167,18 @@ local function player_draw(s, ent)
   if ent.will_pogo then
     ent.animFrame = "pogojump"
   end
-    
-  --love.graphics.setColor(255,0,0,255)
-  --love.graphics.rectangle("fill", ent.x, ent.y, ent.w, ent.h)
-  --love.graphics.setColor(255,255,255,255)
-    
+  
+  if ent.dbg then
+    love.graphics.setColor(255,0,0,255)
+    love.graphics.rectangle("fill", ent.x, ent.y, ent.w, ent.h)
+    love.graphics.setColor(255,255,255,255)
+  end
+  
   love.graphics.draw(s.media.player, s.media.player_frames[ent.animFrame], x, ent.y + ent.drawy, 0, sx, 1)
+  
+  if ent.dbg then
+    love.graphics.print(ent.dbg, ent.x, ent.y)
+  end
 end
 
 return { init = player_init, spawn = player_spawn, think = player_think, draw = player_draw }
