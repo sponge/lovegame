@@ -4,6 +4,14 @@ local gs = {error = nil}
 
 local selectedIndex = 1
 local levelList = {}
+local helptext =
+[[welcome to my dumb game
+
+arrows to move
+z to jump/double jump
+down while midair to pogo
+hold left/right on wall to wallslide
+wallslide + jump to walljump]]
 
 local function cb_play(opt, key)
   if key == "return" then
@@ -27,7 +35,7 @@ end
 local function cb_vsync(opt, key)
   local width, height, flags = love.window.getMode()
   
-  if key then
+  if key == 'return' or key == 'left' or key == 'right' then
     flags.vsync = not flags.vsync
     love.window.setMode( width, height, flags)
   end
@@ -38,7 +46,7 @@ end
 local function cb_fs(opt, key)
   local width, height, flags = love.window.getMode()
   
-  if key then
+  if key == 'return' or key == 'left' or key == 'right' then
     flags.fullscreen = not flags.fullscreen
     if not fullscreen then
       love.window.setMode( 1280, 720, flags)
@@ -86,7 +94,7 @@ function gs:draw()
     love.graphics.printf(gs.error, 0, 15, width, "center")
   end
   
-  love.graphics.printf("welcome to my dumb game\narrows to move\n z to jump/double jump\ndown while midair to pogo", 0, 120, width, "center")
+  love.graphics.printf(helptext, 0, 120, width, "center")
 
   
   local x = width / 2
