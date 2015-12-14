@@ -118,7 +118,9 @@ function gs:draw()
   end
 end
 
-function gs:keypressed(key, code)
+function gs:keypressed(key, code, isrepeat)
+  if key == 'z' then key = 'return' end
+    
   if key == 'down' then
     selectedIndex = math.min(#options, selectedIndex + 1)
     return
@@ -126,7 +128,7 @@ function gs:keypressed(key, code)
     selectedIndex = math.max(1, selectedIndex - 1)
     return
   end
-  
+    
   if options[selectedIndex].cb then
     options[selectedIndex].cb(options[selectedIndex], key)
   end

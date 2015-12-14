@@ -7,7 +7,7 @@ local TERMINAL_VELOCITY = 300
 
 local ACCEL = 275
 local SKID_ACCEL = 400
-local AIR_ACCEL = 250
+local AIR_ACCEL = 200
 
 local GROUND_FRICTION = 250
 
@@ -73,6 +73,7 @@ local function player_think(s, ent, dt)
   if ent.on_ground then
     if ent.command.down > 0 and ent.will_pogo and ent.dy >= 0 then
       ent.dy = POGO_JUMP_HEIGHT
+      ent.can_double_jump = true
     else 
      ent.can_jump = true
      ent.can_double_jump = false
