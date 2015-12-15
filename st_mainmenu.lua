@@ -90,6 +90,10 @@ end
 function gs:draw()
   local width, height = love.graphics.getDimensions()
   
+  love.graphics.setColor(30,30,30,255)
+  love.graphics.rectangle("fill", 0, 0, width, height)
+  love.graphics.setColor(255, 255, 255, 255)
+  
   if gs.error ~= nil then
     love.graphics.printf(gs.error, 0, 15, width, "center")
   end

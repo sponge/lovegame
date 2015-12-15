@@ -62,8 +62,8 @@ function scene:draw()
   
   local player = gs.s.entities[playerNum]
   
-  if player.on_ground and player.dy == 0 and math.abs(player.y - camLockY) > 48 then
-    camLockY = player.y
+  if math.abs(player.last_ground_y - camLockY) > 48 then
+    camLockY = player.last_ground_y
   end
   
   gs.cam:lockX(player.x + math.floor(player.dx/2), smoothFunc)

@@ -68,6 +68,7 @@ local function player_spawn(s, ent)
   ent.animFrame = "stand"
   ent.animMirror = false
   ent.on_ground = false
+  ent.last_ground_y = ent.y
   ent.can_jump = false
   ent.can_double_jump = false
   ent.jump_held = false
@@ -95,6 +96,8 @@ local function player_think(s, ent, dt)
      ent.can_double_jump = true
      ent.will_pogo = false
     end
+    
+    ent.last_ground_y = ent.y
   else
     ent.dy = ent.dy + (GRAVITY*dt)
     ent.can_jump = false
