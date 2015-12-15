@@ -105,7 +105,7 @@ end
 local function spawnPlayer(state)
   local spawnPoint = nil
   for _, ent in ipairs(state.s.entities) do
-    if ent.className == "player_start" then
+    if ent.classname == "player_start" then
       spawnPoint = ent
       break
     end
@@ -113,10 +113,10 @@ local function spawnPlayer(state)
   
   local ent = Entity.new("player", spawnPoint.x, spawnPoint.y, 10, 22)
   ent.number = #state.s.entities
-  ent.think = ent_funcs[ent.className].think
-  ent.draw = ent_funcs[ent.className].draw
+  ent.think = ent_funcs[ent.classname].think
+  ent.draw = ent_funcs[ent.classname].draw
   state.s.entities[ent.number] = ent
-  if ent_funcs[ent.className].spawn then ent_funcs[ent.className].spawn(state, ent) end
+  if ent_funcs[ent.classname].spawn then ent_funcs[ent.classname].spawn(state, ent) end
   
   state.cam:lookAt(spawnPoint.x, spawnPoint.y)  
   

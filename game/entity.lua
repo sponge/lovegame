@@ -1,13 +1,13 @@
 local entity = {}
 entity.__index = entity
 
-local function new(className, x, y, w, h)
+local function new(classname, x, y, w, h)
 	x,y  = x or love.graphics.getWidth()/2, y or love.graphics.getHeight()/2
-	className = className or "default"
+	classname = classname or "default"
 
 	return setmetatable({
       number = nil,
-      className = className,
+      classname = classname,
       x = x,
       y = y,
       dx = 0,
