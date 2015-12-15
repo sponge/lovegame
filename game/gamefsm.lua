@@ -49,6 +49,7 @@ local function init(str_level)
     l = nil, -- level
     col = nil, -- tilecollider
     dt = nil,
+    time = 0,
     media = {},
   }
 
@@ -86,6 +87,7 @@ end
 
 local function step(state, dt)
   state.dt = dt
+  state.time = state.time + dt
   
   local ent = nil
   for i = 1, #state.s.entities do

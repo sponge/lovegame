@@ -23,7 +23,11 @@ local HEAD_BUMP_MODIFIER = 0.5
 local WALL_SLIDE_SPEED = 45
 local WALL_JUMP_X = 100
 
-local function getAccel(ent, dir)
+local function getAccel(s, ent, dir)
+  if s.time < ent.stun_time then
+    return 0
+  end
+  
   if not ent.on_ground then
     if (dir == 'left' and ent.dx > 0) or (dir == 'right' and ent.dx < 0) then
       return TURN_AIR_ACCEL
@@ -69,6 +73,7 @@ local function player_spawn(s, ent)
   ent.jump_held = false
   ent.will_pogo = false
   ent.wall_sliding = false
+  ent.stun_time = 0
   ent.drawx = 3
   ent.drawy = -2
 end
@@ -120,6 +125,7 @@ local function player_think(s, ent, dt)
     if ent.wall_sliding then
       ent.dy = JUMP_HEIGHT
       ent.dx = WALL_JUMP_X
+      ent.stun_time = s.time + 1/10
       if ent.command.right > 0 then
         ent.dx = ent.dx * -1
       end
@@ -140,10 +146,10 @@ local function player_think(s, ent, dt)
   end
   
   if ent.command.left > 0 then
-    ent.dx = ent.dx - (getAccel(ent,'left')*dt)
+    ent.dx = ent.dx - (getAccel(s, ent,'left')*dt)
     ent.animMirror = true
   elseif ent.command.right > 0 then
-    ent.dx = ent.dx + (getAccel(ent,'right')*dt)
+    ent.dx = ent.dx + (getAccel(s, ent,'right')*dt)
     ent.animMirror = false
   else
     local friction = ent.on_ground and GROUND_FRICTION or AIR_FRICTION
