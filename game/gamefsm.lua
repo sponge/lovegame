@@ -1,3 +1,6 @@
+local Strictness = require "game/strictness"
+if not Strictness.is_strict(_G) then Strictness.strict(_G) end
+
 local JSON = require "game/dkjson"
 local Camera = require "game/camera"
 local TileCollider = require "game/tilecollider"

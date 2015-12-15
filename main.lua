@@ -1,7 +1,18 @@
+local Strictness = require "game/strictness"
+Strictness.strict(_G)
+
+-- globals
+_, s_mainmenu, s_game, game_err = nil
+
 local Gamestate = require "gamestate"
 
 s_mainmenu = require "st_mainmenu"
 s_game = require "st_game"
+
+function game_err(msg)
+  s_mainmenu.error = msg
+  Gamestate.switch(s_mainmenu)
+end
 
 local timers = {
   frame = {0,0},
@@ -25,11 +36,6 @@ local function addDebugLine(col1, col2, col3)
   if col2 ~= nil then love.graphics.print(col2, 90, debugY) end
   if col3 ~= nil then love.graphics.print(col3, 130, debugY) end
   debugY = debugY + 20
-end
-  
-function game_err(msg)
-  s_mainmenu.error = msg
-  Gamestate.switch(s_mainmenu)
 end
 
 function love.load(arg)
