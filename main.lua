@@ -1,5 +1,7 @@
 local Strictness = require "game/strictness"
-Strictness.strict(_G)
+if arg and arg[#arg] ~= "-debug" then
+  Strictness.strict(_G)
+end
 
 -- globals
 _, s_mainmenu, s_game, game_err = nil

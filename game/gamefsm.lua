@@ -1,5 +1,7 @@
 local Strictness = require "game/strictness"
-if not Strictness.is_strict(_G) then Strictness.strict(_G) end
+if arg and arg[#arg] ~= "-debug" then
+  if not Strictness.is_strict(_G) then Strictness.strict(_G) end
+end
 
 local JSON = require "game/dkjson"
 local Camera = require "game/camera"
@@ -57,7 +59,7 @@ local function init(str_level)
   }
 
   state.l, _, err = JSON.decode(str_level, 1, nil)
-  state.cam = Camera(0, 0, 4)
+  state.cam = Camera(0, 0, 1920/(16*24)) -- FIXME: use tile sizes correctly, pass in width?
   
   if err ~= nil then
     game_err("Error while loading map JSON")

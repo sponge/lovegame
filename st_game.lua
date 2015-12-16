@@ -9,12 +9,15 @@ local tileInfo = {}
 local scene = {}
 local playerNum = nil
 local camLockY = nil
+local canvas = nil
 
 function scene:enter(current, mapname)
   local err = nil
   local level_json, _ = love.filesystem.read(mapname)
   
   gs = GameFSM.init(level_json)
+  
+  canvas = love.graphics.newCanvas(1920, 1080)
   
   -- load all graphics used in the map
   for _, v in ipairs(gs.l.tilesets) do
@@ -58,7 +61,10 @@ end
 local smoothFunc = Camera.smooth.damped(3)
 
 function scene:draw()
-  local width, height = love.graphics.getDimensions()
+  local width, height = canvas:getDimensions()
+  
+  love.graphics.setCanvas(canvas)
+  love.graphics.clear(168,168,168,255)
   
   local player = gs.s.entities[playerNum]
   
@@ -69,11 +75,6 @@ function scene:draw()
   gs.cam:lockX(player.x + math.floor(player.dx/2), smoothFunc)
   gs.cam:lockY(camLockY, smoothFunc)
   gs.cam:lockWindow(player.x, player.y, width/2 - 100, width/2 + 100, 100, height - 300)
-    
-  love.graphics.setColor(168,168,168,255)
-  love.graphics.rectangle("fill", 0, 0, width, height)
-  
-  love.graphics.setColor(255,255,255,255)
   
   local cminx, cminy = gs.cam:worldCoords(0,0)
   local cmaxx, cmaxy = gs.cam:worldCoords(width, height)
@@ -132,6 +133,12 @@ function scene:draw()
   end
 
   gs.cam:detach()
+  
+  love.graphics.setCanvas()
+  
+  local winw, winh = love.graphics.getDimensions()
+  local sf = winw/winh < width/height and winw/width or winh/height
+  love.graphics.draw(canvas, winw/2, winh/2, 0, sf, sf, width/2, height/2)
 
 end
 
