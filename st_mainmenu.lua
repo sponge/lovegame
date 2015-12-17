@@ -97,12 +97,11 @@ function gs:draw()
   if gs.error ~= nil then
     love.graphics.printf(gs.error, 0, 15, width, "center")
   end
-  
-  local x = math.floor(width / 2)
+
+  local w = math.min( 800, math.floor(0.8 * width) )
+  local lside = math.floor((width - w) / 2)
+  local x = math.floor(w / 2)
   local y = math.floor(height / 2 - 100)
-  local lside = math.floor(0.1 * width)
-  local w = math.floor(0.8 * width)
-  
   
   love.graphics.printf(helptext, 0, y, width, "center")
   y = y + 150
