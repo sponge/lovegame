@@ -1,5 +1,11 @@
 local Entity = require 'game/entity'
 
+local abs = math.abs
+local floor = math.floor
+local ceil = math.ceil
+local max = math.max
+local min = math.min
+
 local GRAVITY = 375
 
 local MAX_SPEED = 170
@@ -64,7 +70,7 @@ local function player_init(s)
   }
 end
 
-local function player_spawn(s, ent)    
+local function player_spawn(s, ent)
   ent.anim_frame = "stand"
   ent.anim_mirror = false
   ent.on_ground = false
@@ -125,7 +131,7 @@ local function player_think(s, ent, dt)
     ent.jump_held = false
     -- allow shorter hops by letting go of jumps while going up
     if ent.dy < 0 then
-      ent.dy = math.floor(ent.dy * EARLY_JUMP_END_MODIFIER)
+      ent.dy = floor(ent.dy * EARLY_JUMP_END_MODIFIER)
     end
   end
   
@@ -149,7 +155,7 @@ local function player_think(s, ent, dt)
       ent.jump_held = true
     -- check for first jump
     elseif ent.can_jump == true then
-      ent.dy = JUMP_HEIGHT + (math.abs(ent.dx) >= MAX_SPEED * 0.25 and SPEED_JUMP_BONUS or 0)
+      ent.dy = JUMP_HEIGHT + (abs(ent.dx) >= MAX_SPEED * 0.25 and SPEED_JUMP_BONUS or 0)
       ent.can_jump = false
       ent.jump_held = true
       ent.can_double_jump = true
@@ -179,14 +185,14 @@ local function player_think(s, ent, dt)
     end
     
     -- stop small floats from creeping you around
-    if ent.dx ~= 0 and math.abs(ent.dx) < 1 then
+    if ent.dx ~= 0 and abs(ent.dx) < 1 then
       ent.dx = 0
     end
   end
   
   -- cap intended x/y speed
-  ent.dx = math.max(-MAX_SPEED, math.min(MAX_SPEED, ent.dx))
-  ent.dy = math.min(TERMINAL_VELOCITY, ent.dy)
+  ent.dx = max(-MAX_SPEED, min(MAX_SPEED, ent.dx))
+  ent.dy = min(TERMINAL_VELOCITY, ent.dy)
   
   -- start the actual move
   
@@ -200,6 +206,15 @@ local function player_think(s, ent, dt)
   
   -- don't conserve any movement in x on a collision
   if collided then
+    ent.dx = 0
+  end
+  
+  -- don't let them move offscreen, but also don't treat the edge as walls
+  if ent.x < 0 then
+    ent.x = 0
+    ent.dx = 0
+  elseif ent.x+ent.w > s.l.width*s.l.tilewidth then
+    ent.x = s.l.width*s.l.tilewidth - ent.w
     ent.dx = 0
   end
   

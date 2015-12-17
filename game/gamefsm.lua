@@ -9,6 +9,12 @@ local TileCollider = require "game/tilecollider"
 local Entity = require "game/entity"
 local TileTypes = require "game/tiletypes"
 
+local abs = math.abs
+local floor = math.floor
+local ceil = math.ceil
+local max = math.max
+local min = math.min
+
 local function parse_color(col)
     local rgb = {}
     for pair in string.gmatch(col, "[^#].") do
@@ -28,20 +34,22 @@ local map_funcs = {
 }
 
 local ent_funcs = {
-  player = require 'game/ent_player',
-  
   player_start = {
     init = nil,
     spawn = nil,
     think = nil,
     draw = nil
-  }
+  },
+  
+  player = require 'game/ent_player',
+  coin = require 'game/ent_coin',
+  coin_block = require 'game/ent_coin_block',
 }
 
 -- tilecollider functions
 local g = function(state, x, y)
-  if x <= 0 then return TileTypes.__oob end
-  if x > state.l.width then return TileTypes.__oob end
+  --if x <= 0 then return TileTypes.__oob end
+  --if x > state.l.width then return TileTypes.__oob end
   if y <= 0 then y = 1 end
   return state.tileinfo[ state.s.worldLayer.data[(y-1)*state.l.width+x] ]
 end
@@ -99,6 +107,22 @@ local function init(str_level)
         ent.draw = map_funcs[obj.properties.draw] or ent_funcs[obj.type].draw
         table.insert(state.s.entities, ent)
         if ent_funcs[obj.type].spawn then ent_funcs[obj.type].spawn(state, ent) end
+      end
+    end
+  end
+  
+  -- spawn tile entities and take them out of the map
+  for i,v in ipairs(state.s.worldLayer.data) do
+    if state.tileinfo[v] then
+      if state.tileinfo[v].tile_entity ~= nil then
+        state.s.worldLayer.data[i] = 0
+        local classname = state.tileinfo[v].tile_entity
+        local ent = Entity.new(state.tileinfo[v].tile_entity, (i%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
+        ent.number = #state.s.entities
+        ent.think = ent_funcs[classname].think
+        ent.draw = ent_funcs[classname].draw
+        table.insert(state.s.entities, ent)
+        if ent_funcs[classname].spawn then ent_funcs[classname].spawn(state, ent) end
       end
     end
   end

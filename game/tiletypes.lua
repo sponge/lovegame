@@ -31,6 +31,20 @@ local keen1 = {
 }
 
 local smw = {
+  [2] = {
+    num = 2,
+    solid = true,
+    platform = false,
+    tile_entity = 'coin_block'
+  },
+  
+  [7] = {
+    num = 7,
+    solid = true,
+    platform = false,
+    tile_entity = 'coin'
+  },
+  
   [96] = {
     num = 96,
     solid = false,

@@ -1,6 +1,12 @@
 local GameFSM = require 'game/gamefsm'
 local Camera = require "game/camera"
 
+local abs = math.abs
+local floor = math.floor
+local ceil = math.ceil
+local max = math.max
+local min = math.min
+
 local gs = {}
 
 local spritebatches = {}
@@ -31,6 +37,12 @@ function scene:enter(current, mapname)
       y = math.floor((i-v.firstgid+1) / tw) * (v.tileheight + v.spacing) + v.margin
       tileInfo[i+1] = { name = v.name, quad = love.graphics.newQuad(x, y, v.tilewidth, v.tileheight, v.imagewidth, v.imageheight) }
     end
+  end
+  
+  -- load all backgrounds used in the map
+  if gs.l.properties.background ~= nil then
+    gs.media.bg = love.graphics.newImage(gs.l.properties.background)
+    gs.media.bg:setFilter("nearest", "nearest")
   end
   
   playerNum = GameFSM.spawnPlayer(gs)
@@ -121,6 +133,14 @@ function scene:draw()
       end
     end
     
+  end
+  
+  if gs.media.bg then
+    local x = max(0, floor(cminx/512))
+    while x < cmaxx do
+      love.graphics.draw(gs.media.bg, x, gs.l.height*gs.l.tileheight - gs.media.bg:getHeight())
+      x = x + gs.media.bg:getWidth()
+    end
   end
   
   for _, batch in pairs(spritebatches) do

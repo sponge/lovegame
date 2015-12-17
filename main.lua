@@ -41,8 +41,10 @@ local function addDebugLine(col1, col2, col3)
 end
 
 local write = io.write
+local origprint = print
 print = function(...)
-   write("[", love.timer.getTime(), "] ", ..., "\n")
+   write("[", love.timer.getTime(), "] ")
+   origprint(...)
 end
 
 function love.load(arg)
