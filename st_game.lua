@@ -67,7 +67,7 @@ function scene:draw()
   local width, height = canvas:getDimensions()
   
   love.graphics.setCanvas(canvas)
-  love.graphics.clear(168,168,168,255)
+  love.graphics.clear(gs.l.backgroundcolor)
   
   local player = gs.s.entities[playerNum]
   

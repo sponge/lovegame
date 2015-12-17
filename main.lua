@@ -40,6 +40,11 @@ local function addDebugLine(col1, col2, col3)
   debugY = debugY + 20
 end
 
+local write = io.write
+print = function(...)
+   write("[", love.timer.getTime(), "] ", ..., "\n")
+end
+
 function love.load(arg)
   if arg and arg[#arg] == "-debug" then require("mobdebug").start() end
   Gamestate.registerEvents()

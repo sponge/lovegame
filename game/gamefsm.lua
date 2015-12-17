@@ -9,13 +9,19 @@ local TileCollider = require "game/tilecollider"
 local Entity = require "game/entity"
 local TileTypes = require "game/tiletypes"
 
--- Collision detection function.
--- Checks if a and b overlap.
--- w and h mean width and height.
--- local function CheckCollision(ax1,ay1,aw,ah, bx1,by1,bw,bh)
---   local ax2,ay2,bx2,by2 = ax1 + aw, ay1 + ah, bx1 + bw, by1 + bh
---   return ax1 < bx2 and ax2 > bx1 and ay1 < by2 and ay2 > by1
--- end
+local function parse_color(col)
+    local rgb = {}
+    for pair in string.gmatch(col, "[^#].") do
+        local i = tonumber(pair, 16)
+        if i then
+            table.insert(rgb, i)
+        end
+    end
+    while #rgb < 4 do
+        table.insert(rgb, 255)
+    end
+    return rgb
+end
 
 local map_funcs = {
 
@@ -34,6 +40,9 @@ local ent_funcs = {
 
 -- tilecollider functions
 local g = function(state, x, y)
+  if x <= 0 then return TileTypes.__oob end
+  if x > state.l.width then return TileTypes.__oob end
+  if y <= 0 then y = 1 end
   return state.tileinfo[ state.s.worldLayer.data[(y-1)*state.l.width+x] ]
 end
 
@@ -68,6 +77,8 @@ local function init(str_level)
   end
   
   ent_funcs.player.init(state)
+  
+  state.l.backgroundcolor = parse_color(state.l.backgroundcolor)
   
   for _, v in ipairs(state.l.tilesets) do
     for i = v.firstgid, v.firstgid + v.tilecount do
