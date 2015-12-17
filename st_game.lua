@@ -21,12 +21,15 @@ function scene:enter(current, mapname)
   
   -- load all graphics used in the map
   for _, v in ipairs(gs.l.tilesets) do
+    local x, y = nil
     gs.media[v.name] = love.graphics.newImage(v.image)
     gs.media[v.name]:setFilter("nearest", "nearest")
     spritebatches[v.name] = love.graphics.newSpriteBatch(gs.media[v.name], 1024)
-    local lastgid = v.firstgid + v.tilecount
-    for i = v.firstgid, lastgid do
-      tileInfo[i+1] = { name = v.name, quad = love.graphics.newQuad((i-v.firstgid+1) * v.tilewidth % v.imagewidth, math.floor((i-v.firstgid+1) * v.tilewidth / v.imagewidth) * v.tileheight, v.tilewidth, v.tileheight, v.imagewidth, v.imageheight) }
+    local tw = (v.imagewidth - v.margin) / (v.tilewidth + v.spacing)
+    for i = v.firstgid, v.firstgid + v.tilecount do
+      x = ( (i-v.firstgid+1) * (v.tilewidth+v.spacing) ) % (v.imagewidth - v.margin) + v.margin
+      y = math.floor((i-v.firstgid+1) / tw) * (v.tileheight + v.spacing) + v.margin
+      tileInfo[i+1] = { name = v.name, quad = love.graphics.newQuad(x, y, v.tilewidth, v.tileheight, v.imagewidth, v.imageheight) }
     end
   end
   

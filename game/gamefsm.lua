@@ -34,7 +34,7 @@ local ent_funcs = {
 
 -- tilecollider functions
 local g = function(state, x, y)
-  return TileTypes[ state.s.worldLayer.data[(y-1)*state.l.width+x] ]
+  return state.tileinfo[ state.s.worldLayer.data[(y-1)*state.l.width+x] ]
 end
 
 local c = function(state, ent, side, tile, x, y, dx, dy)
@@ -50,6 +50,7 @@ local function init(str_level)
 
   local state = {
     s = {entities = {}, worldLayer = nil}, -- serializable state (network?)
+    tileinfo = {},
     camera = nil,
     l = nil, -- level
     col = nil, -- tilecollider
@@ -67,6 +68,12 @@ local function init(str_level)
   end
   
   ent_funcs.player.init(state)
+  
+  for _, v in ipairs(state.l.tilesets) do
+    for i = v.firstgid, v.firstgid + v.tilecount do
+      state.tileinfo[i] = TileTypes[v.name][i-v.firstgid]
+    end
+  end
   
   for _, layer in ipairs(state.l.layers) do
     if layer.name == "world" and layer.type == "tilelayer" then
