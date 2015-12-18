@@ -8,7 +8,7 @@ local kbmappings = {
   jump = 'z',
   run = 'x',
   shoot = 'c',
-  menu = 'esc',
+  menu = 'escape',
 }
 
 local padmappings = {

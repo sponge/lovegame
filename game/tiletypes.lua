@@ -169,10 +169,4 @@ setmetatable(keen1, mt)
 setmetatable(keen3, mt)
 setmetatable(smw, mt)
 
-local __oob = {
-  num = 1,
-  solid = true,
-  platform = false
-}
-
-return {keen1 = keen1, smw = smw, keen3 = keen3, __oob = __oob }
+return {keen1 = keen1, smw = smw, keen3 = keen3}

@@ -6,28 +6,32 @@ local ceil = math.ceil
 local max = math.max
 local min = math.min
 
-local GRAVITY = 375
+local function setup_physics(s, ent)
+  local cv = s.cvars
+  ent.gravity = cv.p_gravity.int
 
-local MAX_SPEED = 170
-local TERMINAL_VELOCITY = 300
+  ent.max_speed = cv.p_speed.int
+  ent.terminal_velocity = cv.p_terminalvel.int
 
-local ACCEL = 150
-local SKID_ACCEL = 420
-local AIR_ACCEL = 150
-local TURN_AIR_ACCEL = 230
+  ent.accel = cv.p_accel.int
+  ent.skid_accel = cv.p_skidaccel.int
+  ent.air_accel = cv.p_airaccel.int
+  ent.turn_air_accel = cv.p_turnairaccel.int
 
-local AIR_FRICTION = 100
-local GROUND_FRICTION = 300
+  ent.air_friction = cv.p_airfriction.int
+  ent.ground_friction = cv.p_groundfriction.int
 
-local JUMP_HEIGHT = -190
-local SPEED_JUMP_BONUS = -15
-local POGO_JUMP_HEIGHT = -245
-local DOUBLE_JUMP_HEIGHT = -145
-local EARLY_JUMP_END_MODIFIER = 0.6
-local HEAD_BUMP_MODIFIER = 0.5
+  ent.jump_height = cv.p_jumpheight.int
+  ent.speed_jump_bonus = cv.p_speedjumpbonus.int
+  ent.pogo_jump_height = cv.p_pogojumpheight.int
+  ent.double_jump_height = cv.p_doublejumpheight.int
+  ent.early_jump_end_modifier = cv.p_earlyjumpendmodifier.value
+  ent.head_bump_modifier = cv.p_headbumpmodifier.value
 
-local WALL_SLIDE_SPEED = 45
-local WALL_JUMP_X = 100
+  ent.wall_slide_speed = cv.p_wallslidespeed.int
+  ent.wall_jump_x = cv.p_walljumpx.int
+end
+
 
 local function getAccel(s, ent, dir)
   if s.time < ent.stun_time then
@@ -36,14 +40,14 @@ local function getAccel(s, ent, dir)
   
   if not ent.on_ground then
     if (dir == 'left' and ent.dx > 0) or (dir == 'right' and ent.dx < 0) then
-      return TURN_AIR_ACCEL
+      return ent.turn_air_accel
     else
-      return AIR_ACCEL
+      return ent.air_accel
     end
   elseif (dir == 'left' and ent.dx > 0) or (dir == 'right' and ent.dx < 0) then
-    return SKID_ACCEL
+    return ent.skid_accel
   else
-    return ACCEL
+    return ent.accel
   end
 end
 
@@ -86,6 +90,8 @@ local function player_spawn(s, ent)
 end
 
 local function player_think(s, ent, dt)
+  setup_physics(s, ent)
+  
   _, ent.on_ground = s.col:bottomResolve(s, ent, ent.x, ent.y+1, ent.w, ent.h, 0, 1)
   -- we may be passing through a platform
   if ent.dy < 0 then
@@ -98,7 +104,7 @@ local function player_think(s, ent, dt)
     ent.can_double_jump = true
     ent.last_ground_y = ent.y
   else
-    ent.dy = ent.dy + (GRAVITY*dt)
+    ent.dy = ent.dy + (ent.gravity*dt)
     ent.can_jump = false
   end
   
@@ -122,7 +128,7 @@ local function player_think(s, ent, dt)
   -- apply wall sliding
   if ent.wall_sliding then
     -- FIXME: transition to slide speed, not instant
-    ent.dy = WALL_SLIDE_SPEED
+    ent.dy = ent.wall_slide_speed
   end
   
   -- check if let go of jump
@@ -131,7 +137,7 @@ local function player_think(s, ent, dt)
     ent.jump_held = false
     -- allow shorter hops by letting go of jumps while going up
     if ent.dy < 0 then
-      ent.dy = floor(ent.dy * EARLY_JUMP_END_MODIFIER)
+      ent.dy = floor(ent.dy * ent.early_jump_end_modifier)
     end
   end
   
@@ -142,26 +148,26 @@ local function player_think(s, ent, dt)
   
   -- check for pogo jump
   if ent.on_ground and ent.will_pogo then
-    ent.dy = POGO_JUMP_HEIGHT
+    ent.dy = ent.pogo_jump_height
     ent.can_jump = true
     ent.can_double_jump = true
   -- check for other jumps
   elseif ent.command.jump == true and ent.jump_held == false then
     -- check for walljump
     if ent.wall_sliding then
-      ent.dy = JUMP_HEIGHT
-      ent.dx = WALL_JUMP_X * (ent.command.right and -1 or 1)
+      ent.dy = ent.jump_height
+      ent.dx = ent.wall_jump_x * (ent.command.right and -1 or 1)
       ent.stun_time = s.time + 1/10
       ent.jump_held = true
     -- check for first jump
     elseif ent.can_jump == true then
-      ent.dy = JUMP_HEIGHT + (abs(ent.dx) >= MAX_SPEED * 0.25 and SPEED_JUMP_BONUS or 0)
+      ent.dy = ent.jump_height + (abs(ent.dx) >= ent.max_speed * 0.25 and ent.speed_jump_bonus or 0)
       ent.can_jump = false
       ent.jump_held = true
       ent.can_double_jump = true
     -- check for second jump
     elseif ent.can_double_jump == true then
-      ent.dy = DOUBLE_JUMP_HEIGHT
+      ent.dy = ent.double_jump_height
       ent.can_double_jump = false
       ent.jump_held = true
     end
@@ -177,7 +183,7 @@ local function player_think(s, ent, dt)
     ent.anim_mirror = false
   -- player isn't moving, bring them to stop
   else
-    local friction = ent.on_ground and GROUND_FRICTION or AIR_FRICTION
+    local friction = ent.on_ground and ent.ground_friction or ent.air_friction
     if ent.dx < 0 then
       ent.dx = ent.dx + (friction*dt)
     elseif ent.dx > 0 then
@@ -191,8 +197,8 @@ local function player_think(s, ent, dt)
   end
   
   -- cap intended x/y speed
-  ent.dx = max(-MAX_SPEED, min(MAX_SPEED, ent.dx))
-  ent.dy = min(TERMINAL_VELOCITY, ent.dy)
+  ent.dx = max(-ent.max_speed, min(ent.max_speed, ent.dx))
+  ent.dy = min(ent.terminal_velocity, ent.dy)
   
   -- start the actual move
   
@@ -230,7 +236,7 @@ local function player_think(s, ent, dt)
     ent.y, collided = s.col:topResolve(s, ent, ent.x, ent.y + (ent.dy*dt), ent.w, ent.h, 0, ent.dy*dt)
     -- conserve some momentum (note this will get hit for several frames after first collision)
     if collided then
-      ent.dy = ent.dy * HEAD_BUMP_MODIFIER
+      ent.dy = ent.dy * ent.head_bump_modifier
     end
   end
 

@@ -1,3 +1,4 @@
+local Console = require "game/console"
 local Gamestate = require "gamestate"
 local InputManager = require 'input'
 
@@ -19,7 +20,7 @@ wallslide + jump to walljump]]
 local function cb_play(opt, inputs)
   if inputs then
     if inputs.jump then
-      Gamestate.switch(s_game, levelList[opt.counter])
+      Console:dispatch("map", levelList[opt.counter])
     end
     
     if inputs.right then
@@ -37,38 +38,28 @@ local function cb_play(opt, inputs)
 end
 
 local function cb_vsync(opt, inputs)
-  local width, height, flags = love.window.getMode()
+  local cvar = Console:getcvar("vid_vsync")
   
-  if inputs then
-    if inputs.jump or inputs.left or inputs.right then
-      flags.vsync = not flags.vsync
-      love.window.setMode( width, height, flags)
-    end
+  if inputs and (inputs.jump or inputs.left or inputs.right) then
+    cvar = Console:setcvar("vid_vsync", cvar.int == 0 and 1 or 0)
   end
   
-  opt.val = flags.vsync and "On" or "Off"
+  opt.val = cvar.int > 0 and "On" or "Off"
 end
 
 local function cb_fs(opt, inputs)
-  local width, height, flags = love.window.getMode()
+  local cvar = Console:getcvar("vid_fullscreen")
   
-  if inputs then
-    if inputs.jump or inputs.left or inputs.right then
-      flags.fullscreen = not flags.fullscreen
-      if not fullscreen then
-        love.window.setMode( 1280, 720, flags)
-      else
-        love.window.setMode( width, height, flags)
-      end
-    end
+  if inputs and (inputs.jump or inputs.left or inputs.right) then
+    cvar = Console:setcvar("vid_fullscreen", cvar.int == 0 and 1 or 0)
   end
   
-  opt.val = flags.fullscreen and "On" or "Off"
+  opt.val = cvar.int > 0 and "On" or "Off"
 end
 
 local function cb_quit(opt, inputs)
   if inputs and inputs.jump then
-    love.event.push('quit')
+    Console:dispatch("quit")
   end
 end
 
@@ -78,7 +69,6 @@ local options = {
   { label = "Fullscreen", value = nil, counter = 1, cb = cb_fs },
   { label = "VSync", value = nil, counter = 1, cb = cb_vsync },
   { label = "Quit", value = nil, counter = 1, cb = cb_quit },
-
 }
 
 function gs:enter()

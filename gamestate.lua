@@ -86,9 +86,8 @@ function GS.registerEvents(callbacks)
 	for _, f in ipairs(callbacks) do
 		registry[f] = love[f] or __NULL__
 		love[f] = function(...)
-      local gsfunc = GS[f](...)
 			registry[f](...)
-			return gsfunc
+			return GS[f](...)
 		end
 	end
 end

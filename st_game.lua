@@ -1,3 +1,5 @@
+local Console = require 'game/console'
+local GameState = require 'gamestate'
 local GameFSM = require 'game/gamefsm'
 local Camera = require 'game/camera'
 local InputManager = require 'input'
@@ -18,11 +20,36 @@ local playerNum = nil
 local camLockY = nil
 local canvas = nil
 
+local phys_needs_update = false
+
+local function update_player_physics()
+  phys_needs_update = true
+end
+
 function scene:enter(current, mapname)
   local err = nil
   local level_json, _ = love.filesystem.read(mapname)
   
-  gs = GameFSM.init(level_json)
+  Console:addcvar("p_gravity", 375)
+  Console:addcvar("p_speed", 170)
+  Console:addcvar("p_terminalvel", 300)
+  Console:addcvar("p_accel", 150)
+  Console:addcvar("p_skidaccel", 420)
+  Console:addcvar("p_airaccel", 150)
+  Console:addcvar("p_turnairaccel", 230)
+  Console:addcvar("p_terminalvel", 300)
+  Console:addcvar("p_airfriction", 100)
+  Console:addcvar("p_groundfriction", 300)
+  Console:addcvar("p_jumpheight", -190)
+  Console:addcvar("p_speedjumpbonus", -15)
+  Console:addcvar("p_pogojumpheight", -245)
+  Console:addcvar("p_doublejumpheight", -145)
+  Console:addcvar("p_earlyjumpendmodifier", 0.6)
+  Console:addcvar("p_headbumpmodifier", 0.5)
+  Console:addcvar("p_wallslidespeed", 45)
+  Console:addcvar("p_walljumpx", 100)
+  
+  gs = GameFSM.init(level_json, Console.cvars)
   
   canvas = love.graphics.newCanvas(1920, 1080)
   
@@ -55,14 +82,17 @@ end
 
 function scene:update(dt)
   -- add commands before stepping
-  local usercmd = InputManager.getInputs()
-  
-  if usercmd.menu then
-    game_err('Game exited')
-    return
+  if GameState.current() == self then
+    local usercmd = InputManager.getInputs()
+    
+    if usercmd.menu then
+      game_err('Game exited')
+      return
+    end
+    
+    GameFSM.addCommand(gs, playerNum, usercmd)
   end
   
-  GameFSM.addCommand(gs, playerNum, usercmd)
   GameFSM.step(gs, dt)
 end
 

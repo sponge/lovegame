@@ -48,8 +48,6 @@ local ent_funcs = {
 
 -- tilecollider functions
 local g = function(state, x, y)
-  --if x <= 0 then return TileTypes.__oob end
-  --if x > state.l.width then return TileTypes.__oob end
   if y <= 0 then y = 1 end
   return state.tileinfo[ state.s.worldLayer.data[(y-1)*state.l.width+x] ]
 end
@@ -62,7 +60,7 @@ local c = function(state, ent, side, tile, x, y, dx, dy)
   return tile.solid
 end
 
-local function init(str_level)
+local function init(str_level, cvars)
   local err
 
   local state = {
@@ -74,6 +72,7 @@ local function init(str_level)
     dt = nil,
     time = 0,
     media = {},
+    cvars = cvars,
   }
 
   state.l, _, err = JSON.decode(str_level, 1, nil)
