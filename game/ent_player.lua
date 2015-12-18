@@ -105,10 +105,10 @@ local function player_think(s, ent, dt)
   -- check for wall sliding
   if not ent.on_ground and ent.dy > 0 then
     -- check for a wall in the held direction
-    if ent.command.left > 0 then
+    if ent.command.left then
       _, ent.wall_sliding = s.col:leftResolve(s, ent, ent.x-1, ent.y, ent.w, ent.h, -1, 0)
       ent.wall_sliding = ent.wall_sliding and 'left' or false
-    elseif ent.command.right > 0 then
+    elseif ent.command.right then
       _, ent.wall_sliding = s.col:rightResolve(s, ent, ent.x+1, ent.y, ent.w, ent.h, 1, 0)
       ent.wall_sliding = ent.wall_sliding and 'right' or false
 
@@ -126,7 +126,7 @@ local function player_think(s, ent, dt)
   end
   
   -- check if let go of jump
-  if ent.command.button1 == false and ent.jump_held == true then
+  if ent.command.jump == false and ent.jump_held == true then
     -- allow a jump next time the ground is touched
     ent.jump_held = false
     -- allow shorter hops by letting go of jumps while going up
@@ -137,7 +137,7 @@ local function player_think(s, ent, dt)
   
   -- check if the player wants to pogo, but don't let a pogo start on the ground
   if not ent.on_ground then
-    ent.will_pogo = ent.command.down > 0
+    ent.will_pogo = ent.command.down
   end
   
   -- check for pogo jump
@@ -146,11 +146,11 @@ local function player_think(s, ent, dt)
     ent.can_jump = true
     ent.can_double_jump = true
   -- check for other jumps
-  elseif ent.command.button1 == true and ent.jump_held == false then
+  elseif ent.command.jump == true and ent.jump_held == false then
     -- check for walljump
     if ent.wall_sliding then
       ent.dy = JUMP_HEIGHT
-      ent.dx = WALL_JUMP_X * (ent.command.right > 0 and -1 or 1)
+      ent.dx = WALL_JUMP_X * (ent.command.right and -1 or 1)
       ent.stun_time = s.time + 1/10
       ent.jump_held = true
     -- check for first jump
@@ -168,11 +168,11 @@ local function player_think(s, ent, dt)
   end
   
   -- player wants to move left, check what their accel should be
-  if ent.command.left > 0 then
+  if ent.command.left then
     ent.dx = ent.dx - (getAccel(s, ent,'left')*dt)
     ent.anim_mirror = true
   -- player wants to move right
-  elseif ent.command.right > 0 then
+  elseif ent.command.right then
     ent.dx = ent.dx + (getAccel(s, ent,'right')*dt)
     ent.anim_mirror = false
   -- player isn't moving, bring them to stop

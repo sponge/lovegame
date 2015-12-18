@@ -4,9 +4,10 @@ if arg and arg[#arg] ~= "-debug" then
 end
 
 -- globals
-_, s_mainmenu, s_game, game_err = nil
+_, s_mainmenu, s_game, game_err= nil
 
 local Gamestate = require "gamestate"
+local InputManager = require 'input'
 
 s_mainmenu = require "st_mainmenu"
 s_game = require "st_game"
@@ -51,6 +52,14 @@ function love.load(arg)
   if arg and arg[#arg] == "-debug" then require("mobdebug").start() end
   Gamestate.registerEvents()
   Gamestate.switch(s_mainmenu)
+end
+
+function love.joystickadded( gamepad )
+  InputManager.gamepadAdded(gamepad)
+end
+
+function love.joystickremoved( gamepad )
+  InputManager.gamepadRemoved(gamepad)
 end
 
 function love.run()
@@ -129,7 +138,7 @@ function love.run()
     else
       for i, v in pairs(max_timers) do
         max_timers[i] = math.max(max_timers[i], timers[i][2])
-      end      
+      end
     end
 	end
  
@@ -138,7 +147,7 @@ end
 function love.draw()
   debugY = 20
   addDebugLine("FPS:", love.timer.getFPS())
-  addDebugLine("Garbage:", collectgarbage("count") * 1024)
+  addDebugLine("Memory:", math.floor(collectgarbage("count")))
   addDebugLine("Time (Max Time - del to reset)")
   addDebugLine("Frame:", string.format("%.1f", timers.frame[2] * 1000), string.format("(%.2f)", max_timers.frame * 1000))
   addDebugLine("Events:", string.format("%.1f", timers.events[2] * 1000), string.format("(%.2f)", max_timers.events * 1000))

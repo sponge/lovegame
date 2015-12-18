@@ -1,6 +1,9 @@
 local Gamestate = require "gamestate"
+local InputManager = require 'input'
 
 local gs = {error = nil}
+
+local inputs = nil
 
 local selectedIndex = 1
 local levelList = {}
@@ -13,53 +16,58 @@ down while midair to pogo
 hold left/right on wall to wallslide
 wallslide + jump to walljump]]
 
-local function cb_play(opt, key)
-  if key == "return" then
-    Gamestate.switch(s_game, levelList[opt.counter])
-  end
-  
-  if key == "right" then
-    if opt.counter == #levelList then opt.counter = 1
-    else opt.counter = opt.counter + 1 end
-  end
-
-  
-  if key == "left" then
-    if opt.counter == 1 then opt.counter = #levelList
-    else opt.counter = opt.counter - 1 end
+local function cb_play(opt, inputs)
+  if inputs then
+    if inputs.jump then
+      Gamestate.switch(s_game, levelList[opt.counter])
+    end
+    
+    if inputs.right then
+      if opt.counter == #levelList then opt.counter = 1
+      else opt.counter = opt.counter + 1 end
+    end
+    
+    if inputs.left then
+      if opt.counter == 1 then opt.counter = #levelList
+      else opt.counter = opt.counter - 1 end
+    end
   end
   
   opt.val = levelList[opt.counter]
 end
 
-local function cb_vsync(opt, key)
+local function cb_vsync(opt, inputs)
   local width, height, flags = love.window.getMode()
   
-  if key == 'return' or key == 'left' or key == 'right' then
-    flags.vsync = not flags.vsync
-    love.window.setMode( width, height, flags)
+  if inputs then
+    if inputs.jump or inputs.left or inputs.right then
+      flags.vsync = not flags.vsync
+      love.window.setMode( width, height, flags)
+    end
   end
   
   opt.val = flags.vsync and "On" or "Off"
 end
 
-local function cb_fs(opt, key)
+local function cb_fs(opt, inputs)
   local width, height, flags = love.window.getMode()
   
-  if key == 'return' or key == 'left' or key == 'right' then
-    flags.fullscreen = not flags.fullscreen
-    if not fullscreen then
-      love.window.setMode( 1280, 720, flags)
-    else
-      love.window.setMode( width, height, flags)
+  if inputs then
+    if inputs.jump or inputs.left or inputs.right then
+      flags.fullscreen = not flags.fullscreen
+      if not fullscreen then
+        love.window.setMode( 1280, 720, flags)
+      else
+        love.window.setMode( width, height, flags)
+      end
     end
   end
   
   opt.val = flags.fullscreen and "On" or "Off"
 end
 
-local function cb_quit(opt, key)
-  if key == 'return' then
+local function cb_quit(opt, inputs)
+  if inputs and inputs.jump then
     love.event.push('quit')
   end
 end
@@ -87,7 +95,30 @@ function gs:leave()
   gs.error = nil
 end
 
-function gs:draw()
+function gs:keypressed(key, code, isrepeat)
+  inputs = InputManager.getInputs()
+end
+
+function gs:gamepadpressed(pad, button)
+  inputs = InputManager.getInputs()
+end
+
+function gs:draw()   
+  if inputs then
+    if inputs.down then
+      selectedIndex = math.min(#options, selectedIndex + 1)
+    elseif inputs.up then
+      selectedIndex = math.max(1, selectedIndex - 1)
+    end
+    
+    if love.keyboard.isDown('return') then inputs.jump = true end
+      
+  end
+  
+  if options[selectedIndex].cb then
+    options[selectedIndex].cb(options[selectedIndex], inputs)
+  end
+  
   local width, height = love.graphics.getDimensions()
   
   love.graphics.setColor(30,30,30,255)
@@ -103,6 +134,13 @@ function gs:draw()
   local x = math.floor(w / 2)
   local y = math.floor(height / 2 - 100)
   
+  if InputManager.getPad() ~= nil then
+    love.graphics.setColor(0,168,0,255)
+    love.graphics.printf("GAMEPAD ENABLED! " .. InputManager.getPad():getName(), 0, y, width, "center")
+    love.graphics.setColor(255,255,255,255)
+
+    y = y + 20
+  end
   love.graphics.printf(helptext, 0, y, width, "center")
   y = y + 150
 
@@ -128,22 +166,8 @@ function gs:draw()
     
     y = y + 25
   end
-end
-
-function gs:keypressed(key, code, isrepeat)
-  if key == 'z' then key = 'return' end
-    
-  if key == 'down' then
-    selectedIndex = math.min(#options, selectedIndex + 1)
-    return
-  elseif key == 'up' then
-    selectedIndex = math.max(1, selectedIndex - 1)
-    return
-  end
-    
-  if options[selectedIndex].cb then
-    options[selectedIndex].cb(options[selectedIndex], key)
-  end
+  
+  inputs = nil
 end
 
 return gs

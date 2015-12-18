@@ -1,5 +1,6 @@
 local GameFSM = require 'game/gamefsm'
-local Camera = require "game/camera"
+local Camera = require 'game/camera'
+local InputManager = require 'input'
 
 local abs = math.abs
 local floor = math.floor
@@ -52,22 +53,14 @@ function scene:enter(current, mapname)
 
 end
 
-function scene:keypressed(key)
-  if key == 'escape' then
+function scene:update(dt)
+  -- add commands before stepping
+  local usercmd = InputManager.getInputs()
+  
+  if usercmd.menu then
     game_err('Game exited')
     return
   end
-end
-function scene:update(dt)
-  -- add commands before stepping
-  local usercmd = { left = 0, right = 0, up = 0, down = 0, button1 = false, button2 = false, button3 = false }
-  usercmd.button1 = love.keyboard.isDown("z") -- jump
-  usercmd.button2 = love.keyboard.isDown("x") -- run
-  usercmd.button3 = love.keyboard.isDown("c") -- shoot
-  usercmd.left = love.keyboard.isDown("left") and 255 or 0
-  usercmd.right = love.keyboard.isDown("right") and 255 or 0
-  usercmd.up = love.keyboard.isDown("up") and 255 or 0
-  usercmd.down = love.keyboard.isDown("down") and 255 or 0
   
   GameFSM.addCommand(gs, playerNum, usercmd)
   GameFSM.step(gs, dt)
