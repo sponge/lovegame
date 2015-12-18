@@ -8,9 +8,11 @@ _, s_mainmenu, s_game, game_err= nil
 
 local Gamestate = require "gamestate"
 local InputManager = require 'input'
+local Console = require 'game/console'
 
 s_mainmenu = require "st_mainmenu"
 s_game = require "st_game"
+local s_console = require "st_console"
 
 function game_err(msg)
   s_mainmenu.error = msg
@@ -46,11 +48,44 @@ local origprint = print
 print = function(...)
    write("[", love.timer.getTime(), "] ")
    origprint(...)
+   Console:addline(...)
+end
+
+local function con_quit(name)
+  if love.event then
+    love.event.push('quit')
+  end
+end
+
+local function cb_vid_vsync(old, cvar)
+  local width, height, flags = love.window.getMode()
+  flags.vsync = tonumber(cvar.int) > 0
+  love.window.setMode(width, height, flags)
+end
+
+local function cb_vid_fullscreen(old, cvar)
+  local width, height, flags = love.window.getMode()
+  flags.fullscreen = tonumber(cvar.int) > 0
+  love.window.setMode(width, height, flags)
 end
 
 function love.load(arg)
   if arg and arg[#arg] == "-debug" then require("mobdebug").start() end
-  Gamestate.registerEvents()
+  local width, height, flags = love.window.getMode()
+  
+  Console:init()
+  
+  Console:addcommand("quit", con_quit)
+  Console:addcvar("vid_vsync", flags.vsync, cb_vid_vsync)
+  Console:addcvar("vid_fullscreen", flags.fullscreen, cb_vid_fullscreen)
+  
+  -- we'll handle draw ourselves so we can draw debug stuff
+  local callbacks = { 'errhand', 'update' }
+  for k in pairs(love.handlers) do
+    callbacks[#callbacks+1] = k
+  end
+  Gamestate.registerEvents(callbacks)
+  
   Gamestate.switch(s_mainmenu)
 end
 
@@ -145,14 +180,27 @@ function love.run()
 end
 
 function love.draw()
-  debugY = 20
-  addDebugLine("FPS:", love.timer.getFPS())
-  addDebugLine("Memory:", math.floor(collectgarbage("count")))
-  addDebugLine("Time (Max Time - del to reset)")
-  addDebugLine("Frame:", string.format("%.1f", timers.frame[2] * 1000), string.format("(%.2f)", max_timers.frame * 1000))
-  addDebugLine("Events:", string.format("%.1f", timers.events[2] * 1000), string.format("(%.2f)", max_timers.events * 1000))
-  addDebugLine("Update:", string.format("%.1f", timers.update[2] * 1000), string.format("(%.2f)", max_timers.update * 1000))
-  addDebugLine("Draw:", string.format("%.1f", timers.draw[2] * 1000), string.format("(%.2f)", max_timers.draw * 1000))
-  addDebugLine("GC:", string.format("%.1f", timers.gc[2] * 1000), string.format("(%.2f)", max_timers.gc * 1000))
-
+  Gamestate.draw()
+  
+  if Gamestate.current() ~= s_console then
+    debugY = 20
+    addDebugLine("FPS:", love.timer.getFPS())
+    addDebugLine("Memory:", math.floor(collectgarbage("count")))
+    addDebugLine("Time (Max Time - del to reset)")
+    addDebugLine("Frame:", string.format("%.1f", timers.frame[2] * 1000), string.format("(%.2f)", max_timers.frame * 1000))
+    addDebugLine("Events:", string.format("%.1f", timers.events[2] * 1000), string.format("(%.2f)", max_timers.events * 1000))
+    addDebugLine("Update:", string.format("%.1f", timers.update[2] * 1000), string.format("(%.2f)", max_timers.update * 1000))
+    addDebugLine("Draw:", string.format("%.1f", timers.draw[2] * 1000), string.format("(%.2f)", max_timers.draw * 1000))
+    addDebugLine("GC:", string.format("%.1f", timers.gc[2] * 1000), string.format("(%.2f)", max_timers.gc * 1000))
+  end
+end
+  
+function love.keypressed(key, code, isrepeat)
+  if key == '`' then
+    if Gamestate.current() == s_console then
+      Gamestate.pop()
+    else
+      Gamestate.push(s_console)
+    end
+  end
 end
