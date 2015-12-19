@@ -21,10 +21,28 @@ function scene:textinput(t)
 end
 
 function scene:keypressed(key, code, isrepeat)
-  if key == "return" or key == "kpenter" then
+  if key == "up" then
+    input = Console:movehistory(-1)
+  elseif key == "down" then
+    input = Console:movehistory(1)
+  elseif key == "return" or key == "kpenter" then
     print("> " .. input)
     Console:command(input)
+    if #input > 0 then
+      Console:addhistory(input)
+    end
     input = ''
+  elseif key == "backspace" and (love.keyboard.isDown("lalt") or love.keyboard.isDown("ralt")) then
+    for i= #input - 1, 1, -1 do
+      if (string.sub(input, i, i) == " ") then
+        input = string.sub(input, 1, i)
+        break
+      end
+      
+      if i == 1 then
+        input = ''
+      end
+    end
   elseif key == "backspace" then
     -- get the byte offset to the last UTF-8 character in the string.
     local byteoffset = UTF8.offset(input, -1)
@@ -56,8 +74,14 @@ function scene:draw()
   
   local x = 10
   local y = con_height - font:getHeight() - 5
-  love.graphics.print(">", x, y)
-  love.graphics.print(input, x+20, y)
+  love.graphics.print("> ", x, y)
+  local xofs = font:getWidth("> ")
+  love.graphics.print(input, x+xofs, y)
+  xofs = xofs + font:getWidth(input)
+  if love.timer.getTime()*2 % 2 > 1 then
+    love.graphics.print('|', x+xofs, y-2)
+  end
+  
   y = y - font:getHeight() - 5
 
   for i = #Console.lines, 1, -1 do

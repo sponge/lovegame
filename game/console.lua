@@ -58,6 +58,19 @@ end
 con.lines = {}
 con.cmds = {}
 con.cvars = {}
+con.history = {}
+con.history_pos = 1
+
+function con:addhistory(cmd)
+  con.history[#con.history+1] = cmd
+  con.history_pos = #con.history + 1
+end
+
+function con:movehistory(count)
+  con.history_pos = con.history_pos + count
+  con.history_pos = math.max(1, math.min(con.history_pos, #con.history+1))
+  return con.history[con.history_pos] ~= nil and con.history[con.history_pos] or ''
+end
 
 function con:addcommand(cmd, cb)
   cmd = string.lower(cmd)
@@ -110,6 +123,10 @@ function con:command(s)
     else
       args[#args+1] = i
     end
+  end
+  
+  if cmd == nil then
+    return
   end
   
   if not self:dispatch(cmd, unpack(args)) then  
