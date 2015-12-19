@@ -7,4 +7,6 @@ del dist\game.love
 cd dist
 "c:\Program Files\7-Zip\7z.exe" a -tzip game.zip *
 cd ..
+move dist\game.zip c:\dropbox\game.zip
+echo https://www.dropbox.com/s/bse3a6ao34apogn/game.zip?dl=0| clip
 pause
