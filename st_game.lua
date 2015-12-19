@@ -4,6 +4,8 @@ local GameFSM = require 'game/gamefsm'
 local Camera = require 'game/camera'
 local InputManager = require 'input'
 
+local st_console = require 'st_console'
+
 local abs = math.abs
 local floor = math.floor
 local ceil = math.ceil
@@ -22,6 +24,8 @@ local canvas = nil
 
 local phys_needs_update = false
 
+local smoothFunc = Camera.smooth.damped(3)
+
 local function update_player_physics()
   phys_needs_update = true
 end
@@ -30,24 +34,30 @@ function scene:enter(current, mapname)
   local err = nil
   local level_json, _ = love.filesystem.read(mapname)
   
-  Console:addcvar("p_gravity", 375)
-  Console:addcvar("p_speed", 170)
-  Console:addcvar("p_terminalvel", 300)
-  Console:addcvar("p_accel", 150)
-  Console:addcvar("p_skidaccel", 420)
-  Console:addcvar("p_airaccel", 150)
-  Console:addcvar("p_turnairaccel", 230)
-  Console:addcvar("p_terminalvel", 300)
-  Console:addcvar("p_airfriction", 100)
-  Console:addcvar("p_groundfriction", 300)
-  Console:addcvar("p_jumpheight", -190)
-  Console:addcvar("p_speedjumpbonus", -15)
-  Console:addcvar("p_pogojumpheight", -245)
-  Console:addcvar("p_doublejumpheight", -145)
-  Console:addcvar("p_earlyjumpendmodifier", 0.6)
-  Console:addcvar("p_headbumpmodifier", 0.5)
-  Console:addcvar("p_wallslidespeed", 45)
-  Console:addcvar("p_walljumpx", 100)
+  local cvar_table = {
+    {"p_gravity", 375},
+    {"p_speed", 170},
+    {"p_terminalvel", 300},
+    {"p_accel", 150},
+    {"p_skidaccel", 420},
+    {"p_airaccel", 150},
+    {"p_turnairaccel", 230},
+    {"p_terminalvel", 300},
+    {"p_airfriction", 100},
+    {"p_groundfriction", 300},
+    {"p_jumpheight", -190},
+    {"p_speedjumpbonus", -15},
+    {"p_pogojumpheight", -245},
+    {"p_doublejumpheight", -145},
+    {"p_earlyjumpendmodifier", 0.6},
+    {"p_headbumpmodifier", 0.5},
+    {"p_wallslidespeed", 45},
+    {"p_walljumpx", 100},
+  }
+  
+  for _, v in ipairs(cvar_table) do
+    Console:addcvar(v[1], v[2])
+  end
   
   gs = GameFSM.init(level_json, Console.cvars)
   
@@ -80,9 +90,11 @@ function scene:enter(current, mapname)
 
 end
 
+local cbtest = true
+
 function scene:update(dt)
   -- add commands before stepping
-  if GameState.current() == self then
+  if GameState.current() ~= st_console then
     local usercmd = InputManager.getInputs()
     
     if usercmd.menu then
@@ -95,8 +107,6 @@ function scene:update(dt)
   
   GameFSM.step(gs, dt)
 end
-
-local smoothFunc = Camera.smooth.damped(3)
 
 function scene:draw()
   local width, height = canvas:getDimensions()
@@ -185,7 +195,6 @@ function scene:draw()
   local winw, winh = love.graphics.getDimensions()
   local sf = winw/winh < width/height and winw/width or winh/height
   love.graphics.draw(canvas, winw/2, winh/2, 0, sf, sf, width/2, height/2)
-
 end
 
 return scene

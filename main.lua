@@ -1,7 +1,11 @@
 local Strictness = require "game/strictness"
 if arg and arg[#arg] ~= "-debug" then
   Strictness.strict(_G)
+else
+  require("mobdebug").start()
+  --require("mobdebug").off()
 end
+
 
 -- globals
 _, s_mainmenu, s_game, game_err= nil
@@ -13,6 +17,8 @@ local Console = require 'game/console'
 s_mainmenu = require "st_mainmenu"
 s_game = require "st_game"
 local s_console = require "st_console"
+local s_debug = require "st_debug"
+
 
 function game_err(msg)
   s_mainmenu.error = msg
@@ -70,7 +76,6 @@ local function cb_vid_fullscreen(old, cvar)
 end
 
 function love.load(arg)
-  if arg and arg[#arg] == "-debug" then require("mobdebug").start() end
   local width, height, flags = love.window.getMode()
   
   Console:init()
@@ -201,6 +206,14 @@ function love.keypressed(key, code, isrepeat)
       Gamestate.pop()
     else
       Gamestate.push(s_console)
+    end
+  end
+  
+  if key == 'd' and love.keyboard.isDown('lctrl') then
+    if Gamestate.current() == s_debug then
+      Gamestate.pop()
+    elseif Gamestate.current() == s_game then
+      Gamestate.push(s_debug)
     end
   end
 end
