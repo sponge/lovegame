@@ -6,23 +6,21 @@ else
   --require("mobdebug").off()
 end
 
-
 -- globals
-_, s_mainmenu, s_game, game_err= nil
+_, game_err= nil
 
 local Gamestate = require "gamestate"
 local InputManager = require 'input'
 local Console = require 'game/console'
 
-s_mainmenu = require "st_mainmenu"
-s_game = require "st_game"
-local s_console = require "st_console"
-local s_debug = require "st_debug"
-
+local st_mainmenu = require "st_mainmenu"
+local st_game = require "st_game"
+local st_console = require "st_console"
+local st_debug = require "st_debug"
 
 function game_err(msg)
-  s_mainmenu.error = msg
-  Gamestate.switch(s_mainmenu)
+  st_mainmenu.error = msg
+  Gamestate.switch(st_mainmenu)
 end
 
 local timers = {
@@ -41,12 +39,11 @@ local max_timers = {
   gc = 0
 }
 
-local debugY = 20
-local function addDebugLine(col1, col2, col3)
-  if col1 ~= nil then love.graphics.print(col1, 10, debugY) end
-  if col2 ~= nil then love.graphics.print(col2, 90, debugY) end
-  if col3 ~= nil then love.graphics.print(col3, 130, debugY) end
-  debugY = debugY + 20
+local function addDebugLine(y, col1, col2, col3)
+  if col1 ~= nil then love.graphics.print(col1, 10, y) end
+  if col2 ~= nil then love.graphics.print(col2, 90, y) end
+  if col3 ~= nil then love.graphics.print(col3, 130, y) end
+  return y + 20
 end
 
 local write = io.write
@@ -91,7 +88,7 @@ function love.load(arg)
   end
   Gamestate.registerEvents(callbacks)
   
-  Gamestate.switch(s_mainmenu)
+  Gamestate.switch(st_mainmenu)
 end
 
 function love.joystickadded( gamepad )
@@ -104,16 +101,9 @@ end
 
 function love.run()
  
-	if love.math then
-		love.math.setRandomSeed(os.time())
-	end
- 
-	if love.event then
-		love.event.pump()
-	end
- 
-	if love.load then love.load(arg) end
- 
+	if love.math then	love.math.setRandomSeed(os.time()) end
+ 	if love.event then	love.event.pump()	end
+ 	if love.load then love.load(arg) end
 	-- We don't want the first frame's dt to include time taken by love.load.
 	if love.timer then love.timer.step() end
  
@@ -187,33 +177,33 @@ end
 function love.draw()
   Gamestate.draw()
   
-  if Gamestate.current() ~= s_console then
-    debugY = 20
-    addDebugLine("FPS:", love.timer.getFPS())
-    addDebugLine("Memory:", math.floor(collectgarbage("count")))
-    addDebugLine("Time (Max Time - del to reset)")
-    addDebugLine("Frame:", string.format("%.1f", timers.frame[2] * 1000), string.format("(%.2f)", max_timers.frame * 1000))
-    addDebugLine("Events:", string.format("%.1f", timers.events[2] * 1000), string.format("(%.2f)", max_timers.events * 1000))
-    addDebugLine("Update:", string.format("%.1f", timers.update[2] * 1000), string.format("(%.2f)", max_timers.update * 1000))
-    addDebugLine("Draw:", string.format("%.1f", timers.draw[2] * 1000), string.format("(%.2f)", max_timers.draw * 1000))
-    addDebugLine("GC:", string.format("%.1f", timers.gc[2] * 1000), string.format("(%.2f)", max_timers.gc * 1000))
+  if Gamestate.current() ~= st_console then
+    local y = 20
+    y = addDebugLine(y, "FPS:", love.timer.getFPS())
+    y = addDebugLine(y, "Memory:", math.floor(collectgarbage("count")))
+    y = addDebugLine(y, "Time (Max Time - del to reset)")
+    y = addDebugLine(y, "Frame:", string.format("%.1f", timers.frame[2] * 1000), string.format("(%.2f)", max_timers.frame * 1000))
+    y = addDebugLine(y, "Events:", string.format("%.1f", timers.events[2] * 1000), string.format("(%.2f)", max_timers.events * 1000))
+    y = addDebugLine(y, "Update:", string.format("%.1f", timers.update[2] * 1000), string.format("(%.2f)", max_timers.update * 1000))
+    y = addDebugLine(y, "Draw:", string.format("%.1f", timers.draw[2] * 1000), string.format("(%.2f)", max_timers.draw * 1000))
+    y = addDebugLine(y, "GC:", string.format("%.1f", timers.gc[2] * 1000), string.format("(%.2f)", max_timers.gc * 1000))
   end
 end
   
 function love.keypressed(key, code, isrepeat)
   if key == '`' then
-    if Gamestate.current() == s_console then
+    if Gamestate.current() == st_console then
       Gamestate.pop()
     else
-      Gamestate.push(s_console)
+      Gamestate.push(st_console)
     end
   end
   
   if key == 'd' and love.keyboard.isDown('lctrl') then
-    if Gamestate.current() == s_debug then
+    if Gamestate.current() == st_debug then
       Gamestate.pop()
-    elseif Gamestate.current() == s_game then
-      Gamestate.push(s_debug)
+    elseif Gamestate.current() == st_game then
+      Gamestate.push(st_debug)
     end
   end
 end

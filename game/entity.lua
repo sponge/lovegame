@@ -2,7 +2,7 @@ local entity = {}
 entity.__index = entity
 
 local function new(classname, x, y, w, h)
-	x,y  = x or love.graphics.getWidth()/2, y or love.graphics.getHeight()/2
+	if not classname or not x or not y or not w or not h then return nil end
 	classname = classname or "default"
 
 	return setmetatable({

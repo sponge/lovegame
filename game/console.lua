@@ -61,8 +61,12 @@ con.cmds = {}
 con.cvars = {}
 con.history = {}
 con.history_pos = 1
+con.scroll_offset = 0
 
 function con:addhistory(cmd)
+  if con.history[#con.history] == cmd then
+    return
+  end
   con.history[#con.history+1] = cmd
   con.history_pos = #con.history + 1
 end
@@ -89,9 +93,11 @@ function con:addline(...)
    line = line .. tostring(e)
   end
   self.lines[#self.lines+1] = line
+  self.scroll_offset = self.scroll_offset + 1
   
-  if #self.lines > 50 then
+  if #self.lines > 500 then
     table.remove(self.lines, 1)
+    self.scroll_offset = #self.lines
   end
 end
 

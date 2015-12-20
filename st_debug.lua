@@ -4,13 +4,12 @@ local gui = require "Quickie"
 
 local cvars = {
   "p_gravity",
-  "p_speed",
   "p_terminalvel",
+  "p_speed",
   "p_accel",
   "p_skidaccel",
   "p_airaccel",
   "p_turnairaccel",
-  "p_terminalvel",
   "p_airfriction",
   "p_groundfriction",
   "p_jumpheight",

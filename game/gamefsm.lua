@@ -79,7 +79,6 @@ local function init(str_level, cvars)
     {"p_skidaccel", 420},
     {"p_airaccel", 150},
     {"p_turnairaccel", 230},
-    {"p_terminalvel", 300},
     {"p_airfriction", 100},
     {"p_groundfriction", 300},
     {"p_jumpheight", -190},
@@ -98,7 +97,7 @@ local function init(str_level, cvars)
   end
 
   state.l, _, err = JSON.decode(str_level, 1, nil)
-  state.cam = Camera(0, 0, 1920/(16*24)) -- FIXME: use tile sizes correctly, pass in width?
+  state.cam = Camera(0, 0, 1920/(state.l.tilewidth*24)) -- FIXME:  pass in width?
   
   if err ~= nil then
     game_err("Error while loading map JSON")

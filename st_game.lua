@@ -40,7 +40,7 @@ function scene:enter(current, mapname)
   for _, v in ipairs(gs.l.tilesets) do
     local x, y = nil
     gs.media[v.name] = love.graphics.newImage(v.image)
-    gs.media[v.name]:setFilter("nearest", "nearest")
+    gs.media[v.name]:setFilter("linear", "nearest")
     spritebatches[v.name] = love.graphics.newSpriteBatch(gs.media[v.name], 1024)
     local tw = (v.imagewidth - v.margin) / (v.tilewidth + v.spacing)
     for i = v.firstgid, v.firstgid + v.tilecount do
@@ -53,7 +53,7 @@ function scene:enter(current, mapname)
   -- load all backgrounds used in the map
   if gs.l.properties.background ~= nil then
     gs.media.bg = love.graphics.newImage(gs.l.properties.background)
-    gs.media.bg:setFilter("nearest", "nearest")
+    gs.media.bg:setFilter("linear", "nearest")
   end
   
   playerNum = GameFSM.spawnPlayer(gs)
