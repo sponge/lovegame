@@ -22,44 +22,17 @@ local playerNum = nil
 local camLockY = nil
 local canvas = nil
 
-local phys_needs_update = false
-
 local smoothFunc = Camera.smooth.damped(3)
-
-local function update_player_physics()
-  phys_needs_update = true
-end
 
 function scene:enter(current, mapname)
   local err = nil
   local level_json, _ = love.filesystem.read(mapname)
   
-  local cvar_table = {
-    {"p_gravity", 375},
-    {"p_speed", 170},
-    {"p_terminalvel", 300},
-    {"p_accel", 150},
-    {"p_skidaccel", 420},
-    {"p_airaccel", 150},
-    {"p_turnairaccel", 230},
-    {"p_terminalvel", 300},
-    {"p_airfriction", 100},
-    {"p_groundfriction", 300},
-    {"p_jumpheight", -190},
-    {"p_speedjumpbonus", -15},
-    {"p_pogojumpheight", -245},
-    {"p_doublejumpheight", -145},
-    {"p_earlyjumpendmodifier", 0.6},
-    {"p_headbumpmodifier", 0.5},
-    {"p_wallslidespeed", 45},
-    {"p_walljumpx", 100},
-  }
+  gs = GameFSM.init(level_json)
   
-  for _, v in ipairs(cvar_table) do
-    Console:addcvar(v[1], v[2])
+  for _, v in pairs(gs.cvars) do
+    Console:registercvar(v)
   end
-  
-  gs = GameFSM.init(level_json, Console.cvars)
   
   canvas = love.graphics.newCanvas(1920, 1080)
   

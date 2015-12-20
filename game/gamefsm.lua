@@ -1,3 +1,4 @@
+local CVar = require "game/cvar"
 local JSON = require "game/dkjson"
 local Camera = require "game/camera"
 local TileCollider = require "game/tilecollider"
@@ -67,8 +68,34 @@ local function init(str_level, cvars)
     dt = nil,
     time = 0,
     media = {},
-    cvars = cvars,
+    cvars = {},
   }
+  
+  local cvar_table = {
+    {"p_gravity", 375},
+    {"p_speed", 170},
+    {"p_terminalvel", 300},
+    {"p_accel", 150},
+    {"p_skidaccel", 420},
+    {"p_airaccel", 150},
+    {"p_turnairaccel", 230},
+    {"p_terminalvel", 300},
+    {"p_airfriction", 100},
+    {"p_groundfriction", 300},
+    {"p_jumpheight", -190},
+    {"p_speedjumpbonus", -15},
+    {"p_pogojumpheight", -245},
+    {"p_doublejumpheight", -145},
+    {"p_earlyjumpendmodifier", 0.6},
+    {"p_headbumpmodifier", 0.5},
+    {"p_wallslidespeed", 45},
+    {"p_walljumpx", 100},
+  }
+  
+  for _, v in ipairs(cvar_table) do
+    local cvar = CVar.new(v[1], v[2])
+    state.cvars[cvar.name] = cvar
+  end
 
   state.l, _, err = JSON.decode(str_level, 1, nil)
   state.cam = Camera(0, 0, 1920/(16*24)) -- FIXME: use tile sizes correctly, pass in width?

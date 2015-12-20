@@ -1,4 +1,5 @@
 local Gamestate = require 'gamestate'
+local CVar = require 'game/cvar'
 
 local con = {}
 
@@ -149,31 +150,26 @@ function con:getcvar(name)
   return self.cvars[string.lower(name)]
 end
 
-local function sanitizecvar(name, value)
-  name = string.lower(name)
-  
-  local num = nil
-  if type(value) == 'boolean' then
-    num = value and 1 or 0
-  else
-    num = tonumber(value)
+function con:registercvar(cvar)
+  if self.cvars[cvar.name] ~= nil then
+    return false
   end
-  if num == nil then num = 0 end
   
-  return name, num, tostring(value), value
+  self.cvars[cvar.name] = cvar
+  return true
 end
 
 function con:addcvar(name, value, cb)
   if name == nil or value == nil then return false end
   
   local num, str = nil
-  name, num, str, value = sanitizecvar(name, value)
+  name = string.lower(name)
   
   if self.cvars[name] ~= nil then
     return self.cvars[name], false
   end
   
-  self.cvars[name] = {name = name, int = num, str = str, value = value, default = str, cb = nil}
+  self.cvars[name] = CVar.new(name, value)
   if type(cb) == 'function' then
     self.cvars[name].cb = cb
   end
@@ -185,7 +181,8 @@ function con:setcvar(name, value)
   if name == nil or value == nil then return false end
   
   local num, str = nil
-  name, num, str, value = sanitizecvar(name, value)
+  name = string.lower(name)
+  num, str, value = CVar.sanitize(value)
   
   local cvar = self.cvars[name]
   
