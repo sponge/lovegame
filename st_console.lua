@@ -22,13 +22,13 @@ end
 
 function scene:keypressed(key, code, isrepeat)
   if key == "pageup" then
-    if love.keyboard.isDown("lalt") or love.keyboard.isDown("ralt") then
+    if love.keyboard.isDown("lalt", "ralt") then
       Console.scroll_offset = 1
     else
       Console.scroll_offset = math.max(1, Console.scroll_offset - 6)
     end
   elseif key == "pagedown" then
-    if love.keyboard.isDown("lalt") or love.keyboard.isDown("lalt") then
+    if love.keyboard.isDown("lalt", "ralt") then
       Console.scroll_offset = #Console.lines
     else
       Console.scroll_offset = math.min(#Console.lines, Console.scroll_offset + 6)
@@ -45,7 +45,7 @@ function scene:keypressed(key, code, isrepeat)
       Console.history_pos = #Console.history+1
     end
     input = ''
-  elseif key == "backspace" and (love.keyboard.isDown("lalt") or love.keyboard.isDown("ralt")) then
+  elseif key == "backspace" and love.keyboard.isDown("lalt", "ralt") then
     for i= #input - 1, 1, -1 do
       if (string.sub(input, i, i) == " ") then
         input = string.sub(input, 1, i)

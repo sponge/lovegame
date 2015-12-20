@@ -113,6 +113,11 @@ function con:init()
   self:addcommand("map", con_map)
   
   print("Console loaded")
+  print("listcvars, listcmds for commands and settings")
+  print("pgup/pgdn to scroll back through history")
+  print("alt + pgup/pgdn to jump to top/bottom")
+  print("up arrow and down arrow to go through command history")
+  print("alt+backspace to backspace a full world")
 end
 
 function con:dispatch(cmd, ...)

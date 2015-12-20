@@ -5,6 +5,8 @@ local Camera = require 'game/camera'
 local InputManager = require 'input'
 
 local st_console = require 'st_console'
+local st_debug = require 'st_debug'
+
 
 local abs = math.abs
 local floor = math.floor
@@ -63,7 +65,20 @@ function scene:enter(current, mapname)
 
 end
 
-local cbtest = true
+function scene:leave()
+  for i, v in pairs(spritebatches) do
+    spritebatches[i] = nil
+  end
+  
+  for i, v in pairs(gs.media) do
+    gs.media[i] = nil
+  end
+  
+  spritebatches = {}
+  gs = {}
+  tileInfo = {}
+  canvas = nil
+end
 
 function scene:update(dt)
   -- add commands before stepping
@@ -167,7 +182,11 @@ function scene:draw()
   
   local winw, winh = love.graphics.getDimensions()
   local sf = winw/winh < width/height and winw/width or winh/height
-  love.graphics.draw(canvas, winw/2, winh/2, 0, sf, sf, width/2, height/2)
+  local x, xoff = winw/2, width/2
+  if GameState.current() == st_debug then
+    x, xoff = 0
+  end
+  love.graphics.draw(canvas, x, winh/2, 0, sf, sf, xoff, height/2)
 end
 
 return scene

@@ -79,6 +79,8 @@ function gs:enter()
       table.insert(levelList, "base/maps/"..v)
     end
   end
+  
+  collectgarbage("collect")
 end
 
 function gs:leave()
