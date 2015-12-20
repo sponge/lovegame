@@ -181,7 +181,7 @@ function love.draw()
     local y = 20
     y = addDebugLine(y, "FPS:",    love.timer.getFPS())
     y = addDebugLine(y, "Memory:", math.floor(collectgarbage("count")))
-    y = addDebugLine(y, "",        "Time",                  "Max (del to reset)")
+    y = addDebugLine(y, "",        "Time",                  "Max (del resets)")
     y = addDebugLine(y, "Frame:",  measure('get','frame'),  measure('getmax','frame'))
     y = addDebugLine(y, "Events:", measure('get','events'), measure('getmax','events'))
     y = addDebugLine(y, "Update:", measure('get','update'), measure('getmax','update'))

@@ -93,9 +93,12 @@ function con:addline(...)
    line = line .. tostring(e)
   end
   self.lines[#self.lines+1] = line
-  self.scroll_offset = self.scroll_offset + 1
   
-  if #self.lines > 500 then
+  if self.scroll_offset == #self.lines - 1 then
+    self.scroll_offset = self.scroll_offset + 1
+  end
+  
+  if #self.lines > 100 then
     table.remove(self.lines, 1)
     self.scroll_offset = #self.lines
   end
