@@ -23,21 +23,28 @@ function game_err(msg)
   Gamestate.switch(st_mainmenu)
 end
 
-local timers = {
-  frame = {0,0},
-  events = {0,0},
-  update = {0,0},
-  draw = {0,0},
-  gc = {0,0},
-}
-
-local max_timers = {
-  frame = 0,
-  events = 0,
-  update = 0,
-  draw = 0,
-  gc = 0
-}
+local timers = {}
+local function measure(mode, metric, time)
+  if mode ~= 'clearall' and timers[metric] == nil then
+    timers[metric] = {0,0,0}
+  end
+  
+  if mode == 'get' then
+    return string.format("%.1f", timers[metric][2] * 1000)
+  elseif mode == 'getmax' then
+    return string.format("%.1f", timers[metric][3] * 1000)
+  elseif mode == 'clearall' then
+    for i, v in pairs(timers) do
+      timers[i][3] = 0
+    end
+  elseif mode == 'start' then
+    timers[metric][1] = love.timer.getTime()
+  elseif mode == 'end' then
+    timers[metric][2] = love.timer.getTime() - timers[metric][1]
+    timers[metric][3] = math.max(timers[metric][3], timers[metric][2])
+  end
+  
+end
 
 local function addDebugLine(y, col1, col2, col3)
   if col1 ~= nil then love.graphics.print(col1, 10, y) end
@@ -112,10 +119,10 @@ function love.run()
  
 	-- Main loop time.
 	while true do
-    timers.frame[1] = love.timer.getTime()
+    measure('start', 'frame')
 		-- Process events.
 		if love.event then
-      timers.events[1] = love.timer.getTime()
+      measure('start', 'events')
 			love.event.pump()
 			for name, a,b,c,d,e,f in love.event.poll() do
 				if name == "quit" then
@@ -125,7 +132,7 @@ function love.run()
 				end
 				love.handlers[name](a,b,c,d,e,f)
 			end
-      timers.events[2] = love.timer.getTime() - timers.events[1]
+      measure('end', 'events')
 		end
  
 		-- Update dt, as we'll be passing it to update
@@ -134,9 +141,9 @@ function love.run()
 			dt = dt + love.timer.getDelta()
       -- Call update and draw
       while dt > tickrate do
-        timers.update[1] = love.timer.getTime()
+        measure('start', 'update')
         if love.update then love.update(tickrate) end -- will pass 0 if love.timer is disabled
-        timers.update[2] = love.timer.getTime() - timers.update[1]
+        measure('end', 'update')
         dt = dt - tickrate
       end
     else
@@ -144,31 +151,24 @@ function love.run()
 		end
  
 		if love.graphics and love.graphics.isActive() then
-      timers.draw[1] = love.timer.getTime()
+      measure('start', 'draw')
 			love.graphics.clear(love.graphics.getBackgroundColor())
 			love.graphics.origin()
 			if love.draw then love.draw() end
 			love.graphics.present()
-      timers.draw[2] = love.timer.getTime() - timers.draw[1]
+      measure('end', 'draw')
 		end
     
-    timers.gc[1] = love.timer.getTime()
+    measure('start', 'gc')
     collectgarbage("step")
-    timers.gc[2] = love.timer.getTime() - timers.gc[1]
+    measure('end', 'gc')
 
-    
-    timers.frame[2] = love.timer.getTime() - timers.frame[1]
+    measure('end', 'frame')
     
     if love.timer then love.timer.sleep(0.001) end
     
     if love.keyboard.isDown("delete") then
-      for i, v in pairs(max_timers) do
-        max_timers[i] = 0
-      end
-    else
-      for i, v in pairs(max_timers) do
-        max_timers[i] = math.max(max_timers[i], timers[i][2])
-      end
+      measure('clearall')
     end
 	end
  
@@ -179,14 +179,14 @@ function love.draw()
   
   if Gamestate.current() ~= st_console then
     local y = 20
-    y = addDebugLine(y, "FPS:", love.timer.getFPS())
+    y = addDebugLine(y, "FPS:",    love.timer.getFPS())
     y = addDebugLine(y, "Memory:", math.floor(collectgarbage("count")))
-    y = addDebugLine(y, "Time (Max Time - del to reset)")
-    y = addDebugLine(y, "Frame:", string.format("%.1f", timers.frame[2] * 1000), string.format("(%.2f)", max_timers.frame * 1000))
-    y = addDebugLine(y, "Events:", string.format("%.1f", timers.events[2] * 1000), string.format("(%.2f)", max_timers.events * 1000))
-    y = addDebugLine(y, "Update:", string.format("%.1f", timers.update[2] * 1000), string.format("(%.2f)", max_timers.update * 1000))
-    y = addDebugLine(y, "Draw:", string.format("%.1f", timers.draw[2] * 1000), string.format("(%.2f)", max_timers.draw * 1000))
-    y = addDebugLine(y, "GC:", string.format("%.1f", timers.gc[2] * 1000), string.format("(%.2f)", max_timers.gc * 1000))
+    y = addDebugLine(y, "",        "Time",                  "Max (del to reset)")
+    y = addDebugLine(y, "Frame:",  measure('get','frame'),  measure('getmax','frame'))
+    y = addDebugLine(y, "Events:", measure('get','events'), measure('getmax','events'))
+    y = addDebugLine(y, "Update:", measure('get','update'), measure('getmax','update'))
+    y = addDebugLine(y, "Draw:",   measure('get','draw'),   measure('getmax','draw'))
+    y = addDebugLine(y, "GC:",     measure('get','gc'),     measure('getmax','gc'))
   end
 end
   
