@@ -56,6 +56,11 @@ local function con_listcmds()
   end
 end
 
+local function con_clear()
+  con.lines = {}
+  con.scroll_offset = 0
+end
+
 con.lines = {}
 con.cmds = {}
 con.cvars = {}
@@ -111,13 +116,14 @@ function con:init()
   self:addcommand("set", con_set)
   self:addcommand("get", con_get)
   self:addcommand("map", con_map)
+  self:addcommand("clear", con_clear)
   
   print("Console loaded")
   print("listcvars, listcmds for commands and settings")
   print("pgup/pgdn to scroll back through history")
   print("alt + pgup/pgdn to jump to top/bottom")
   print("up arrow and down arrow to go through command history")
-  print("alt+backspace to backspace a full world")
+  print("alt+backspace to backspace a full word")
 end
 
 function con:dispatch(cmd, ...)
