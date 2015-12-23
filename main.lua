@@ -7,7 +7,7 @@ else
 end
 
 -- globals
-_, game_err= nil
+_, game_err, socket = nil
 
 local Gamestate = require "gamestate"
 local InputManager = require 'input'
@@ -80,6 +80,8 @@ local function cb_vid_fullscreen(old, cvar)
 end
 
 function love.load(arg)
+  require("lovebird").update()
+
   local width, height, flags = love.window.getMode()
   
   Console:init()
@@ -107,7 +109,6 @@ function love.joystickremoved( gamepad )
 end
 
 function love.run()
- 
 	if love.math then	love.math.setRandomSeed(os.time()) end
  	if love.event then	love.event.pump()	end
  	if love.load then love.load(arg) end
@@ -120,6 +121,9 @@ function love.run()
 	-- Main loop time.
 	while true do
     measure('start', 'frame')
+    
+    require("lovebird").update()
+    
 		-- Process events.
 		if love.event then
       measure('start', 'events')
