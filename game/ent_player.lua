@@ -87,16 +87,13 @@ local function player_spawn(s, ent)
   ent.stun_time = 0
   ent.drawx = 3
   ent.drawy = -2
+  ent.collision = 'slide'
 end
 
 local function player_think(s, ent, dt)
   setup_physics(s, ent)
   
-  _, ent.on_ground = s.col:bottomResolve(s, ent, ent.x, ent.y+1, ent.w, ent.h, 0, 1)
-  -- we may be passing through a platform
-  if ent.dy < 0 then
-    ent.on_ground = false
-  end
+  ent.on_ground = ent.dy >= 0 and Entity.isTouchingSolid(s, ent, 'down')
   
   -- reset some state if on ground, otherwise gravity
   if ent.on_ground then
@@ -109,20 +106,11 @@ local function player_think(s, ent, dt)
   end
   
   -- check for wall sliding
+  ent.wall_sliding = false
   if not ent.on_ground and ent.dy > 0 then
+    ent.wall_sliding = (ent.command.left and Entity.isTouchingSolid(s, ent, 'left')) and 'left' or false
+    ent.wall_sliding = (ent.command.right and Entity.isTouchingSolid(s, ent, 'right')) and 'right' or ent.wall_sliding
     -- check for a wall in the held direction
-    if ent.command.left then
-      _, ent.wall_sliding = s.col:leftResolve(s, ent, ent.x-1, ent.y, ent.w, ent.h, -1, 0)
-      ent.wall_sliding = ent.wall_sliding and 'left' or false
-    elseif ent.command.right then
-      _, ent.wall_sliding = s.col:rightResolve(s, ent, ent.x+1, ent.y, ent.w, ent.h, 1, 0)
-      ent.wall_sliding = ent.wall_sliding and 'right' or false
-
-    else
-      ent.wall_sliding = false
-    end
-  else
-    ent.wall_sliding = false
   end
     
   -- apply wall sliding
@@ -201,43 +189,19 @@ local function player_think(s, ent, dt)
   ent.dy = min(ent.terminal_velocity, ent.dy)
   
   -- start the actual move
+  local xCollided, yCollided = Entity.move(s, ent)
   
-  -- check x first (slopes eventually?)
-  local collided = false
-  if ent.dx > 0 then
-    ent.x, collided = s.col:rightResolve(s, ent, ent.x + (ent.dx*dt), ent.y, ent.w, ent.h, ent.dx*dt, 0)
-  elseif ent.dx < 0 then
-    ent.x, collided = s.col:leftResolve(s, ent, ent.x + (ent.dx*dt), ent.y, ent.w, ent.h, ent.dx*dt, 0)
-  end
-  
-  -- don't conserve any movement in x on a collision
-  if collided then
+  -- walls always stop momentum
+  if xCollided then
     ent.dx = 0
   end
   
-  -- don't let them move offscreen, but also don't treat the edge as walls
-  if ent.x < 0 then
-    ent.x = 0
-    ent.dx = 0
-  elseif ent.x+ent.w > s.l.width*s.l.tilewidth then
-    ent.x = s.l.width*s.l.tilewidth - ent.w
-    ent.dx = 0
-  end
-  
-  -- check y next
-  collided = false
-  if ent.dy > 0 then
-    ent.y, collided = s.col:bottomResolve(s, ent, ent.x, ent.y + (ent.dy*dt), ent.w, ent.h, 0, ent.dy*dt)
-    -- stop them if they fall onto something solid
-    if collided then
-      ent.dy = 0
-    end
-  elseif ent.dy < 0 then
-    ent.y, collided = s.col:topResolve(s, ent, ent.x, ent.y + (ent.dy*dt), ent.w, ent.h, 0, ent.dy*dt)
-    -- conserve some momentum (note this will get hit for several frames after first collision)
-    if collided then
-      ent.dy = ent.dy * ent.head_bump_modifier
-    end
+  -- stop them if they fall onto something solid
+  if yCollided and ent.dy > 0 then
+    ent.dy = 0
+  -- conserve some momentum (note this will get hit for several frames after first collision)
+  elseif yCollided and ent.dy < 0 then
+    ent.dy = ent.dy * ent.head_bump_modifier
   end
 
 end

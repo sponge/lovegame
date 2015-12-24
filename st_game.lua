@@ -169,8 +169,7 @@ function scene:draw()
   end
   
   local ent = nil
-  for i = 1, #gs.s.entities do
-    ent = gs.s.entities[i]
+  for _, ent in ipairs(gs.s.entities) do
     if ent.draw ~= nil then
       ent.draw(gs, ent)
     end

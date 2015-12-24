@@ -2,6 +2,7 @@ local CVar = require "game/cvar"
 local JSON = require "game/dkjson"
 local Camera = require "game/camera"
 local TileCollider = require "game/tilecollider"
+local Bump = require "game/bump"
 local Entity = require "game/entity"
 local TileTypes = require "game/tiletypes"
 
@@ -42,6 +43,10 @@ local ent_funcs = {
   coin_block = require 'game/ent_coin_block',
 }
 
+local filter = function(item, other)
+  return other.collision
+end
+
 -- tilecollider functions
 local g = function(state, x, y)
   if y <= 0 then y = 1 end
@@ -65,10 +70,12 @@ local function init(str_level, cvars)
     camera = nil,
     l = nil, -- level
     col = nil, -- tilecollider
+    bump = nil, -- bump
     dt = nil,
     time = 0,
     media = {},
     cvars = {},
+    bumpfilter = filter,
   }
   
   local cvar_table = {
@@ -99,6 +106,9 @@ local function init(str_level, cvars)
   state.l, _, err = JSON.decode(str_level, 1, nil)
   state.cam = Camera(0, 0, 1920/(state.l.tilewidth*24)) -- FIXME:  pass in width?
   
+  state.col = TileCollider(g, state.l.tilewidth, state.l.tileheight, c, nil, false)
+  state.bump = Bump.newWorld(64)
+  
   if err ~= nil then
     game_err("Error while loading map JSON")
     return
@@ -125,7 +135,9 @@ local function init(str_level, cvars)
         ent.number = #state.s.entities
         ent.think = map_funcs[obj.properties.think] or ent_funcs[obj.type].think
         ent.draw = map_funcs[obj.properties.draw] or ent_funcs[obj.type].draw
-        table.insert(state.s.entities, ent)
+        
+        state.s.entities[#state.s.entities+1] = ent
+        state.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
         if ent_funcs[obj.type].spawn then ent_funcs[obj.type].spawn(state, ent) end
       end
     end
@@ -137,17 +149,17 @@ local function init(str_level, cvars)
       if state.tileinfo[v].tile_entity ~= nil then
         state.s.worldLayer.data[i] = 0
         local classname = state.tileinfo[v].tile_entity
-        local ent = Entity.new(state.tileinfo[v].tile_entity, (i%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
+        local ent = Entity.new(state.tileinfo[v].tile_entity, ((i-1)%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
         ent.number = #state.s.entities
         ent.think = ent_funcs[classname].think
         ent.draw = ent_funcs[classname].draw
-        table.insert(state.s.entities, ent)
+        
+        state.s.entities[#state.s.entities+1] = ent
+        state.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
         if ent_funcs[classname].spawn then ent_funcs[classname].spawn(state, ent) end
       end
     end
   end
-  
-  state.col = TileCollider(g, state.l.tilewidth, state.l.tileheight, c, nil, false)
 
   return state
 end
@@ -179,10 +191,11 @@ local function spawnPlayer(state)
   end
   
   local ent = Entity.new("player", spawnPoint.x, spawnPoint.y, 10, 22)
-  ent.number = #state.s.entities
+  ent.number = #state.s.entities+1
   ent.think = ent_funcs[ent.classname].think
   ent.draw = ent_funcs[ent.classname].draw
   state.s.entities[ent.number] = ent
+  state.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
   if ent_funcs[ent.classname].spawn then ent_funcs[ent.classname].spawn(state, ent) end
   
   state.cam:lookAt(spawnPoint.x, spawnPoint.y)  
