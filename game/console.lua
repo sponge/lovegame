@@ -5,7 +5,7 @@ local con = {}
 
 local function con_map(mapname)
   local st_game = require 'st_game'
-  print("Switching to gameplay scene with map ", mapname)
+  print("Switching to gameplay scene with map", mapname)
   Gamestate.switch(st_game, mapname)
 end
 
@@ -95,7 +95,7 @@ end
 function con:addline(...)
   local line = ''
   for _, e in ipairs({...}) do
-   line = line .. tostring(e)
+   line = line .. ' ' .. tostring(e)
   end
   self.lines[#self.lines+1] = line
   
