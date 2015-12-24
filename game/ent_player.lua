@@ -87,6 +87,7 @@ e.spawn = function(s, ent)
   ent.on_ground = false
   ent.last_ground_y = ent.y
   ent.can_jump = false
+  ent.did_jump = false
   ent.can_double_jump = false
   ent.jump_held = false
   ent.will_pogo = false
@@ -107,6 +108,7 @@ e.think = function(s, ent, dt)
   -- reset some state if on ground, otherwise gravity
   if ent.on_ground then
     ent.can_jump = true
+    ent.did_jump = false
     ent.can_double_jump = true
     ent.last_ground_y = ent.y
   else
@@ -148,6 +150,7 @@ e.think = function(s, ent, dt)
     ent.dy = ent.pogo_jump_height
     ent.can_jump = true
     ent.can_double_jump = true
+    ent.did_jump = true
     s.event_cb(s, {type = 'sound', name = 'pogo'})
   -- check for other jumps
   elseif ent.command.jump == true and ent.jump_held == false then
@@ -157,6 +160,7 @@ e.think = function(s, ent, dt)
       ent.dx = ent.wall_jump_x * (ent.command.right and -1 or 1)
       ent.stun_time = s.time + 1/10
       ent.jump_held = true
+      ent.did_jump = true
       s.event_cb(s, {type = 'sound', name = 'jump'})
     -- check for first jump
     elseif ent.can_jump == true then
@@ -164,12 +168,14 @@ e.think = function(s, ent, dt)
       ent.can_jump = false
       ent.jump_held = true
       ent.can_double_jump = true
+      ent.did_jump = true
       s.event_cb(s, {type = 'sound', name = 'jump'})
     -- check for second jump
     elseif ent.can_double_jump == true then
       ent.dy = ent.double_jump_height
       ent.can_double_jump = false
       ent.jump_held = true
+      ent.did_jump = true
       s.event_cb(s, {type = 'sound', name = 'jump'})
     end
   end
@@ -229,15 +235,25 @@ e.draw = function(s, ent)
   
   ent.anim_frame = "stand"
   
+  if ent.wall_sliding then
+    ent.anim_frame = "prejump3"
+  elseif ent.will_pogo then
+    ent.anim_frame = "pogochrg"
+  elseif ent.did_jump then
+    ent.anim_frame = "jump"
+  elseif (ent.dx > 0 and ent.command.left) or (ent.dx < 0 and ent.command.right) then
+    ent.anim_frame = "prejump2"
+  elseif ent.dx ~= 0 then
+    local i = math.floor(s.time * 8) % 3 + 1
+    ent.anim_frame = "run"..i
+    print(ent.anim_frame)
+  end
+  
   if ent.anim_mirror then
     x = ent.x + ent.w + ent.drawx
     sx = sx * -1
   else
     x = ent.x - ent.drawx
-  end
-  
-  if ent.will_pogo then
-    ent.anim_frame = "pogojump"
   end
   
   if ent.dbg then
@@ -247,13 +263,6 @@ e.draw = function(s, ent)
   end
   
   love.graphics.draw(s.media.player, s.media.player_frames[ent.anim_frame], x, ent.y + ent.drawy, 0, sx, 1)
-  
-  if ent.wall_sliding then
-    local x = ent.wall_sliding == 'right' and ent.x + ent.w or ent.x - 2
-    love.graphics.setColor(255,0,0,255)
-    love.graphics.rectangle("fill", x, ent.y, 2, ent.h)
-    love.graphics.setColor(255,255,255,255)
-  end
   
   if ent.dbg then
     love.graphics.print(ent.dbg, ent.x, ent.y)
