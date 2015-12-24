@@ -30,6 +30,8 @@ local event_cb = function(s, ev)
   if ev.type == 'sound' then
     love.audio.stop(s.media['snd_'.. ev.name])
     love.audio.play(s.media['snd_'.. ev.name])
+  elseif ev.type == 'stopsound' then
+    love.audio.stop(s.media['snd_'.. ev.name])
   end
 end
 

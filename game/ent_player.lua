@@ -78,6 +78,8 @@ e.init = function(s)
   if love.audio then
     s.media.snd_jump = love.audio.newSource("base/jump.wav", "static")
     s.media.snd_pogo = love.audio.newSource("base/pogo.wav", "static")
+    s.media.snd_wallslide = love.audio.newSource("base/wallslide.wav", "static")
+    s.media.snd_wallslide:setLooping(true)
   end
 end
 
@@ -117,11 +119,18 @@ e.think = function(s, ent, dt)
   end
   
   -- check for wall sliding
+  local wasSlide = ent.wall_sliding
   ent.wall_sliding = false
   if not ent.on_ground and ent.dy > 0 then
     ent.wall_sliding = (ent.command.left and Entity.isTouchingSolid(s, ent, 'left')) and 'left' or false
     ent.wall_sliding = (ent.command.right and Entity.isTouchingSolid(s, ent, 'right')) and 'right' or ent.wall_sliding
     -- check for a wall in the held direction
+  end
+  
+  if not wasSlide and ent.wall_sliding then
+    s.event_cb(s, {type = 'sound', name = 'wallslide'})
+  elseif wasSlide and not ent.wall_sliding then
+    s.event_cb(s, {type = 'stopsound', name = 'wallslide'})
   end
     
   -- apply wall sliding
@@ -246,7 +255,6 @@ e.draw = function(s, ent)
   elseif ent.dx ~= 0 then
     local i = math.floor(s.time * 8) % 3 + 1
     ent.anim_frame = "run"..i
-    print(ent.anim_frame)
   end
   
   if ent.anim_mirror then
