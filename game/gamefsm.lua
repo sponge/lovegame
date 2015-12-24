@@ -59,8 +59,10 @@ local c = function(state, ent, side, tile, x, y, dx, dy)
   return tile.solid
 end
 
-local function init(str_level, cvars)
+local function init(str_level, event_cb)
   local err
+  
+  assert(type(event_cb) == 'function', "No callback passed into GameFSM.init")
 
   local state = {
     s = {entities = {}, worldLayer = nil}, -- serializable state (network?)
@@ -73,6 +75,7 @@ local function init(str_level, cvars)
     time = 0,
     media = {},
     cvars = {},
+    event_cb = event_cb,
     bumpfilter = filter,
   }
   

@@ -26,11 +26,18 @@ local canvas = nil
 
 local smoothFunc = Camera.smooth.damped(3)
 
+local event_cb = function(s, ev)
+  if ev.type == 'sound' then
+    love.audio.stop(s.media['snd_'.. ev.name])
+    love.audio.play(s.media['snd_'.. ev.name])
+  end
+end
+
 function scene:enter(current, mapname)
   local err = nil
   local level_json, _ = love.filesystem.read(mapname)
   
-  gs = GameFSM.init(level_json)
+  gs = GameFSM.init(level_json, event_cb)
   
   for _, v in pairs(gs.cvars) do
     Console:registercvar(v)

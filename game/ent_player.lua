@@ -54,26 +54,31 @@ end
 local e = {}
 
 e.init = function(s)
-  if not love.graphics then return end
-  
-  s.media.player = love.graphics.newImage("base/player.png")
-  s.media.player:setFilter("nearest", "nearest")
+  if love.graphics then
+    s.media.player = love.graphics.newImage("base/player.png")
+    s.media.player:setFilter("nearest", "nearest")
 
-  local w, h = s.media.player:getDimensions()
-  s.media.player_frames = {
-    stand =    love.graphics.newQuad(16*0,  0, 16, h, w, h),
-    run1 =     love.graphics.newQuad(16*1,  0, 16, h, w, h),
-    run2 =     love.graphics.newQuad(16*2,  0, 16, h, w, h),
-    run3 =     love.graphics.newQuad(16*3,  0, 16, h, w, h),
-    prejump1 = love.graphics.newQuad(16*4,  0, 16, h, w, h),
-    prejump2 = love.graphics.newQuad(16*5,  0, 16, h, w, h),
-    prejump3 = love.graphics.newQuad(16*6,  0, 16, h, w, h),
-    prejump4 = love.graphics.newQuad(16*7,  0, 16, h, w, h),
-    jump =     love.graphics.newQuad(16*8,  0, 16, h, w, h),
-    shoot =    love.graphics.newQuad(16*9,  0, 16, h, w, h),
-    pogojump = love.graphics.newQuad(16*10, 0, 16, h, w, h),
-    pogochrg = love.graphics.newQuad(16*11, 0, 16, h, w, h)
-  }
+    local w, h = s.media.player:getDimensions()
+    s.media.player_frames = {
+      stand =    love.graphics.newQuad(16*0,  0, 16, h, w, h),
+      run1 =     love.graphics.newQuad(16*1,  0, 16, h, w, h),
+      run2 =     love.graphics.newQuad(16*2,  0, 16, h, w, h),
+      run3 =     love.graphics.newQuad(16*3,  0, 16, h, w, h),
+      prejump1 = love.graphics.newQuad(16*4,  0, 16, h, w, h),
+      prejump2 = love.graphics.newQuad(16*5,  0, 16, h, w, h),
+      prejump3 = love.graphics.newQuad(16*6,  0, 16, h, w, h),
+      prejump4 = love.graphics.newQuad(16*7,  0, 16, h, w, h),
+      jump =     love.graphics.newQuad(16*8,  0, 16, h, w, h),
+      shoot =    love.graphics.newQuad(16*9,  0, 16, h, w, h),
+      pogojump = love.graphics.newQuad(16*10, 0, 16, h, w, h),
+      pogochrg = love.graphics.newQuad(16*11, 0, 16, h, w, h)
+    }
+  end
+  
+  if love.audio then
+    s.media.snd_jump = love.audio.newSource("base/jump.wav", "static")
+    s.media.snd_pogo = love.audio.newSource("base/pogo.wav", "static")
+  end
 end
 
 e.spawn = function(s, ent)
@@ -143,6 +148,7 @@ e.think = function(s, ent, dt)
     ent.dy = ent.pogo_jump_height
     ent.can_jump = true
     ent.can_double_jump = true
+    s.event_cb(s, {type = 'sound', name = 'pogo'})
   -- check for other jumps
   elseif ent.command.jump == true and ent.jump_held == false then
     -- check for walljump
@@ -151,17 +157,20 @@ e.think = function(s, ent, dt)
       ent.dx = ent.wall_jump_x * (ent.command.right and -1 or 1)
       ent.stun_time = s.time + 1/10
       ent.jump_held = true
+      s.event_cb(s, {type = 'sound', name = 'jump'})
     -- check for first jump
     elseif ent.can_jump == true then
       ent.dy = ent.jump_height + (abs(ent.dx) >= ent.max_speed * 0.25 and ent.speed_jump_bonus or 0)
       ent.can_jump = false
       ent.jump_held = true
       ent.can_double_jump = true
+      s.event_cb(s, {type = 'sound', name = 'jump'})
     -- check for second jump
     elseif ent.can_double_jump == true then
       ent.dy = ent.double_jump_height
       ent.can_double_jump = false
       ent.jump_held = true
+      s.event_cb(s, {type = 'sound', name = 'jump'})
     end
   end
   
@@ -211,9 +220,7 @@ e.think = function(s, ent, dt)
 end
 
 e.collide = function(s, ent, col)
-  if col.other.classname == 'coin' or (col.other.classname == 'coin_block' and col.other.active and col.other.item == 'coin') then
-    print('ding!')
-  end
+
 end
 
 e.draw = function(s, ent)

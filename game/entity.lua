@@ -2,8 +2,7 @@ local entity = {}
 entity.__index = entity
 
 local function new(classname, x, y, w, h)
-	if not classname or not x or not y or not w or not h then return nil end
-	classname = classname or "default"
+  assert(classname and x and y and w and h, "Invalid entity")
 
 	return setmetatable({
       number = nil,

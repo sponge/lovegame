@@ -33,11 +33,17 @@ e.draw = function(s, ent)
 end
 
 e.collide = function(s, ent, col)
-  if ent == col.other then
-    if col.normal.x == 0 and col.normal.y == 1 then
-      ent.active = false
-    end
+  if col.item.classname ~= 'player' or not ent.active then
+    return
   end
+  
+  if not (col.normal.x == 0 and col.normal.y == 1) then
+    return
+  end
+  
+  s.event_cb(s, {type = 'sound', name = 'coin'})
+  
+  ent.active = false
 end
 
 return e
