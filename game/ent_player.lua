@@ -80,6 +80,8 @@ e.init = function(s)
     s.media.snd_pogo = love.audio.newSource("base/pogo.wav", "static")
     s.media.snd_wallslide = love.audio.newSource("base/wallslide.wav", "static")
     s.media.snd_wallslide:setLooping(true)
+    s.media.snd_skid = love.audio.newSource("base/skid.wav", "static")
+
   end
 end
 
@@ -98,6 +100,7 @@ e.spawn = function(s, ent)
   ent.drawx = 3
   ent.drawy = -2
   ent.collision = 'slide'
+  ent.accel_type = 0
   
   s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
 end
@@ -190,12 +193,15 @@ e.think = function(s, ent, dt)
   end
   
   -- player wants to move left, check what their accel should be
+  local last_accel = ent.accel_type
   if ent.command.left then
-    ent.dx = ent.dx - (getAccel(s, ent,'left')*dt)
+    ent.accel_type = getAccel(s, ent,'left')
+    ent.dx = ent.dx - (ent.accel_type*dt)
     ent.anim_mirror = true
   -- player wants to move right
   elseif ent.command.right then
-    ent.dx = ent.dx + (getAccel(s, ent,'right')*dt)
+    ent.accel_type = getAccel(s, ent,'right')
+    ent.dx = ent.dx + (ent.accel_type*dt)
     ent.anim_mirror = false
   -- player isn't moving, bring them to stop
   else
@@ -210,6 +216,13 @@ e.think = function(s, ent, dt)
     if ent.dx ~= 0 and abs(ent.dx) < 1 then
       ent.dx = 0
     end
+    ent.accel_type = 0
+  end
+  
+  if abs(ent.dx) > 60 and last_accel ~= ent.skid_accel and ent.accel_type == ent.skid_accel then
+    s.event_cb(s, {type = 'sound', name = 'skid'})
+  elseif last_accel == ent.skid_accel and ent.accel_type ~= ent.skid_accel then
+    s.event_cb(s, {type = 'stopsound', name = 'skid'})
   end
   
   -- cap intended x/y speed
