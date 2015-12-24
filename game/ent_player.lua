@@ -81,6 +81,7 @@ e.init = function(s)
     s.media.snd_wallslide = love.audio.newSource("base/wallslide.wav", "static")
     s.media.snd_wallslide:setLooping(true)
     s.media.snd_skid = love.audio.newSource("base/skid.wav", "static")
+    s.media.snd_bump = love.audio.newSource("base/bump.wav", "static")
 
   end
 end
@@ -125,9 +126,9 @@ e.think = function(s, ent, dt)
   local wasSlide = ent.wall_sliding
   ent.wall_sliding = false
   if not ent.on_ground and ent.dy > 0 then
+    -- check for a wall in the held direction
     ent.wall_sliding = (ent.command.left and Entity.isTouchingSolid(s, ent, 'left')) and 'left' or false
     ent.wall_sliding = (ent.command.right and Entity.isTouchingSolid(s, ent, 'right')) and 'right' or ent.wall_sliding
-    -- check for a wall in the held direction
   end
   
   if not wasSlide and ent.wall_sliding then
@@ -239,6 +240,9 @@ e.think = function(s, ent, dt)
   
   -- stop them if they fall onto something solid
   if yCollided and ent.dy > 0 then
+    if not ent.will_pogo and ent.dy >= ent.terminal_velocity * 0.75 then
+      s.event_cb(s, {type = 'sound', name = 'bump'})
+    end
     ent.dy = 0
   -- conserve some momentum (note this will get hit for several frames after first collision)
   elseif yCollided and ent.dy < 0 then
