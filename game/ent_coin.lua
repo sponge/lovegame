@@ -1,24 +1,35 @@
 local Entity = require 'game/entity'
 
-local function init(s)
+local e = {}
+
+e.init = function(s)
+  if not love.graphics then return end
+  
+  s.media.coin = love.graphics.newImage("base/coin.png")
+  s.media.coin:setFilter("nearest", "nearest")
+
+  s.media.coin_frames = {}
+  local f = s.media.coin_frames
+  local w, h = s.media.coin:getDimensions()
+  for i=0, 8 do
+    f[#f+1] = love.graphics.newQuad(16*i,  0, 16, h, w, h)
+  end
+end
+
+e.spawn = function(s, ent)
+  ent.collision = 'cross'
+  ent.w = 12
+  ent.x = ent.x + 2
+  s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
+end
+
+e.think = function(s, ent, dt)
   
 end
 
-local function spawn(s, ent)
-  ent.collision = 'slide'
+e.draw = function(s, ent)
+  local i = (math.floor(s.time * 8) % 8) + 1
+  love.graphics.draw(s.media.coin, s.media.coin_frames[i], ent.x - 2, ent.y, 0, 1, 1)
 end
 
-local function think(s, ent, dt)
-  
-end
-
-local function draw(s, ent)
-  local x,y,w,h = s.bump:getRect(ent)
-  love.graphics.setColor(248,248,0,255)
-  love.graphics.rectangle("fill", ent.x, ent.y, ent.w, ent.h)
-  love.graphics.setColor(0,255,0,255)
-  love.graphics.rectangle("line",x,y,w,h)
-  love.graphics.setColor(255,255,255,255)
-end
-
-return { init = init, spawn = spawn, think = think, draw = draw }
+return e

@@ -51,7 +51,9 @@ local function getAccel(s, ent, dir)
   end
 end
 
-local function player_init(s)
+local e = {}
+
+e.init = function(s)
   if not love.graphics then return end
   
   s.media.player = love.graphics.newImage("base/player.png")
@@ -74,7 +76,7 @@ local function player_init(s)
   }
 end
 
-local function player_spawn(s, ent)
+e.spawn = function(s, ent)
   ent.anim_frame = "stand"
   ent.anim_mirror = false
   ent.on_ground = false
@@ -88,9 +90,11 @@ local function player_spawn(s, ent)
   ent.drawx = 3
   ent.drawy = -2
   ent.collision = 'slide'
+  
+  s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
 end
 
-local function player_think(s, ent, dt)
+e.think = function(s, ent, dt)
   setup_physics(s, ent)
   
   ent.on_ground = ent.dy >= 0 and Entity.isTouchingSolid(s, ent, 'down')
@@ -206,7 +210,11 @@ local function player_think(s, ent, dt)
 
 end
 
-local function player_draw(s, ent)
+e.collide = function(s, ent, col)
+  print(col)
+end
+
+e.draw = function(s, ent)
   local x = nil
   local sx = 1
   
@@ -243,4 +251,4 @@ local function player_draw(s, ent)
   end
 end
 
-return { init = player_init, spawn = player_spawn, think = player_think, draw = player_draw }
+return e

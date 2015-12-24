@@ -18,6 +18,7 @@ local function new(classname, x, y, w, h)
       drawy = 0,
       think = nil,
       draw = nil,
+      collide = nil,
       collision = 'cross',
       command = {}
     }, entity)
@@ -46,16 +47,16 @@ local function isTouchingSolid(s, ent, side)
 end
 
 local function move(s, ent)
-  local bumpx, bumpy, cols, len = nil
+  local cols, len = nil
   local moves = {x = {0,0}, y={0,0}}
   local entCol, tileCol = false
   local xCollided, yCollided = false
   
   moves.x[1], _, cols, len = s.bump:check(ent, ent.x + (ent.dx*s.dt), ent.y, s.bumpfilter)
   for i=1, len do
+    if ent.collide then ent.collide(s, ent, cols[i]) end
     if cols[i].other.collision ~= 'cross' then
       entCol = true
-      break
     end
   end
     
@@ -68,7 +69,6 @@ local function move(s, ent)
     ent.x = math.max(unpack(moves.x))
   end
   
-  -- don't conserve any movement in x on a collision
   xCollided = entCol or tileCol 
   
   -- don't let them move offscreen, but also don't treat the edge as walls

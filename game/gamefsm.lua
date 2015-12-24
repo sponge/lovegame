@@ -26,10 +26,6 @@ local function parse_color(col)
     return rgb
 end
 
-local map_funcs = {
-
-}
-
 local ent_funcs = {
   player_start = {
     init = nil,
@@ -42,6 +38,8 @@ local ent_funcs = {
   coin = require 'game/ent_coin',
   coin_block = require 'game/ent_coin_block',
 }
+
+local inited_ents = {}
 
 local filter = function(item, other)
   return other.collision
@@ -113,8 +111,9 @@ local function init(str_level, cvars)
     game_err("Error while loading map JSON")
     return
   end
-  
+    
   ent_funcs.player.init(state)
+  inited_ents.player = true
   
   state.l.backgroundcolor = parse_color(state.l.backgroundcolor)
   
@@ -131,13 +130,16 @@ local function init(str_level, cvars)
     
     if layer.type == "objectgroup" then
       for _, obj in ipairs(layer.objects) do
+        if not inited_ents[obj.type] and ent_funcs[obj.type].init then ent_funcs[obj.type].init(state) end
+        inited_ents[obj.type] = true
+        
         local ent = Entity.new(obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
         ent.number = #state.s.entities
-        ent.think = map_funcs[obj.properties.think] or ent_funcs[obj.type].think
-        ent.draw = map_funcs[obj.properties.draw] or ent_funcs[obj.type].draw
+        ent.think = ent_funcs[obj.type].think
+        ent.draw = ent_funcs[obj.type].draw
+        ent.collide = ent_funcs[obj.type].collide
         
         state.s.entities[#state.s.entities+1] = ent
-        state.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
         if ent_funcs[obj.type].spawn then ent_funcs[obj.type].spawn(state, ent) end
       end
     end
@@ -149,13 +151,17 @@ local function init(str_level, cvars)
       if state.tileinfo[v].tile_entity ~= nil then
         state.s.worldLayer.data[i] = 0
         local classname = state.tileinfo[v].tile_entity
+        
+        if inited_ents[classname] ~= true and ent_funcs[classname].init then ent_funcs[classname].init(state) end
+        inited_ents[classname] = true
+        
         local ent = Entity.new(state.tileinfo[v].tile_entity, ((i-1)%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
         ent.number = #state.s.entities
         ent.think = ent_funcs[classname].think
         ent.draw = ent_funcs[classname].draw
+        ent.collide = ent_funcs[classname].collide
         
         state.s.entities[#state.s.entities+1] = ent
-        state.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
         if ent_funcs[classname].spawn then ent_funcs[classname].spawn(state, ent) end
       end
     end
@@ -194,8 +200,9 @@ local function spawnPlayer(state)
   ent.number = #state.s.entities+1
   ent.think = ent_funcs[ent.classname].think
   ent.draw = ent_funcs[ent.classname].draw
+  ent.collide = ent_funcs[ent.classname].collide
+
   state.s.entities[ent.number] = ent
-  state.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
   if ent_funcs[ent.classname].spawn then ent_funcs[ent.classname].spawn(state, ent) end
   
   state.cam:lookAt(spawnPoint.x, spawnPoint.y)  
