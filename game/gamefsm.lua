@@ -113,7 +113,6 @@ local function init(str_level, cvars)
   end
     
   ent_funcs.player.init(state)
-  inited_ents.player = true
   
   state.l.backgroundcolor = parse_color(state.l.backgroundcolor)
   
@@ -130,7 +129,6 @@ local function init(str_level, cvars)
     
     if layer.type == "objectgroup" then
       for _, obj in ipairs(layer.objects) do
-        if not inited_ents[obj.type] and ent_funcs[obj.type].init then ent_funcs[obj.type].init(state) end
         inited_ents[obj.type] = true
         
         local ent = Entity.new(obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
@@ -156,7 +154,7 @@ local function init(str_level, cvars)
         inited_ents[classname] = true
         
         local ent = Entity.new(state.tileinfo[v].tile_entity, ((i-1)%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
-        ent.number = #state.s.entities
+        ent.number = #state.s.entities+1
         ent.think = ent_funcs[classname].think
         ent.draw = ent_funcs[classname].draw
         ent.collide = ent_funcs[classname].collide
@@ -165,6 +163,10 @@ local function init(str_level, cvars)
         if ent_funcs[classname].spawn then ent_funcs[classname].spawn(state, ent) end
       end
     end
+  end
+  
+  for i,v in pairs(ent_funcs) do
+    if v.init then v.init(state) end
   end
 
   return state
@@ -175,9 +177,9 @@ local function step(state, dt)
   state.time = state.time + dt
   
   local ent = nil
-  for i = 1, #state.s.entities do
+  for i = 1, 1024 do --FIXME: hardcoded value
     ent = state.s.entities[i]
-    if ent.think ~= nil then
+    if ent ~= nil and ent.think ~= nil then
       ent.think(state, ent, dt)
     end
   end

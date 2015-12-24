@@ -169,8 +169,9 @@ function scene:draw()
   end
   
   local ent = nil
-  for _, ent in ipairs(gs.s.entities) do
-    if ent.draw ~= nil then
+  for i = 1, 1024 do --FIXME: hardcoded value
+    ent = gs.s.entities[i]
+    if ent ~= nil and ent.draw ~= nil then
       ent.draw(gs, ent)
     end
   end

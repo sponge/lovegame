@@ -211,7 +211,9 @@ e.think = function(s, ent, dt)
 end
 
 e.collide = function(s, ent, col)
-  print(col)
+  if col.other.classname == 'coin' or (col.other.classname == 'coin_block' and col.other.active and col.other.item == 'coin') then
+    print('ding!')
+  end
 end
 
 e.draw = function(s, ent)

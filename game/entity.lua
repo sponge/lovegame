@@ -55,6 +55,7 @@ local function move(s, ent)
   moves.x[1], _, cols, len = s.bump:check(ent, ent.x + (ent.dx*s.dt), ent.y, s.bumpfilter)
   for i=1, len do
     if ent.collide then ent.collide(s, ent, cols[i]) end
+    if cols[i].other.collide then cols[i].other.collide(s, cols[i].other, cols[i]) end
     if cols[i].other.collision ~= 'cross' then
       entCol = true
     end
@@ -88,6 +89,8 @@ local function move(s, ent)
   
   _, moves.y[1], cols, len = s.bump:check(ent, ent.x, ent.y + (ent.dy*s.dt), s.bumpfilter)
   for i=1, len do
+    if ent.collide then ent.collide(s, ent, cols[i]) end
+    if cols[i].other.collide then cols[i].other.collide(s, cols[i].other, cols[i]) end
     if cols[i].other.collision ~= 'cross' then
       entCol = true
       break

@@ -81,6 +81,7 @@ end
 
 function love.load(arg)
   require("lovebird").update()
+  io.stdout:setvbuf("no")
 
   local width, height, flags = love.window.getMode()
   

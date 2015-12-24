@@ -32,4 +32,11 @@ e.draw = function(s, ent)
   love.graphics.draw(s.media.coin, s.media.coin_frames[i], ent.x - 2, ent.y, 0, 1, 1)
 end
 
+e.collide = function(s, ent, col)
+  if ent == col.other then
+    s.bump:remove(ent)
+    s.s.entities[ent.number] = nil
+  end
+end
+
 return e
