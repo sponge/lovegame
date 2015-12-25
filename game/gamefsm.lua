@@ -37,6 +37,8 @@ local ent_funcs = {
   player = require 'game/ent_player',
   coin = require 'game/ent_coin',
   coin_block = require 'game/ent_coin_block',
+  goomba = require 'game/ent_goomba',
+  turtle = require 'game/ent_turtle',
 }
 
 local inited_ents = {}
@@ -132,16 +134,18 @@ local function init(str_level, event_cb)
     
     if layer.type == "objectgroup" then
       for _, obj in ipairs(layer.objects) do
-        inited_ents[obj.type] = true
-        
-        local ent = Entity.new(obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
-        ent.number = #state.s.entities
-        ent.think = ent_funcs[obj.type].think
-        ent.draw = ent_funcs[obj.type].draw
-        ent.collide = ent_funcs[obj.type].collide
-        
-        state.s.entities[#state.s.entities+1] = ent
-        if ent_funcs[obj.type].spawn then ent_funcs[obj.type].spawn(state, ent) end
+        if ent_funcs[obj.type] ~= nil then
+          inited_ents[obj.type] = true
+          
+          local ent = Entity.new(obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
+          ent.number = #state.s.entities+1
+          ent.think = ent_funcs[obj.type].think
+          ent.draw = ent_funcs[obj.type].draw
+          ent.collide = ent_funcs[obj.type].collide
+          
+          state.s.entities[ent.number] = ent
+          if ent_funcs[obj.type].spawn then ent_funcs[obj.type].spawn(state, ent) end
+        end
       end
     end
   end
@@ -162,7 +166,7 @@ local function init(str_level, event_cb)
         ent.draw = ent_funcs[classname].draw
         ent.collide = ent_funcs[classname].collide
         
-        state.s.entities[#state.s.entities+1] = ent
+        state.s.entities[ent.number] = ent
         if ent_funcs[classname].spawn then ent_funcs[classname].spawn(state, ent) end
       end
     end

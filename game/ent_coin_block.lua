@@ -11,7 +11,7 @@ e.init = function(s)
   s.media.coin_block_frames = {}
   local f = s.media.coin_block_frames
   local w, h = s.media.coin_block:getDimensions()
-  for i=0, 5 do
+  for i=0, w/16 do
     f[#f+1] = love.graphics.newQuad(16*i,  0, 16, h, w, h)
   end  
 end
