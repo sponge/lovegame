@@ -16,9 +16,6 @@ local function new(classname, x, y, w, h)
       h = h,
       drawx = 0,
       drawy = 0,
-      think = nil,
-      draw = nil,
-      collide = nil,
       collision = 'cross',
       command = {}
     }, entity)
