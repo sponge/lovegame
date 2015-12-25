@@ -13,6 +13,7 @@ local helptext =
 
 arrows to move
 z to jump/double jump
+x to attack with sword
 down while midair to pogo
 hold left/right on wall to wallslide
 wallslide + jump to walljump]]

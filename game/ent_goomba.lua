@@ -25,15 +25,25 @@ e.spawn = function(s, ent)
   ent.y = ent.y + 1
   ent.h = ent.h - 1
   ent.collision = 'touch'
+  ent.can_take_damage = true
+  ent.active = true
+  ent.dead_time = nil
   s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
   ent.dx = -20
 end
 
-e.think = function(s, ent, dt)
+e.think = function(s, ent, dt)  
+  if not ent.active then
+    if s.time > ent.dead_time then
+      s.s.entities[ent.number] = nil
+    end
+    return
+  end
+  
   ent.on_ground = ent.dy >= 0 and Entity.isTouchingSolid(s, ent, 'down')
   
   ent.dy = not ent.on_ground and 150 or 0
-  
+
   if ent.dx > 0 and Entity.isTouchingSolid(s, ent, 'right') then
     ent.dx = ent.dx * -1
   elseif ent.dx < 0 and Entity.isTouchingSolid(s, ent, 'left') then
@@ -44,7 +54,7 @@ e.think = function(s, ent, dt)
 end
 
 e.draw = function(s, ent)
-  local i = (math.floor(s.time * 8) % 2) + 1
+  local i = ent.active and (math.floor(s.time * 8) % 2) + 1 or 3
   love.graphics.draw(s.media.goomba, s.media.goomba_frames[i], ent.x, ent.y, 0, 1, 1)
 end
 
@@ -59,7 +69,7 @@ e.collide = function(s, ent, col)
   
   if col.normal.x == 0 and col.normal.y == -1 then
     EntHandlers[ent.classname].take_damage(s, ent, 1)
-  elseif col.item.take_damage == 'player' then
+  elseif col.item.can_take_damage then
     EntHandlers[col.item.classname].take_damage(s, col.item, 1)
   end
   
@@ -67,7 +77,8 @@ end
 
 e.take_damage = function(s, ent, dmg)
   s.bump:remove(ent)
-  s.s.entities[ent.number] = nil
+  ent.active = false
+  ent.dead_time = s.time + 1
   --s.event_cb(s, {type = 'sound', name = 'goomba_squish'})  
 end
 

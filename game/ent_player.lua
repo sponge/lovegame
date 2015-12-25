@@ -100,18 +100,23 @@ e.spawn = function(s, ent)
   ent.wall_sliding = false
   ent.stun_time = 0
   ent.invuln_time = 0
+  ent.attack_length = 0.25
+  ent.attack_time = 0
+  ent.attack_held = false
   ent.drawx = 3
   ent.drawy = -2
   ent.collision = 'slide'
   ent.accel_type = 0
   ent.coins = 0
   ent.health = 6
-  ent.take_damage = 'player'
+  ent.can_take_damage = true
   
   s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
 end
 
 e.think = function(s, ent, dt)
+  local EntHandlers = require 'game/enthandlers'
+  
   setup_physics(s, ent)
   
   ent.on_ground = ent.dy >= 0 and Entity.isTouchingSolid(s, ent, 'down')
@@ -198,14 +203,23 @@ e.think = function(s, ent, dt)
     end
   end
   
+  if ent.command.attack == false and ent.attack_held == true and s.time >= ent.attack_time then
+    ent.attack_held = false
+  end
+  
+  if ent.command.attack and not ent.attack_held then
+    ent.attack_time = s.time + ent.attack_length
+    ent.attack_held = true
+  end
+
   -- player wants to move left, check what their accel should be
   local last_accel = ent.accel_type
-  if ent.command.left then
+  if ent.command.left and s.time >= ent.attack_time then
     ent.accel_type = getAccel(s, ent,'left')
     ent.dx = ent.dx - (ent.accel_type*dt)
     ent.anim_mirror = true
   -- player wants to move right
-  elseif ent.command.right then
+  elseif ent.command.right and s.time >= ent.attack_time then
     ent.accel_type = getAccel(s, ent,'right')
     ent.dx = ent.dx + (ent.accel_type*dt)
     ent.anim_mirror = false
@@ -253,6 +267,15 @@ e.think = function(s, ent, dt)
   elseif yCollided and ent.dy < 0 then
     ent.dy = ent.dy * ent.head_bump_modifier
   end
+  
+  if s.time < ent.attack_time then
+    local hits, len = s.bump:queryRect(ent.anim_mirror and ent.x - 13 or ent.x + ent.w, ent.y + ent.drawy + 11, 13, 5)
+    for i=1, len do
+      if hits[i].can_take_damage then
+        EntHandlers[hits[i].classname].take_damage(s, hits[i], 1)
+      end
+    end
+  end
 
 end
 
@@ -268,7 +291,9 @@ e.draw = function(s, ent)
   
   ent.anim_frame = "stand"
   
-  if ent.wall_sliding then
+  if s.time < ent.attack_time then
+    ent.anim_frame = "shoot"
+  elseif ent.wall_sliding then
     ent.anim_frame = "prejump3"
   elseif ent.will_pogo then
     ent.anim_frame = "pogochrg"
@@ -299,6 +324,20 @@ e.draw = function(s, ent)
   end
   
   love.graphics.draw(s.media.player, s.media.player_frames[ent.anim_frame], x, ent.y + ent.drawy, 0, sx, 1)
+  
+  if s.time < ent.attack_time then
+    local swordx = x+(ent.anim_mirror and -ent.w-4 or 14)
+    local swordy = ent.y + ent.drawy + 11
+    if ent.anim_mirror then
+      love.graphics.polygon("fill", swordx, swordy, swordx-13, swordy + 2.5, swordx, swordy+5)
+      love.graphics.setColor(90,90,90,255)
+      love.graphics.polygon("line", swordx, swordy, swordx-13, swordy + 2.5, swordx, swordy +5)
+    else
+      love.graphics.polygon("fill", swordx, swordy, swordx+13, swordy + 2.5, swordx, swordy +5)
+      love.graphics.setColor(90,90,90,255)
+      love.graphics.polygon("line", swordx, swordy, swordx+13, swordy + 2.5, swordx, swordy +5)
+    end
+  end
   
   love.graphics.setColor(255,255,255,255)
   
