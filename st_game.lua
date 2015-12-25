@@ -3,7 +3,6 @@ local GameState = require 'gamestate'
 local GameFSM = require 'game/gamefsm'
 local Camera = require 'game/camera'
 local InputManager = require 'input'
-local EntHandlers = require "game/enthandlers"
 
 local st_console = require 'st_console'
 local st_debug = require 'st_debug'
@@ -186,8 +185,8 @@ function scene:draw()
   local ent = nil
   for i = 1, 1024 do --FIXME: hardcoded value
     ent = gs.s.entities[i]
-    if ent ~= nil and EntHandlers[ent.classname].draw ~= nil then
-      EntHandlers[ent.classname].draw(gs, ent)
+    if ent ~= nil and gs.ent_handlers[ent.classname].draw ~= nil then
+      gs.ent_handlers[ent.classname].draw(gs, ent)
     end
   end
 

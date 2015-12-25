@@ -65,6 +65,7 @@ local function init(str_level, event_cb)
     cvars = {},
     event_cb = event_cb,
     bumpfilter = filter,
+    ent_handlers = EntHandlers,
   }
   
   local cvar_table = {
@@ -103,7 +104,7 @@ local function init(str_level, event_cb)
     return
   end
     
-  EntHandlers.player.init(state)
+  state.ent_handlers.player.init(state)
   
   state.l.backgroundcolor = parse_color(state.l.backgroundcolor)
   
@@ -123,7 +124,7 @@ local function init(str_level, event_cb)
         local ent = Entity.new(obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
         ent.number = #state.s.entities+1
         state.s.entities[ent.number] = ent
-        if EntHandlers[ent.classname].spawn then EntHandlers[ent.classname].spawn(state, ent) end
+        if state.ent_handlers[ent.classname].spawn then state.ent_handlers[ent.classname].spawn(state, ent) end
       end
     end
   end
@@ -137,12 +138,12 @@ local function init(str_level, event_cb)
         local ent = Entity.new(state.tileinfo[v].tile_entity, ((i-1)%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
         ent.number = #state.s.entities+1        
         state.s.entities[ent.number] = ent
-        if EntHandlers[ent.classname].spawn then EntHandlers[ent.classname].spawn(state, ent) end
+        if state.ent_handlers[ent.classname].spawn then state.ent_handlers[ent.classname].spawn(state, ent) end
       end
     end
   end
   
-  for i,v in pairs(EntHandlers) do
+  for i,v in pairs(state.ent_handlers) do
     if v.init then v.init(state) end
   end
 
@@ -156,8 +157,8 @@ local function step(state, dt)
   local ent = nil
   for i = 1, 1024 do --FIXME: hardcoded value
     ent = state.s.entities[i]
-    if ent ~= nil and EntHandlers[ent.classname].think ~= nil then
-      EntHandlers[ent.classname].think(state, ent, dt)
+    if ent ~= nil and state.ent_handlers[ent.classname].think ~= nil then
+      state.ent_handlers[ent.classname].think(state, ent, dt)
     end
   end
 end
@@ -175,10 +176,10 @@ local function spawnPlayer(state)
     end
   end
   
-  local ent = Entity.new("player", spawnPoint.x, spawnPoint.y, 10, 22)
+  local ent = Entity.new("player", spawnPoint.x, spawnPoint.y, 8, 22)
   ent.number = #state.s.entities+1
   state.s.entities[ent.number] = ent
-  if EntHandlers[ent.classname].spawn then EntHandlers[ent.classname].spawn(state, ent) end
+  if state.ent_handlers[ent.classname].spawn then state.ent_handlers[ent.classname].spawn(state, ent) end
   
   state.cam:lookAt(spawnPoint.x, spawnPoint.y)  
   

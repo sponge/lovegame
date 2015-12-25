@@ -23,29 +23,33 @@ end
 
 local function isTouchingSolid(s, ent, side)
   local touching = false
-  local bumpx, bumpy
-
+  local cols = nil
+  
   local x = side == 'right' and 1 or 0
   x = side == 'left' and -1 or x
   
   local y = side == 'up' and -1 or 0
   y = side == 'down' and 1 or y
   
-  _, touching = s.col:bottomResolve(s, ent, ent.x+x, ent.y+y, ent.w, ent.h, x, y)
-  if not touching then
-    bumpx, bumpy = s.bump:check(ent, ent.x+x, ent.y+y, s.bumpfilter)
-    if side == 'left' or side == 'right' then
-      touching = bumpx == ent.x
-    else
-      touching = bumpy == ent.y
-    end
+  if side == 'left' then
+    _, touching = s.col:leftResolve(s, ent, ent.x+x, ent.y+y, ent.w, ent.h, x, y)
+  elseif side == 'right' then
+    _, touching = s.col:rightResolve(s, ent, ent.x+x, ent.y+y, ent.w, ent.h, x, y)
+  elseif side == 'up' then
+    _, touching = s.col:topResolve(s, ent, ent.x+x, ent.y+y, ent.w, ent.h, x, y)
+  elseif side == 'down' then
+    _, touching = s.col:bottomResolve(s, ent, ent.x+x, ent.y+y, ent.w, ent.h, x, y)
   end
-  return touching
+  
+  if not touching then
+    local bumpx, bumpy
+    bumpx, bumpy, cols = s.bump:check(ent, ent.x+x, ent.y+y, s.bumpfilter)
+    touching = ((side == 'left' or side == 'right') and bumpx == ent.x) or ((side == 'up' or side == 'down') and bumpy == ent.y)
+  end
+  return touching, cols
 end
 
 local function move(s, ent)
-  local EntHandlers = require "game/enthandlers"
-
   local cols, len = nil
   local moves = {x = {0,0}, y={0,0}}
   local entCol, tileCol = false
@@ -53,8 +57,8 @@ local function move(s, ent)
   
   moves.x[1], _, cols, len = s.bump:check(ent, ent.x + (ent.dx*s.dt), ent.y, s.bumpfilter)
   for i=1, len do
-    if EntHandlers[ent.classname].collide then EntHandlers[ent.classname].collide(s, ent, cols[i]) end
-    if EntHandlers[cols[i].other.classname].collide then EntHandlers[cols[i].other.classname].collide(s, cols[i].other, cols[i]) end
+    if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, cols[i]) end
+    if s.ent_handlers[cols[i].other.classname].collide then s.ent_handlers[cols[i].other.classname].collide(s, cols[i].other, cols[i]) end
     if cols[i].other.collision ~= 'cross' then
       entCol = true
     end
@@ -88,8 +92,8 @@ local function move(s, ent)
   
   _, moves.y[1], cols, len = s.bump:check(ent, ent.x, ent.y + (ent.dy*s.dt), s.bumpfilter)
   for i=1, len do
-    if EntHandlers[ent.classname].collide then EntHandlers[ent.classname].collide(s, ent, cols[i]) end
-    if EntHandlers[cols[i].other.classname].collide then EntHandlers[cols[i].other.classname].collide(s, cols[i].other, cols[i]) end
+    if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, cols[i]) end
+    if s.ent_handlers[cols[i].other.classname].collide then s.ent_handlers[cols[i].other.classname].collide(s, cols[i].other, cols[i]) end
     if cols[i].other.collision ~= 'cross' then
       entCol = true
       break

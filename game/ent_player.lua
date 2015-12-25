@@ -103,7 +103,7 @@ e.spawn = function(s, ent)
   ent.attack_length = 0.25
   ent.attack_time = 0
   ent.attack_held = false
-  ent.drawx = 3
+  ent.drawx = 5
   ent.drawy = -2
   ent.collision = 'slide'
   ent.accel_type = 0
@@ -114,9 +114,7 @@ e.spawn = function(s, ent)
   s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
 end
 
-e.think = function(s, ent, dt)
-  local EntHandlers = require 'game/enthandlers'
-  
+e.think = function(s, ent, dt) 
   setup_physics(s, ent)
   
   ent.on_ground = ent.dy >= 0 and Entity.isTouchingSolid(s, ent, 'down')
@@ -272,7 +270,7 @@ e.think = function(s, ent, dt)
     local hits, len = s.bump:queryRect(ent.anim_mirror and ent.x - 13 or ent.x + ent.w, ent.y + ent.drawy + 11, 13, 5)
     for i=1, len do
       if hits[i].can_take_damage then
-        EntHandlers[hits[i].classname].take_damage(s, hits[i], 1)
+        s.ent_handlers[hits[i].classname].take_damage(s, hits[i], 1)
       end
     end
   end

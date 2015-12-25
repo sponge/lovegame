@@ -44,10 +44,16 @@ e.think = function(s, ent, dt)
   
   ent.dy = not ent.on_ground and 150 or 0
 
-  if ent.dx > 0 and Entity.isTouchingSolid(s, ent, 'right') then
+  local touching, cols = Entity.isTouchingSolid(s, ent, ent.dx > 0 and 'right' or 'left')
+  if touching then
     ent.dx = ent.dx * -1
-  elseif ent.dx < 0 and Entity.isTouchingSolid(s, ent, 'left') then
-    ent.dx = ent.dx * -1
+  end
+  if cols ~= nil then
+    for i = 1, #cols do  
+      if cols[i].other.classname == 'player' and s.ent_handlers[cols[i].other.classname].take_damage then
+        s.ent_handlers[cols[i].other.classname].take_damage(s, cols[i].other, 1)
+      end
+    end
   end
 
   local xCollided, yCollided = Entity.move(s, ent)
@@ -59,8 +65,6 @@ e.draw = function(s, ent)
 end
 
 e.collide = function(s, ent, col)
-  local EntHandlers = require 'game/enthandlers'
-
   ent.dx = ent.dx * -1
   
   if col.item.classname ~= 'player' then
@@ -68,9 +72,9 @@ e.collide = function(s, ent, col)
   end
   
   if col.normal.x == 0 and col.normal.y == -1 then
-    EntHandlers[ent.classname].take_damage(s, ent, 1)
+    s.ent_handlers[ent.classname].take_damage(s, ent, 1)
   elseif col.item.can_take_damage then
-    EntHandlers[col.item.classname].take_damage(s, col.item, 1)
+    s.ent_handlers[col.item.classname].take_damage(s, col.item, 1)
   end
   
 end
