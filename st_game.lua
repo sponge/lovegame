@@ -3,10 +3,10 @@ local GameState = require 'gamestate'
 local GameFSM = require 'game/gamefsm'
 local Camera = require 'game/camera'
 local InputManager = require 'input'
+local EntHandlers = require "game/enthandlers"
 
 local st_console = require 'st_console'
 local st_debug = require 'st_debug'
-
 
 local abs = math.abs
 local floor = math.floor
@@ -40,6 +40,7 @@ function scene:enter(current, mapname)
   local level_json, _ = love.filesystem.read(mapname)
   
   gs = GameFSM.init(level_json, event_cb)
+  currgame = gs
   
   for _, v in pairs(gs.cvars) do
     Console:registercvar(v)
@@ -85,6 +86,7 @@ function scene:leave()
   
   spritebatches = {}
   gs = {}
+  currgame = {}
   tileInfo = {}
   canvas = nil
 end
@@ -180,8 +182,8 @@ function scene:draw()
   local ent = nil
   for i = 1, 1024 do --FIXME: hardcoded value
     ent = gs.s.entities[i]
-    if ent ~= nil and ent.draw ~= nil then
-      ent.draw(gs, ent)
+    if ent ~= nil and EntHandlers[ent.classname].draw ~= nil then
+      EntHandlers[ent.classname].draw(gs, ent)
     end
   end
 

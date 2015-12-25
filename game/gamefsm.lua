@@ -4,6 +4,7 @@ local Camera = require "game/camera"
 local TileCollider = require "game/tilecollider"
 local Bump = require "game/bump"
 local Entity = require "game/entity"
+local EntHandlers = require "game/enthandlers"
 local TileTypes = require "game/tiletypes"
 
 local abs = math.abs
@@ -25,21 +26,6 @@ local function parse_color(col)
     end
     return rgb
 end
-
-local ent_funcs = {
-  player_start = {
-    init = nil,
-    spawn = nil,
-    think = nil,
-    draw = nil
-  },
-  
-  player = require 'game/ent_player',
-  coin = require 'game/ent_coin',
-  coin_block = require 'game/ent_coin_block',
-  goomba = require 'game/ent_goomba',
-  turtle = require 'game/ent_turtle',
-}
 
 local inited_ents = {}
 
@@ -117,7 +103,7 @@ local function init(str_level, event_cb)
     return
   end
     
-  ent_funcs.player.init(state)
+  EntHandlers.player.init(state)
   
   state.l.backgroundcolor = parse_color(state.l.backgroundcolor)
   
@@ -134,18 +120,10 @@ local function init(str_level, event_cb)
     
     if layer.type == "objectgroup" then
       for _, obj in ipairs(layer.objects) do
-        if ent_funcs[obj.type] ~= nil then
-          inited_ents[obj.type] = true
-          
-          local ent = Entity.new(obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
-          ent.number = #state.s.entities+1
-          ent.think = ent_funcs[obj.type].think
-          ent.draw = ent_funcs[obj.type].draw
-          ent.collide = ent_funcs[obj.type].collide
-          
-          state.s.entities[ent.number] = ent
-          if ent_funcs[obj.type].spawn then ent_funcs[obj.type].spawn(state, ent) end
-        end
+        local ent = Entity.new(obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
+        ent.number = #state.s.entities+1
+        state.s.entities[ent.number] = ent
+        if EntHandlers[ent.classname].spawn then EntHandlers[ent.classname].spawn(state, ent) end
       end
     end
   end
@@ -155,24 +133,16 @@ local function init(str_level, event_cb)
     if state.tileinfo[v] then
       if state.tileinfo[v].tile_entity ~= nil then
         state.s.worldLayer.data[i] = 0
-        local classname = state.tileinfo[v].tile_entity
-        
-        if inited_ents[classname] ~= true and ent_funcs[classname].init then ent_funcs[classname].init(state) end
-        inited_ents[classname] = true
-        
+        local classname = state.tileinfo[v].tile_entity        
         local ent = Entity.new(state.tileinfo[v].tile_entity, ((i-1)%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
-        ent.number = #state.s.entities+1
-        ent.think = ent_funcs[classname].think
-        ent.draw = ent_funcs[classname].draw
-        ent.collide = ent_funcs[classname].collide
-        
+        ent.number = #state.s.entities+1        
         state.s.entities[ent.number] = ent
-        if ent_funcs[classname].spawn then ent_funcs[classname].spawn(state, ent) end
+        if EntHandlers[ent.classname].spawn then EntHandlers[ent.classname].spawn(state, ent) end
       end
     end
   end
   
-  for i,v in pairs(ent_funcs) do
+  for i,v in pairs(EntHandlers) do
     if v.init then v.init(state) end
   end
 
@@ -186,8 +156,8 @@ local function step(state, dt)
   local ent = nil
   for i = 1, 1024 do --FIXME: hardcoded value
     ent = state.s.entities[i]
-    if ent ~= nil and ent.think ~= nil then
-      ent.think(state, ent, dt)
+    if ent ~= nil and EntHandlers[ent.classname].think ~= nil then
+      EntHandlers[ent.classname].think(state, ent, dt)
     end
   end
 end
@@ -207,12 +177,8 @@ local function spawnPlayer(state)
   
   local ent = Entity.new("player", spawnPoint.x, spawnPoint.y, 10, 22)
   ent.number = #state.s.entities+1
-  ent.think = ent_funcs[ent.classname].think
-  ent.draw = ent_funcs[ent.classname].draw
-  ent.collide = ent_funcs[ent.classname].collide
-
   state.s.entities[ent.number] = ent
-  if ent_funcs[ent.classname].spawn then ent_funcs[ent.classname].spawn(state, ent) end
+  if EntHandlers[ent.classname].spawn then EntHandlers[ent.classname].spawn(state, ent) end
   
   state.cam:lookAt(spawnPoint.x, spawnPoint.y)  
   

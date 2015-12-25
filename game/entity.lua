@@ -1,5 +1,6 @@
 local entity = {}
 entity.__index = entity
+entity.__tostring = function(ent) return "Entity: " .. ent.classname end
 
 local function new(classname, x, y, w, h)
   assert(classname and x and y and w and h, "Invalid entity")
@@ -46,6 +47,8 @@ local function isTouchingSolid(s, ent, side)
 end
 
 local function move(s, ent)
+  local EntHandlers = require "game/enthandlers"
+
   local cols, len = nil
   local moves = {x = {0,0}, y={0,0}}
   local entCol, tileCol = false
@@ -53,8 +56,8 @@ local function move(s, ent)
   
   moves.x[1], _, cols, len = s.bump:check(ent, ent.x + (ent.dx*s.dt), ent.y, s.bumpfilter)
   for i=1, len do
-    if ent.collide then ent.collide(s, ent, cols[i]) end
-    if cols[i].other.collide then cols[i].other.collide(s, cols[i].other, cols[i]) end
+    if EntHandlers[ent.classname].collide then EntHandlers[ent.classname].collide(s, ent, cols[i]) end
+    if EntHandlers[cols[i].other.classname].collide then EntHandlers[cols[i].other.classname].collide(s, cols[i].other, cols[i]) end
     if cols[i].other.collision ~= 'cross' then
       entCol = true
     end
@@ -88,8 +91,8 @@ local function move(s, ent)
   
   _, moves.y[1], cols, len = s.bump:check(ent, ent.x, ent.y + (ent.dy*s.dt), s.bumpfilter)
   for i=1, len do
-    if ent.collide then ent.collide(s, ent, cols[i]) end
-    if cols[i].other.collide then cols[i].other.collide(s, cols[i].other, cols[i]) end
+    if EntHandlers[ent.classname].collide then EntHandlers[ent.classname].collide(s, ent, cols[i]) end
+    if EntHandlers[cols[i].other.classname].collide then EntHandlers[cols[i].other.classname].collide(s, cols[i].other, cols[i]) end
     if cols[i].other.collision ~= 'cross' then
       entCol = true
       break

@@ -34,12 +34,13 @@ e.think = function(s, ent, dt)
   
   ent.dy = not ent.on_ground and 150 or 0
   
-  local xCollided, yCollided = Entity.move(s, ent)
-  
-  -- walls always stop momentum
-  if xCollided then
+  if ent.dx > 0 and Entity.isTouchingSolid(s, ent, 'right') then
+    ent.dx = ent.dx * -1
+  elseif ent.dx < 0 and Entity.isTouchingSolid(s, ent, 'left') then
     ent.dx = ent.dx * -1
   end
+
+  local xCollided, yCollided = Entity.move(s, ent)
 end
 
 e.draw = function(s, ent)

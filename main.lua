@@ -7,7 +7,7 @@ else
 end
 
 -- globals
-_, game_err, socket = nil
+_, game_err, socket, currgame = nil
 
 local Gamestate = require "gamestate"
 local InputManager = require 'input'
