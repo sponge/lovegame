@@ -26,30 +26,38 @@ end
 local timers = {}
 local function measure(mode, metric, time)
   if mode ~= 'clearall' and timers[metric] == nil then
-    timers[metric] = {0,0,0}
+    timers[metric] = {0,0,0,0}
   end
   
   if mode == 'get' then
     return string.format("%.1f", timers[metric][2] * 1000)
   elseif mode == 'getmax' then
     return string.format("%.1f", timers[metric][3] * 1000)
+  elseif mode == 'getsum' then
+    return string.format("%.1f", timers[metric][4] * 1000)
+  elseif mode == 'getpct' then
+    return string.format("%.1f", timers[metric][4] / timers.frame[4] * 100 )
   elseif mode == 'clearall' then
     for i, v in pairs(timers) do
       timers[i][3] = 0
+      timers[i][4] = 0
     end
   elseif mode == 'start' then
     timers[metric][1] = love.timer.getTime()
   elseif mode == 'end' then
     timers[metric][2] = love.timer.getTime() - timers[metric][1]
     timers[metric][3] = math.max(timers[metric][3], timers[metric][2])
+    timers[metric][4] = timers[metric][4] + timers[metric][2]
   end
   
 end
 
-local function addDebugLine(y, col1, col2, col3)
-  if col1 ~= nil then love.graphics.print(col1, 10, y) end
-  if col2 ~= nil then love.graphics.print(col2, 90, y) end
-  if col3 ~= nil then love.graphics.print(col3, 130, y) end
+local function addDebugLine(y, ...)
+  local x = 10
+  for _, e in ipairs({...}) do
+    love.graphics.print(e, x, y)
+    x = x + 80
+  end
   return y + 20
 end
 
@@ -186,12 +194,12 @@ function love.draw()
     local y = 20
     y = addDebugLine(y, "FPS:",    love.timer.getFPS())
     y = addDebugLine(y, "Memory:", math.floor(collectgarbage("count")))
-    y = addDebugLine(y, "",        "Time",                  "Max (del resets)")
-    y = addDebugLine(y, "Frame:",  measure('get','frame'),  measure('getmax','frame'))
-    y = addDebugLine(y, "Events:", measure('get','events'), measure('getmax','events'))
-    y = addDebugLine(y, "Update:", measure('get','update'), measure('getmax','update'))
-    y = addDebugLine(y, "Draw:",   measure('get','draw'),   measure('getmax','draw'))
-    y = addDebugLine(y, "GC:",     measure('get','gc'),     measure('getmax','gc'))
+    y = addDebugLine(y, "",        "Time",                  "Max",                     "% (del resets)")
+    y = addDebugLine(y, "Frame:",  measure('get','frame'),  measure('getmax','frame'),  measure('getpct','frame'))
+    y = addDebugLine(y, "Events:", measure('get','events'), measure('getmax','events'), measure('getpct','events'))
+    y = addDebugLine(y, "Update:", measure('get','update'), measure('getmax','update'), measure('getpct','update'))
+    y = addDebugLine(y, "Draw:",   measure('get','draw'),   measure('getmax','draw'),   measure('getpct','draw'))
+    y = addDebugLine(y, "GC:",     measure('get','gc'),     measure('getmax','gc'),     measure('getpct','gc'))
   end
 end
   

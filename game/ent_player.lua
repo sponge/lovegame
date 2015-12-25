@@ -257,7 +257,9 @@ e.think = function(s, ent, dt)
 end
 
 e.collide = function(s, ent, col)
-
+  if col.other.classname == 'goomba' and col.normal.x == 0 and col.normal.y == -1 then
+    ent.dy = 2 * (ent.will_pogo and ent.pogo_jump_height or ent.jump_height)
+  end
 end
 
 e.draw = function(s, ent)
@@ -272,7 +274,7 @@ e.draw = function(s, ent)
     ent.anim_frame = "pogochrg"
   elseif ent.did_jump then
     ent.anim_frame = "jump"
-  elseif (ent.dx > 0 and ent.command.left) or (ent.dx < 0 and ent.command.right) then
+  elseif ent.accel_type == ent.skid_accel then
     ent.anim_frame = "prejump2"
   elseif ent.dx ~= 0 then
     local i = math.floor(s.time * 8) % 3 + 1

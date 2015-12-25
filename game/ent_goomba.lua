@@ -58,13 +58,17 @@ e.collide = function(s, ent, col)
   end
   
   if col.normal.x == 0 and col.normal.y == -1 then
-    s.bump:remove(ent)
-    s.s.entities[ent.number] = nil
-    --s.event_cb(s, {type = 'sound', name = 'goomba_squish'})
+    EntHandlers[ent.classname].take_damage(s, ent, 1)
   elseif col.item.take_damage == 'player' then
     EntHandlers[col.item.classname].take_damage(s, col.item, 1)
   end
   
+end
+
+e.take_damage = function(s, ent, dmg)
+  s.bump:remove(ent)
+  s.s.entities[ent.number] = nil
+  --s.event_cb(s, {type = 'sound', name = 'goomba_squish'})  
 end
 
 return e
