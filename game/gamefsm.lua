@@ -53,7 +53,7 @@ local function init(str_level, event_cb)
   assert(type(event_cb) == 'function', "No callback passed into GameFSM.init")
 
   local state = {
-    s = {entities = {}, worldLayer = nil}, -- serializable state (network?)
+    s = {entities = {}, worldLayer = nil, red_coins = {found = 0, sum = 0}}, -- serializable state (network?)
     tileinfo = {},
     camera = nil,
     l = nil, -- level
@@ -99,7 +99,7 @@ local function init(str_level, event_cb)
   state.bump = Bump.newWorld(64)
   
   if err ~= nil then
-    game_err("Error while loading map JSON")
+    s.event_cb(s, {type = 'error', message = 'Error while loading map JSON'})
     return
   end
     

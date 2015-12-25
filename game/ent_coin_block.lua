@@ -43,6 +43,8 @@ e.collide = function(s, ent, col)
   
   s.event_cb(s, {type = 'sound', name = 'coin'})
   
+  col.item.coins = col.item.coins + 1
+  
   ent.active = false
 end
 

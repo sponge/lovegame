@@ -118,7 +118,7 @@ function gs:draw()
   love.graphics.setColor(255, 255, 255, 255)
   
   if gs.error ~= nil then
-    love.graphics.printf(gs.error, 0, 15, width, "center")
+    love.graphics.printf(gs.error, 0, math.floor(0.1 * height), width, "center")
   end
 
   local w = math.min( 800, math.floor(0.8 * width) )

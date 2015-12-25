@@ -49,6 +49,8 @@ e.draw = function(s, ent)
 end
 
 e.collide = function(s, ent, col)
+  local EntHandlers = require 'game/enthandlers'
+
   ent.dx = ent.dx * -1
   
   if col.item.classname ~= 'player' then
@@ -59,6 +61,8 @@ e.collide = function(s, ent, col)
     s.bump:remove(ent)
     s.s.entities[ent.number] = nil
     --s.event_cb(s, {type = 'sound', name = 'goomba_squish'})
+  elseif col.item.take_damage == 'player' then
+    EntHandlers[col.item.classname].take_damage(s, col.item, 1)
   end
   
 end

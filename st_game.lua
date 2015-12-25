@@ -32,6 +32,10 @@ local event_cb = function(s, ev)
     love.audio.play(s.media['snd_'.. ev.name])
   elseif ev.type == 'stopsound' then
     love.audio.stop(s.media['snd_'.. ev.name])
+  elseif ev.type == 'death' then
+    game_err('YOU ARE DEAD!')
+  elseif ev.type == 'error' then
+    game_err(ev.message)
   end
 end
 
@@ -97,7 +101,7 @@ function scene:update(dt)
     local usercmd = InputManager.getInputs()
     
     if usercmd.menu then
-      game_err('Game exited')
+      gs.event_cb(gs, {type = 'error', message = 'Game exited'})
       return
     end
     
@@ -198,6 +202,18 @@ function scene:draw()
     x, xoff = 0
   end
   love.graphics.draw(canvas, x, winh/2, 0, sf, sf, xoff, height/2)
+  
+  love.graphics.setColor(0,0,0,100)
+  love.graphics.rectangle("fill", 90, winh - 60, 320, 60)
+  love.graphics.setColor(255,255,255,255)
+  
+  love.graphics.printf("HEALTH", 100, winh - 50, 100, "center")
+  love.graphics.printf("COINS", 200, winh - 50, 100, "center")
+  love.graphics.printf("RED COINS", 300, winh - 50, 100, "center")
+  love.graphics.printf(player.health, 100, winh - 25, 100, "center")
+  love.graphics.printf(player.coins, 200, winh - 25, 100, "center")
+  love.graphics.printf(gs.s.red_coins.found ..' / '.. gs.s.red_coins.sum, 300, winh - 25, 100, "center")
+
 end
 
 return scene

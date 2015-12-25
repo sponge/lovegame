@@ -82,6 +82,7 @@ e.init = function(s)
     s.media.snd_wallslide:setLooping(true)
     s.media.snd_skid = love.audio.newSource("base/skid.wav", "static")
     s.media.snd_bump = love.audio.newSource("base/bump.wav", "static")
+    s.media.snd_hurt = love.audio.newSource("base/hurt.wav", "static")
 
   end
 end
@@ -98,10 +99,14 @@ e.spawn = function(s, ent)
   ent.will_pogo = false
   ent.wall_sliding = false
   ent.stun_time = 0
+  ent.invuln_time = 0
   ent.drawx = 3
   ent.drawy = -2
   ent.collision = 'slide'
   ent.accel_type = 0
+  ent.coins = 0
+  ent.health = 6
+  ent.take_damage = 'player'
   
   s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
 end
@@ -287,10 +292,31 @@ e.draw = function(s, ent)
     love.graphics.setColor(255,255,255,255)
   end
   
+  if s.time < ent.invuln_time then
+    love.graphics.setColor(255,255,255,100)
+  end
+  
   love.graphics.draw(s.media.player, s.media.player_frames[ent.anim_frame], x, ent.y + ent.drawy, 0, sx, 1)
+  
+  love.graphics.setColor(255,255,255,255)
   
   if ent.dbg then
     love.graphics.print(ent.dbg, ent.x, ent.y)
+  end
+end
+
+e.take_damage = function(s, ent, amount)
+  if s.time < ent.invuln_time then
+    return
+  end
+  
+  ent.invuln_time = s.time + 1
+  ent.health = ent.health - amount
+  
+  if ent.health <= 0 then
+    s.event_cb(s, {type = 'death', ent = ent.number})
+  else
+    s.event_cb(s, {type = 'sound', name = 'hurt'})
   end
 end
 

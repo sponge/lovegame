@@ -6,8 +6,7 @@ local kbmappings = {
   up = 'up',
   down = 'down',
   jump = 'z',
-  run = 'x',
-  shoot = 'c',
+  attack = 'x',
   menu = 'escape',
 }
 
@@ -17,8 +16,7 @@ local padmappings = {
   up = 'dpup',
   down = 'dpdown',
   jump = 'a',
-  run = 'x',
-  shoot = 'b',
+  attack = 'x',
   menu = 'start',
 }
 
@@ -46,7 +44,7 @@ local function isKeyboardDown(action)
 end
 
 local function getInputs()
-  local usercmd = { left = 0, right = 0, up = 0, down = 0, jump = false, run = false, shoot = false, menu = false }
+  local usercmd = { left = 0, right = 0, up = 0, down = 0, jump = false, attack = false, menu = false }
   for i, v in pairs(usercmd) do
     usercmd[i] = isKeyboardDown(i) or isGamepadDown(i)
   end

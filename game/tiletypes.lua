@@ -152,6 +152,13 @@ local smw = {
     solid = false,
     platform = true
   },
+  
+  [1645] = {
+    num = 1645,
+    solid = true,
+    platform = false,
+    tile_entity = 'red_coin'
+  },
 }
 
 local keen3 = {}
