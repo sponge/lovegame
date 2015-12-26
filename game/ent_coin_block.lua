@@ -1,4 +1,5 @@
 local Entity = require 'game/entity'
+local Easing = require 'game/easing'
 
 local e = {}
 
@@ -20,6 +21,7 @@ e.spawn = function(s, ent)
   ent.collision = 'slide'
   ent.item = 'coin'
   ent.active = true
+  ent.hit_time = nil
   s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
 end
 
@@ -27,9 +29,13 @@ e.think = function(s, ent, dt)
   
 end
 
+local DURATION = 0.08
+
 e.draw = function(s, ent)
   local i = ent.active and (math.floor(s.time * 8) % 4) + 1 or 5
-  love.graphics.draw(s.media.coin_block, s.media.coin_block_frames[i], ent.x, ent.y, 0, 1, 1)
+  local y = (ent.hit_time == nil or s.time > ent.hit_time + DURATION) and ent.y or Easing.linear(s.time - ent.hit_time, ent.y, -4, DURATION)
+  
+  love.graphics.draw(s.media.coin_block, s.media.coin_block_frames[i], ent.x, y, 0, 1, 1)
 end
 
 e.collide = function(s, ent, col)
@@ -46,6 +52,7 @@ e.collide = function(s, ent, col)
   col.item.coins = col.item.coins + 1
   
   ent.active = false
+  ent.hit_time = s.time
 end
 
 return e
