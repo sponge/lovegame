@@ -21,6 +21,7 @@ end
 function gs:leave()
   vid:pause()
   vid = nil
+  love.audio.stop()
 end
 
 function gs:keypressed(key, code, isrepeat)

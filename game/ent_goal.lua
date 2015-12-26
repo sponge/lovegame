@@ -44,7 +44,7 @@ e.collide = function(s, ent, col)
     return
   end
   
-  s.s.goal_time = s.time + 11
+  s.s.goal_time = s.time + 10
   s.event_cb(s, {type = 'sound', name = 'goal'})
 end
 

@@ -3,6 +3,8 @@ local GameState = require 'gamestate'
 local GameFSM = require 'game/gamefsm'
 local Camera = require 'game/camera'
 local InputManager = require 'input'
+local Easing = require 'game/easing'
+
 
 local st_console = require 'st_console'
 local st_debug = require 'st_debug'
@@ -100,6 +102,7 @@ function scene:leave()
   currgame = {}
   tileInfo = {}
   canvas = nil
+  love.audio.stop()
 end
 
 function scene:update(dt)
@@ -208,7 +211,13 @@ function scene:draw()
   if GameState.current() == st_debug then
     x, xoff = 0
   end
-  love.graphics.draw(canvas, x, winh/2, 0, sf, sf, xoff, height/2)
+  
+  local y = winh/2
+  if gs.s.goal_time ~= nil and gs.time + 1.5 >= gs.s.goal_time then
+    y = Easing.inBack(gs.time - gs.s.goal_time + 1.5, winh/2, winh/2, 0.6)
+  end
+  
+  love.graphics.draw(canvas, x, y, 0, sf, sf, xoff, height/2)
   
   love.graphics.setColor(0,0,0,100)
   love.graphics.rectangle("fill", 90, winh - 60, 320, 60)
