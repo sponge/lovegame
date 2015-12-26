@@ -192,7 +192,7 @@ function love.draw()
   
   if Gamestate.current() ~= st_console then
     local y = 20
-    y = addDebugLine(y, "FPS:",    love.timer.getFPS())
+    y = addDebugLine(y, "FPS:",    love.timer.getFPS(), string.format("avg %.1fms", love.timer.getAverageDelta( )*1000))
     y = addDebugLine(y, "Memory:", math.floor(collectgarbage("count")))
     y = addDebugLine(y, "",        "Time",                  "Max",                     "% (del resets)")
     y = addDebugLine(y, "Frame:",  measure('get','frame'),  measure('getmax','frame'),  measure('getpct','frame'))

@@ -56,7 +56,8 @@
  "orientation":"orthogonal",
  "properties":
     {
-
+     "author":"sponge",
+     "title":"slightly less stolen test map"
     },
  "renderorder":"right-down",
  "tileheight":16,

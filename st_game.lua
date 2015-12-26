@@ -7,7 +7,7 @@ local InputManager = require 'input'
 local st_console = require 'st_console'
 local st_debug = require 'st_debug'
 local st_win = require 'st_win'
-
+local st_levelintro = require 'st_levelintro'
 
 local abs = math.abs
 local floor = math.floor
@@ -16,6 +16,7 @@ local max = math.max
 local min = math.min
 
 local gs = {}
+local currmap = nil
 
 local spritebatches = {}
 local tileInfo = {}
@@ -34,7 +35,7 @@ local event_cb = function(s, ev)
   elseif ev.type == 'stopsound' then
     love.audio.stop(s.media['snd_'.. ev.name])
   elseif ev.type == 'death' then
-    game_err('YOU ARE DEAD!')
+    GameState.switch(scene, currmap)
   elseif ev.type == 'win' then
     GameState.switch(st_win)
   elseif ev.type == 'error' then
@@ -46,8 +47,12 @@ function scene:enter(current, mapname)
   local err = nil
   local level_json, _ = love.filesystem.read(mapname)
   
+  currmap = mapname
   gs = GameFSM.init(level_json, event_cb)
-  currgame = gs
+  
+  GameState.push(st_levelintro, gs)
+  
+  currgame = gs -- global for the debugger
   
   for _, v in pairs(gs.cvars) do
     Console:registercvar(v)

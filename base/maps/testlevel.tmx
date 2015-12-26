@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="16" tileheight="16" backgroundcolor="#a8a8a8" nextobjectid="26">
+ <properties>
+  <property name="author" value="sponge"/>
+  <property name="title" value="slightly less stolen test map"/>
+ </properties>
  <tileset firstgid="1" name="keen1" tilewidth="16" tileheight="16" tilecount="611">
   <image source="../keen1.png" width="208" height="752"/>
  </tileset>

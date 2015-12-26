@@ -139,7 +139,9 @@
  "orientation":"orthogonal",
  "properties":
     {
-     "background":"base\/smw_bg.png"
+     "author":"sponge",
+     "background":"base\/smw_bg.png",
+     "title":"not stolen test map"
     },
  "renderorder":"right-down",
  "tileheight":16,
