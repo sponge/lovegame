@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="16" tileheight="16" backgroundcolor="#a8a8a8" nextobjectid="26">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="16" tileheight="16" backgroundcolor="#a8a8a8" nextobjectid="27">
  <properties>
   <property name="author" value="sponge"/>
   <property name="title" value="slightly less stolen test map"/>
@@ -120,5 +120,6 @@
  </layer>
  <objectgroup color="#8f84a4" name="objects">
   <object id="22" type="player_start" gid="493" x="48" y="768" width="16" height="24"/>
+  <object id="26" type="goal" x="864" y="732" width="32" height="37"/>
  </objectgroup>
 </map>
