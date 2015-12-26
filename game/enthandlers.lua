@@ -6,6 +6,7 @@ local ent_funcs = {
   coin_block = require 'game/ent_coin_block',
   goomba = require 'game/ent_goomba',
   turtle = require 'game/ent_turtle',
+  goal = require 'game/ent_goal',
 }
 
 return ent_funcs

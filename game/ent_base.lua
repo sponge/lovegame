@@ -1,19 +1,29 @@
 local Entity = require 'game/entity'
 
-local function init(s)
+local e = {}
+
+e.init = function(s)
+
+end
+
+e.spawn = function(s, ent)
+
+end
+
+e.think = function(s, ent, dt)
   
 end
 
-local function spawn(s, ent)
-  
+e.draw = function(s, ent)
+
 end
 
-local function think(s, ent, dt)
-  
+e.collide = function(s, ent, col)
+
 end
 
-local function draw(s, ent)
-  
+e.take_damage = function(s, ent, dmg)
+
 end
 
-return { init = init, spawn = spawn, think = think, draw = draw }
+return e

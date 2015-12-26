@@ -6,6 +6,8 @@ local InputManager = require 'input'
 
 local st_console = require 'st_console'
 local st_debug = require 'st_debug'
+local st_win = require 'st_win'
+
 
 local abs = math.abs
 local floor = math.floor
@@ -33,6 +35,8 @@ local event_cb = function(s, ev)
     love.audio.stop(s.media['snd_'.. ev.name])
   elseif ev.type == 'death' then
     game_err('YOU ARE DEAD!')
+  elseif ev.type == 'win' then
+    GameState.switch(st_win)
   elseif ev.type == 'error' then
     game_err(ev.message)
   end
@@ -75,7 +79,6 @@ function scene:enter(current, mapname)
   
   gs.cam:lookAt(gs.s.entities[playerNum].x, gs.s.entities[playerNum].y)
   camLockY = gs.cam.y
-
 end
 
 function scene:leave()

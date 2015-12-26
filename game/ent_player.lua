@@ -114,7 +114,7 @@ e.spawn = function(s, ent)
   s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
 end
 
-e.think = function(s, ent, dt) 
+e.think = function(s, ent, dt)     
   setup_physics(s, ent)
   
   ent.on_ground = ent.dy >= 0 and Entity.isTouchingSolid(s, ent, 'down')
@@ -128,6 +128,12 @@ e.think = function(s, ent, dt)
   else
     ent.dy = ent.dy + (ent.gravity*dt)
     ent.can_jump = false
+  end
+  
+  if s.s.goal_time ~= nil then
+    for i in pairs(ent.command) do
+      ent.command[i] = false
+    end
   end
   
   -- check for wall sliding
@@ -345,6 +351,10 @@ e.draw = function(s, ent)
 end
 
 e.take_damage = function(s, ent, amount)
+  if s.s.goal_time ~= nil then
+    return
+  end
+  
   if s.time < ent.invuln_time then
     return
   end
