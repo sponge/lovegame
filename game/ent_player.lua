@@ -94,6 +94,7 @@ e.spawn = function(s, ent)
   ent.can_jump = false
   ent.did_jump = false
   ent.can_double_jump = false
+  ent.can_wall_jump = false
   ent.jump_held = false
   ent.will_pogo = false
   ent.wall_sliding = false
@@ -137,11 +138,14 @@ e.think = function(s, ent, dt)
   
   -- check for wall sliding
   local wasSlide = ent.wall_sliding
+  local leftWall = ent.command.left and Entity.isTouchingSolid(s, ent, 'left')
+  local rightWall = ent.command.right and Entity.isTouchingSolid(s, ent, 'right')
   ent.wall_sliding = false
+  ent.can_wall_jump = not ent.on_ground and (leftWall or rightWall)
   if not ent.on_ground and ent.dy > 0 then
     -- check for a wall in the held direction
-    ent.wall_sliding = (ent.command.left and Entity.isTouchingSolid(s, ent, 'left')) and 'left' or false
-    ent.wall_sliding = (ent.command.right and Entity.isTouchingSolid(s, ent, 'right')) and 'right' or ent.wall_sliding
+    ent.wall_sliding = leftWall and 'left' or false
+    ent.wall_sliding = rightWall and 'right' or ent.wall_sliding
   end
   
   if not wasSlide and ent.wall_sliding then
@@ -181,8 +185,8 @@ e.think = function(s, ent, dt)
   -- check for other jumps
   elseif ent.command.jump == true and ent.jump_held == false then
     -- check for walljump
-    if ent.wall_sliding then
-      ent.dy = ent.jump_height
+    if ent.can_wall_jump then
+      ent.dy = ent.double_jump_height
       ent.dx = ent.wall_jump_x * (ent.command.right and -1 or 1)
       ent.stun_time = s.time + 1/10
       ent.jump_held = true
@@ -249,10 +253,14 @@ e.think = function(s, ent, dt)
   end
   
   -- cap intended x/y speed
+  local uncappeddy = ent.dy
   ent.dx = max(-ent.max_speed, min(ent.max_speed, ent.dx))
+  ent.dy = max(-ent.terminal_velocity, min(ent.terminal_velocity, ent.dy))
   
   -- start the actual move
   local xCollided, yCollided = Entity.move(s, ent)
+  
+  ent.dy = uncappeddy
   
   -- walls always stop momentum
   if xCollided then
@@ -267,6 +275,9 @@ e.think = function(s, ent, dt)
     ent.dy = 0
   -- conserve some momentum (note this will get hit for several frames after first collision)
   elseif yCollided and ent.dy < 0 then
+    ent.dy = 0
+    s.event_cb(s, {type = 'sound', name = 'headbump'})
+
   end
   
   if s.time < ent.attack_time then
