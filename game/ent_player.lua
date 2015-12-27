@@ -26,7 +26,6 @@ local function setup_physics(s, ent)
   ent.pogo_jump_height = cv.p_pogojumpheight.int
   ent.double_jump_height = cv.p_doublejumpheight.int
   ent.early_jump_end_modifier = cv.p_earlyjumpendmodifier.value
-  ent.head_bump_modifier = cv.p_headbumpmodifier.value
 
   ent.wall_slide_speed = cv.p_wallslidespeed.int
   ent.wall_jump_x = cv.p_walljumpx.int
@@ -83,7 +82,7 @@ e.init = function(s)
     s.media.snd_skid = love.audio.newSource("base/skid.wav", "static")
     s.media.snd_bump = love.audio.newSource("base/bump.wav", "static")
     s.media.snd_hurt = love.audio.newSource("base/hurt.wav", "static")
-
+    s.media.snd_headbump = love.audio.newSource("base/headbump.wav", "static")
   end
 end
 
@@ -251,7 +250,6 @@ e.think = function(s, ent, dt)
   
   -- cap intended x/y speed
   ent.dx = max(-ent.max_speed, min(ent.max_speed, ent.dx))
-  ent.dy = min(ent.terminal_velocity, ent.dy)
   
   -- start the actual move
   local xCollided, yCollided = Entity.move(s, ent)
@@ -269,7 +267,6 @@ e.think = function(s, ent, dt)
     ent.dy = 0
   -- conserve some momentum (note this will get hit for several frames after first collision)
   elseif yCollided and ent.dy < 0 then
-    ent.dy = ent.dy * ent.head_bump_modifier
   end
   
   if s.time < ent.attack_time then

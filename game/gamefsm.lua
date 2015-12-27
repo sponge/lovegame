@@ -69,23 +69,22 @@ local function init(str_level, event_cb)
   }
   
   local cvar_table = {
-    {"p_gravity", 375},
+    {"p_gravity", 625},
     {"p_speed", 170},
-    {"p_terminalvel", 300},
-    {"p_accel", 150},
+    {"p_terminalvel", 250},
+    {"p_accel", 165},
     {"p_skidaccel", 420},
-    {"p_airaccel", 150},
-    {"p_turnairaccel", 230},
+    {"p_airaccel", 175},
+    {"p_turnairaccel", 325},
     {"p_airfriction", 100},
     {"p_groundfriction", 300},
-    {"p_jumpheight", -190},
-    {"p_speedjumpbonus", -15},
+    {"p_jumpheight", -290},
+    {"p_speedjumpbonus", -45},
     {"p_pogojumpheight", -245},
-    {"p_doublejumpheight", -145},
-    {"p_earlyjumpendmodifier", 0.6},
-    {"p_headbumpmodifier", 0.5},
+    {"p_doublejumpheight", -245},
+    {"p_earlyjumpendmodifier", 0.5},
     {"p_wallslidespeed", 45},
-    {"p_walljumpx", 100},
+    {"p_walljumpx", 95},
   }
   
   for _, v in ipairs(cvar_table) do

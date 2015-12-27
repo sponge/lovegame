@@ -29,11 +29,11 @@ e.think = function(s, ent, dt)
   
 end
 
-local DURATION = 0.08
+local DURATION = 0.12
 
 e.draw = function(s, ent)
   local i = ent.active and (math.floor(s.time * 8) % 4) + 1 or 5
-  local y = (ent.hit_time == nil or s.time > ent.hit_time + DURATION) and ent.y or Easing.linear(s.time - ent.hit_time, ent.y, -4, DURATION)
+  local y = (ent.hit_time == nil or s.time > ent.hit_time + DURATION) and ent.y or Easing.linear(s.time - ent.hit_time, ent.y-4, 4, DURATION)
   
   love.graphics.draw(s.media.coin_block, s.media.coin_block_frames[i], ent.x, y, 0, 1, 1)
 end

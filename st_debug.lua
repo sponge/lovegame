@@ -17,7 +17,6 @@ local cvars = {
   "p_pogojumpheight",
   "p_doublejumpheight",
   "p_earlyjumpendmodifier",
-  "p_headbumpmodifier",
   "p_wallslidespeed",
   "p_walljumpx",
 }
