@@ -182,7 +182,7 @@ function scene:draw()
   end
   
   if gs.media.bg then
-    local x = max(0, floor(cminx/512))
+    local x = cminx * 0.5
     while x < cmaxx do
       love.graphics.draw(gs.media.bg, x, gs.l.height*gs.l.tileheight - gs.media.bg:getHeight())
       x = x + gs.media.bg:getWidth()
