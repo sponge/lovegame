@@ -44,11 +44,13 @@ function scene:leave()
 end
 
 function scene:update(dt)
-  local width, height = love.graphics.getDimensions()
-
   if self.from.update ~= nil then
     self.from:update(dt)
   end
+end
+
+function scene:draw()
+  local width, height = love.graphics.getDimensions()
   
   gui.group{grow = "down", pos = {width-400, 0}, size={390,30}, function()
     for _, v in ipairs(cvars) do
@@ -73,11 +75,6 @@ function scene:update(dt)
       end
     end
   end}
-
-end
-
-function scene:draw()
-  local width, height = love.graphics.getDimensions()
 
   self.from:draw()
   love.graphics.setColor(0,0,0,200)
