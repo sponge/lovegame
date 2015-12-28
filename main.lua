@@ -18,6 +18,8 @@ local st_game = require "st_game"
 local st_console = require "st_console"
 local st_debug = require "st_debug"
 
+local r_drawdebug = nil
+
 function game_err(msg)
   st_mainmenu.error = msg
   Gamestate.switch(st_mainmenu)
@@ -98,6 +100,8 @@ function love.load(arg)
   Console:addcommand("quit", con_quit)
   Console:addcvar("vid_vsync", flags.vsync, cb_vid_vsync)
   Console:addcvar("vid_fullscreen", flags.fullscreen, cb_vid_fullscreen)
+  
+  r_drawdebug = Console:addcvar("r_drawdebug", 0)
   
   -- we'll handle draw ourselves so we can draw debug stuff
   local callbacks = { 'errhand', 'update' }
@@ -190,16 +194,18 @@ end
 function love.draw()
   Gamestate.draw()
   
-  if Gamestate.current() ~= st_console then
+  if r_drawdebug.int > 0 and Gamestate.current() ~= st_console then
     local y = 20
     y = addDebugLine(y, "FPS:",    love.timer.getFPS(), string.format("avg %.1fms", love.timer.getAverageDelta( )*1000))
-    y = addDebugLine(y, "Memory:", math.floor(collectgarbage("count")))
-    y = addDebugLine(y, "",        "Time",                  "Max",                     "% (del resets)")
-    y = addDebugLine(y, "Frame:",  measure('get','frame'),  measure('getmax','frame'),  measure('getpct','frame'))
-    y = addDebugLine(y, "Events:", measure('get','events'), measure('getmax','events'), measure('getpct','events'))
-    y = addDebugLine(y, "Update:", measure('get','update'), measure('getmax','update'), measure('getpct','update'))
-    y = addDebugLine(y, "Draw:",   measure('get','draw'),   measure('getmax','draw'),   measure('getpct','draw'))
-    y = addDebugLine(y, "GC:",     measure('get','gc'),     measure('getmax','gc'),     measure('getpct','gc'))
+    if r_drawdebug.int > 1 then
+      y = addDebugLine(y, "Memory:", math.floor(collectgarbage("count")))
+      y = addDebugLine(y, "",        "Time",                  "Max",                     "% (del resets)")
+      y = addDebugLine(y, "Frame:",  measure('get','frame'),  measure('getmax','frame'),  measure('getpct','frame'))
+      y = addDebugLine(y, "Events:", measure('get','events'), measure('getmax','events'), measure('getpct','events'))
+      y = addDebugLine(y, "Update:", measure('get','update'), measure('getmax','update'), measure('getpct','update'))
+      y = addDebugLine(y, "Draw:",   measure('get','draw'),   measure('getmax','draw'),   measure('getpct','draw'))
+      y = addDebugLine(y, "GC:",     measure('get','gc'),     measure('getmax','gc'),     measure('getpct','gc'))
+    end
   end
 end
   
