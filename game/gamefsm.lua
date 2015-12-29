@@ -71,10 +71,10 @@ local function init(str_level, event_cb)
   local cvar_table = {
     {"p_gravity", 625},
     {"p_speed", 170},
-    {"p_terminalvel", 250},
-    {"p_accel", 165},
+    {"p_terminalvel", 230},
+    {"p_accel", 175},
     {"p_skidaccel", 420},
-    {"p_airaccel", 175},
+    {"p_airaccel", 190},
     {"p_turnairaccel", 325},
     {"p_airfriction", 100},
     {"p_groundfriction", 300},
