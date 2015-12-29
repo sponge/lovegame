@@ -20,6 +20,10 @@ function scene:textinput(t)
   input = input .. t
 end
 
+function scene:wheelmoved(dx, dy)
+  Console.scroll_offset = math.min(#Console.lines, math.max(1, Console.scroll_offset - dy))
+end
+
 function scene:keypressed(key, code, isrepeat)
   if key == "pageup" then
     if love.keyboard.isDown("lalt", "ralt") then

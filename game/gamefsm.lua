@@ -80,7 +80,7 @@ local function init(str_level, event_cb)
     {"p_groundfriction", 300},
     {"p_jumpheight", -290},
     {"p_speedjumpbonus", -45},
-    {"p_pogojumpheight", -245},
+    {"p_pogojumpheight", -350},
     {"p_doublejumpheight", -245},
     {"p_earlyjumpendmodifier", 0.5},
     {"p_wallslidespeed", 45},

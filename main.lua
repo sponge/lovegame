@@ -1,9 +1,10 @@
-local Strictness = require "game/strictness"
+
 if arg and arg[#arg] ~= "-debug" then
+  local Strictness = require "game/strictness"
   Strictness.strict(_G)
 else
   require("mobdebug").start()
-  --require("mobdebug").off()
+  require("mobdebug").off()
 end
 
 -- globals

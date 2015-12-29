@@ -5,7 +5,6 @@ local Camera = require 'game/camera'
 local InputManager = require 'input'
 local Easing = require 'game/easing'
 
-
 local st_console = require 'st_console'
 local st_debug = require 'st_debug'
 local st_win = require 'st_win'

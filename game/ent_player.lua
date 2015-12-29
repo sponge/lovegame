@@ -273,11 +273,9 @@ e.think = function(s, ent, dt)
       s.event_cb(s, {type = 'sound', name = 'bump'})
     end
     ent.dy = 0
-  -- conserve some momentum (note this will get hit for several frames after first collision)
   elseif yCollided and ent.dy < 0 then
     ent.dy = 0
     s.event_cb(s, {type = 'sound', name = 'headbump'})
-
   end
   
   if s.time < ent.attack_time then
