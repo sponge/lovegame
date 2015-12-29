@@ -25,13 +25,13 @@ function scene:keypressed(key, code, isrepeat)
     if love.keyboard.isDown("lalt", "ralt") then
       Console.scroll_offset = 1
     else
-      Console.scroll_offset = math.max(1, Console.scroll_offset - 6)
+      Console.scroll_offset = math.max(1, Console.scroll_offset - 3)
     end
   elseif key == "pagedown" then
     if love.keyboard.isDown("lalt", "ralt") then
       Console.scroll_offset = #Console.lines
     else
-      Console.scroll_offset = math.min(#Console.lines, Console.scroll_offset + 6)
+      Console.scroll_offset = math.min(#Console.lines, Console.scroll_offset + 3)
     end
   elseif key == "up" then
     input = Console:movehistory(-1)
@@ -109,10 +109,14 @@ function scene:draw()
     love.graphics.setColor(255, 255, 255, 255)
   end
 
+  local wrappedlines = nil
   for i = Console.scroll_offset, 1, -1 do
     if y < 0 then break end
-    love.graphics.print(Console.lines[i], x, y)
-    y = y - font:getHeight()
+    _, wrappedlines = font:getWrap(Console.lines[i], w - 20)
+    for _, l in ipairs(wrappedlines) do
+      love.graphics.print(l, x, y)
+      y = y - font:getHeight()
+    end
   end
 end
 
