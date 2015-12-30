@@ -2,7 +2,9 @@ local entity = {}
 entity.__index = entity
 entity.__tostring = function(ent) return "Entity: " .. ent.classname end
 
-local function new(classname, x, y, w, h)
+local e = {}
+
+e.new = function(classname, x, y, w, h)
   assert(classname and x and y and w and h, "Invalid entity")
 
 	return setmetatable({
@@ -16,12 +18,14 @@ local function new(classname, x, y, w, h)
       h = h,
       drawx = 0,
       drawy = 0,
-      collision = 'cross',
+      type = nil,
+      collision = nil,
+      can_take_damage = false,
       command = {}
     }, entity)
 end
 
-local function isTouchingSolid(s, ent, side)
+e.isTouchingSolid = function(s, ent, side)
   local touching = false
   local cols = nil
   
@@ -49,7 +53,7 @@ local function isTouchingSolid(s, ent, side)
   return touching, cols
 end
 
-local function move(s, ent)
+e.move = function(s, ent)
   local xCols, yCols, len = {}, {}, nil
   local moves = {x = {0,0}, y={0,0}}
   local entCol, tileCol = false
@@ -110,6 +114,18 @@ local function move(s, ent)
   return xCollided, yCollided, xCols, yCols
 end
 
+e.hurt = function(s, ent, amt, inflictor)
+  if not ent.can_take_damage then
+    return
+  end
+  
+  if s.ent_handlers[ent.classname] == nil or s.ent_handlers[ent.classname].take_damage == nil then
+    return
+  end
+  
+  s.ent_handlers[ent.classname].take_damage(s, ent, amt, inflictor)
+end
+
 -- the module
-return setmetatable({new = new, isTouchingSolid = isTouchingSolid, move = move},
+return setmetatable(e,
 	{__call = function(_, ...) return new(...) end})

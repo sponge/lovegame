@@ -68,9 +68,9 @@ e.collide = function(s, ent, col)
   end
   
   if col.normal.x == 0 and col.normal.y == -1 then
-    s.ent_handlers[ent.classname].take_damage(s, ent, 1)
-  elseif col.item.can_take_damage then
-    s.ent_handlers[col.item.classname].take_damage(s, col.item, 1)
+    Entity.hurt(s, ent, 1, col.item)
+  else
+    Entity.hurt(s, col.item, 1, ent)
   end
 end
 

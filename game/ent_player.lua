@@ -290,9 +290,7 @@ e.think = function(s, ent, dt)
   if s.time < ent.attack_time then
     local hits, len = s.bump:queryRect(ent.anim_mirror and ent.x - 13 or ent.x + ent.w, ent.y + ent.drawy + 11, 13, 5)
     for i=1, len do
-      if hits[i].can_take_damage then
-        s.ent_handlers[hits[i].classname].take_damage(s, hits[i], 1)
-      end
+      Entity.hurt(s, hits[i], 1, ent)
     end
   end
 

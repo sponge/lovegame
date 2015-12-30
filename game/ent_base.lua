@@ -22,7 +22,7 @@ e.collide = function(s, ent, col)
 
 end
 
-e.take_damage = function(s, ent, dmg)
+e.take_damage = function(s, ent, dmg, inflictor)
 
 end
 
