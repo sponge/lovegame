@@ -197,6 +197,14 @@ function scene:draw()
     ent = gs.s.entities[i]
     if ent ~= nil and gs.ent_handlers[ent.classname].draw ~= nil then
       gs.ent_handlers[ent.classname].draw(gs, ent)
+      if ent.dbg then
+        love.graphics.setColor(255,0,0,255)
+        love.graphics.rectangle("fill", ent.x, ent.y, ent.w, ent.h)
+        love.graphics.setColor(255,255,255,255)
+        if type(ent.dbg) ~= 'boolean' then
+          love.graphics.print(tostring(ent.dbg), ent.x, ent.y)
+        end
+      end
     end
   end
 

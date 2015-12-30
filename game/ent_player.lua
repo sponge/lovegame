@@ -323,12 +323,6 @@ e.draw = function(s, ent)
     x = ent.x - ent.drawx
   end
   
-  if ent.dbg then
-    love.graphics.setColor(255,0,0,255)
-    love.graphics.rectangle("fill", ent.x, ent.y, ent.w, ent.h)
-    love.graphics.setColor(255,255,255,255)
-  end
-  
   if s.time < ent.invuln_time then
     love.graphics.setColor(255,255,255,100)
   end
@@ -348,12 +342,7 @@ e.draw = function(s, ent)
       love.graphics.polygon("line", swordx, swordy, swordx+13, swordy + 2.5, swordx, swordy +5)
     end
   end
-  
   love.graphics.setColor(255,255,255,255)
-  
-  if ent.dbg then
-    love.graphics.print(ent.dbg, ent.x, ent.y)
-  end
 end
 
 e.take_damage = function(s, ent, amount)
