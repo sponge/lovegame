@@ -50,16 +50,16 @@ local function isTouchingSolid(s, ent, side)
 end
 
 local function move(s, ent)
-  local cols, len = nil
+  local xCols, yCols, len = {}, {}, nil
   local moves = {x = {0,0}, y={0,0}}
   local entCol, tileCol = false
   local xCollided, yCollided = false
   
-  moves.x[1], _, cols, len = s.bump:check(ent, ent.x + (ent.dx*s.dt), ent.y, s.bumpfilter)
+  moves.x[1], _, xCols, len = s.bump:check(ent, ent.x + (ent.dx*s.dt), ent.y, s.bumpfilter)
   for i=1, len do
-    if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, cols[i]) end
-    if s.ent_handlers[cols[i].other.classname].collide then s.ent_handlers[cols[i].other.classname].collide(s, cols[i].other, cols[i]) end
-    if cols[i].other.collision ~= 'cross' then
+    if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, xCols[i]) end
+    if s.ent_handlers[xCols[i].other.classname].collide then s.ent_handlers[xCols[i].other.classname].collide(s, xCols[i].other, xCols[i]) end
+    if xCols[i].other.collision ~= 'cross' then
       entCol = true
     end
   end
@@ -90,11 +90,11 @@ local function move(s, ent)
   entCol = false
   tileCol = false
   
-  _, moves.y[1], cols, len = s.bump:check(ent, ent.x, ent.y + (ent.dy*s.dt), s.bumpfilter)
+  _, moves.y[1], yCols, len = s.bump:check(ent, ent.x, ent.y + (ent.dy*s.dt), s.bumpfilter)
   for i=1, len do
-    if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, cols[i]) end
-    if s.ent_handlers[cols[i].other.classname].collide then s.ent_handlers[cols[i].other.classname].collide(s, cols[i].other, cols[i]) end
-    if cols[i].other.collision ~= 'cross' then
+    if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, yCols[i]) end
+    if s.ent_handlers[yCols[i].other.classname].collide then s.ent_handlers[yCols[i].other.classname].collide(s, yCols[i].other, yCols[i]) end
+    if yCols[i].other.collision ~= 'cross' then
       entCol = true
       break
     end
@@ -112,7 +112,7 @@ local function move(s, ent)
 
   s.bump:update(ent, ent.x, ent.y)
   
-  return xCollided, yCollided
+  return xCollided, yCollided, xCols, yCols
 end
 
 -- the module

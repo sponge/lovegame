@@ -24,7 +24,12 @@ e.spawn = function(s, ent)
   ent.on_ground = false
   ent.y = ent.y + 1
   ent.h = ent.h - 1
-  ent.collision = 'touch'
+  ent.type = 'enemy'
+  ent.collision = {
+    player = 'cross',
+    enemy = 'touch',
+    world = 'slide',
+  }
   ent.can_take_damage = true
   ent.active = true
   ent.dead_time = nil

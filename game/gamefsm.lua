@@ -27,10 +27,11 @@ local function parse_color(col)
     return rgb
 end
 
-local inited_ents = {}
-
+-- (item|other).collision can be playertrigger, player, world, enemy
 local filter = function(item, other)
-  return other.collision
+  if item.collision == nil then return nil end
+  if item.collision[other.type] == nil then return nil end
+  return item.collision[other.type]
 end
 
 -- tilecollider functions

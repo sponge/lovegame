@@ -18,7 +18,7 @@ e.init = function(s)
 end
 
 e.spawn = function(s, ent)
-  ent.collision = 'slide'
+  ent.type = 'world'
   ent.item = 'coin'
   ent.active = true
   ent.hit_time = nil

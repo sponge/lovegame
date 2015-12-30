@@ -14,7 +14,7 @@ e.init = function(s)
 end
 
 e.spawn = function(s, ent)
-  ent.collision = "cross"
+  ent.type = "playertrigger"
   ent.goal_time = 0
   ent.y = ent.y + ent.h + 4 -- FIXME: why???
   

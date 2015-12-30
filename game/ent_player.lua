@@ -105,7 +105,12 @@ e.spawn = function(s, ent)
   ent.attack_held = false
   ent.drawx = 5
   ent.drawy = -2
-  ent.collision = 'slide'
+  ent.type = 'player'
+  ent.collision = {
+    enemy = 'cross',
+    playertrigger = 'cross',
+    world = 'slide',
+  }
   ent.accel_type = 0
   ent.coins = 0
   ent.health = 6
@@ -258,7 +263,7 @@ e.think = function(s, ent, dt)
   ent.dy = max(-ent.terminal_velocity, min(ent.terminal_velocity, ent.dy))
   
   -- start the actual move
-  local xCollided, yCollided = Entity.move(s, ent)
+  local xCollided, yCollided, xCols, yCols = Entity.move(s, ent)
   
   ent.dy = uncappeddy
   
@@ -269,10 +274,16 @@ e.think = function(s, ent, dt)
   
   -- stop them if they fall onto something solid
   if yCollided and ent.dy > 0 then
-    if not ent.will_pogo and ent.dy >= ent.terminal_velocity * 0.75 then
+    if #yCols > 0 and yCols[1].other.type == 'enemy' then
+      ent.dy = ent.will_pogo and ent.pogo_jump_height or ent.jump_height
+      ent.dy = ent.dy * 0.75
+      ent.can_double_jump = true
+    elseif not ent.will_pogo and ent.dy >= ent.terminal_velocity * 0.75 then
       s.event_cb(s, {type = 'sound', name = 'bump'})
+      ent.dy = 0
+    else
+      ent.dy = 0
     end
-    ent.dy = 0
   elseif yCollided and ent.dy < 0 then
     ent.dy = 0
     s.event_cb(s, {type = 'sound', name = 'headbump'})
@@ -290,9 +301,6 @@ e.think = function(s, ent, dt)
 end
 
 e.collide = function(s, ent, col)
-  if col.other.classname == 'goomba' and col.normal.x == 0 and col.normal.y == -1 then
-    ent.dy = 2 * (ent.will_pogo and ent.pogo_jump_height or ent.jump_height)
-  end
 end
 
 e.draw = function(s, ent)

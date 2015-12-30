@@ -21,7 +21,7 @@ e.init = function(s)
 end
 
 e.spawn = function(s, ent)
-  ent.collision = 'cross'
+  ent.type = 'playertrigger'
   ent.w = 12
   ent.x = ent.x + 2
   s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
