@@ -45,6 +45,7 @@ e.collide = function(s, ent, col)
   end
   
   s.s.goal_time = s.time + 10
+  col.item.can_take_damage = false
   s.event_cb(s, {type = 'sound', name = 'goal'})
 end
 

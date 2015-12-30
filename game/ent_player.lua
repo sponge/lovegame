@@ -346,10 +346,6 @@ e.draw = function(s, ent)
 end
 
 e.take_damage = function(s, ent, amount)
-  if s.s.goal_time ~= nil then
-    return
-  end
-  
   if s.time < ent.invuln_time then
     return
   end

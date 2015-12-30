@@ -48,13 +48,6 @@ e.think = function(s, ent, dt)
   if touching then
     ent.dx = ent.dx * -1
   end
-  if cols ~= nil then
-    for i = 1, #cols do  
-      if cols[i].other.classname == 'player' and s.ent_handlers[cols[i].other.classname].take_damage then
-        s.ent_handlers[cols[i].other.classname].take_damage(s, cols[i].other, 1)
-      end
-    end
-  end
 
   local xCollided, yCollided = Entity.move(s, ent)
 end
@@ -64,10 +57,8 @@ e.draw = function(s, ent)
   love.graphics.draw(s.media.goomba, s.media.goomba_frames[i], ent.x, ent.y, 0, 1, 1)
 end
 
-e.collide = function(s, ent, col)
-  ent.dx = ent.dx * -1
-  
-  if col.item.classname ~= 'player' then
+e.collide = function(s, ent, col) 
+  if col.item.type ~= 'player' then
     return
   end
   
@@ -76,7 +67,6 @@ e.collide = function(s, ent, col)
   elseif col.item.can_take_damage then
     s.ent_handlers[col.item.classname].take_damage(s, col.item, 1)
   end
-  
 end
 
 e.take_damage = function(s, ent, dmg)
