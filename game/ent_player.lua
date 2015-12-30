@@ -273,17 +273,15 @@ e.think = function(s, ent, dt)
   end
   
   -- stop them if they fall onto something solid
-  if yCollided and ent.dy > 0 then
-    if #yCols > 0 and yCols[1].other.type == 'enemy' then
-      ent.dy = ent.will_pogo and ent.pogo_jump_height or ent.jump_height
-      ent.dy = ent.dy * 0.75
-      ent.can_double_jump = true
-    elseif not ent.will_pogo and ent.dy >= ent.terminal_velocity * 0.75 then
+  if #yCols > 0 and yCols[1].other.type == 'enemy' and yCols[1].normal.x == 0 and yCols[1].normal.y == -1 then
+    ent.dy = ent.will_pogo and ent.pogo_jump_height or ent.jump_height
+    ent.dy = ent.dy * 0.75
+    ent.can_double_jump = true
+  elseif yCollided and ent.dy > 0 and not ent.will_pogo then
+    ent.dy = 0
+    if ent.dy >= ent.terminal_velocity * 0.75 then
       s.event_cb(s, {type = 'sound', name = 'bump'})
-      ent.dy = 0
-    else
-      ent.dy = 0
-    end
+    end  
   elseif yCollided and ent.dy < 0 then
     ent.dy = 0
     s.event_cb(s, {type = 'sound', name = 'headbump'})

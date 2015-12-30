@@ -59,9 +59,7 @@ local function move(s, ent)
   for i=1, len do
     if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, xCols[i]) end
     if s.ent_handlers[xCols[i].other.classname].collide then s.ent_handlers[xCols[i].other.classname].collide(s, xCols[i].other, xCols[i]) end
-    if xCols[i].other.collision ~= 'cross' then
-      entCol = true
-    end
+    entCol = ent.x == moves.x[1]
   end
     
   -- check x first (slopes eventually?)
@@ -94,10 +92,7 @@ local function move(s, ent)
   for i=1, len do
     if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, yCols[i]) end
     if s.ent_handlers[yCols[i].other.classname].collide then s.ent_handlers[yCols[i].other.classname].collide(s, yCols[i].other, yCols[i]) end
-    if yCols[i].other.collision ~= 'cross' then
-      entCol = true
-      break
-    end
+    entCol = ent.y == moves.y[1]
   end
   
   if ent.dy > 0 then
