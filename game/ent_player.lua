@@ -177,7 +177,7 @@ e.think = function(s, ent, dt)
   end
   
   -- check if the player wants to pogo, but don't let a pogo start on the ground
-  if not ent.on_ground and not ent.will_pogo then
+  if not ent.on_ground and (ent.dy < 0 or not ent.will_pogo) then
     ent.will_pogo = ent.command.down
   end
   
