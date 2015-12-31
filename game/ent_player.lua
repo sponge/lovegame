@@ -91,7 +91,6 @@ e.spawn = function(s, ent)
   ent.anim_mirror = false
   ent.on_ground = false
   ent.last_ground_y = ent.y
-  ent.can_jump = false
   ent.did_jump = false
   ent.can_double_jump = false
   ent.can_wall_jump = false
@@ -127,13 +126,11 @@ e.think = function(s, ent, dt)
   
   -- reset some state if on ground, otherwise gravity
   if ent.on_ground then
-    ent.can_jump = true
     ent.did_jump = false
     ent.can_double_jump = true
     ent.last_ground_y = ent.y
   else
     ent.dy = ent.dy + (ent.gravity*dt)
-    ent.can_jump = false
   end
   
   if s.s.goal_time ~= nil then
@@ -184,7 +181,6 @@ e.think = function(s, ent, dt)
   -- check for pogo jump
   if ent.on_ground and ent.will_pogo then
     ent.dy = ent.pogo_jump_height
-    ent.can_jump = true
     ent.can_double_jump = true
     ent.did_jump = true
     ent.will_pogo = false
@@ -200,9 +196,8 @@ e.think = function(s, ent, dt)
       ent.did_jump = true
       s.event_cb(s, {type = 'sound', name = 'jump'})
     -- check for first jump
-    elseif ent.can_jump == true then
+    elseif ent.on_ground then
       ent.dy = ent.jump_height + (abs(ent.dx) >= ent.max_speed * 0.25 and ent.speed_jump_bonus or 0)
-      ent.can_jump = false
       ent.jump_held = true
       ent.can_double_jump = true
       ent.did_jump = true
