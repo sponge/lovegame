@@ -1,23 +1,23 @@
 local pad = nil
 
 local kbmappings = {
-  left = 'left',
-  right = 'right',
-  up = 'up',
-  down = 'down',
-  jump = 'z',
-  attack = 'x',
-  menu = 'escape',
+  left = {'left'},
+  right = {'right'},
+  up = {'up'},
+  down = {'down'},
+  jump = {'z','a'},
+  attack = {'x','s'},
+  menu = {'escape'},
 }
 
 local padmappings = {
-  left = 'dpleft',
-  right = 'dpright',
-  up = 'dpup',
-  down = 'dpdown',
-  jump = 'a',
-  attack = 'x',
-  menu = 'start',
+  left = {'dpleft'},
+  right = {'dpright'},
+  up = {'dpup'},
+  down = {'dpdown'},
+  jump = {'a'},
+  attack = {'x'},
+  menu = {'start'},
 }
 
 local function gamepadAdded(gamepad)
@@ -35,12 +35,12 @@ end
 local function isGamepadDown(action)
   if pad == nil then return false end
   if padmappings[action] == nil then return false end
-  return pad:isGamepadDown(padmappings[action])
+  return pad:isGamepadDown(unpack(padmappings[action]))
 end
 
 local function isKeyboardDown(action)
   if kbmappings[action] == nil then return false end
-  return love.keyboard.isDown(kbmappings[action])
+  return love.keyboard.isDown(unpack(kbmappings[action]))
 end
 
 local function getInputs()
