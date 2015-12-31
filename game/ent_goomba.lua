@@ -63,15 +63,11 @@ e.draw = function(s, ent)
 end
 
 e.collide = function(s, ent, col) 
-  if col.item.type ~= 'player' then
+  if col.item.type ~= 'player' or not ent.active then
     return
   end
   
-  if col.normal.x == 0 and col.normal.y == -1 then
-    Entity.hurt(s, ent, 1, col.item)
-  else
-    Entity.hurt(s, col.item, 1, ent)
-  end
+  Entity.hurt(s, col.item, 1, ent)
 end
 
 e.take_damage = function(s, ent, dmg)

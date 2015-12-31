@@ -97,6 +97,7 @@ e.spawn = function(s, ent)
   ent.can_wall_jump = false
   ent.jump_held = false
   ent.will_pogo = false
+  ent.will_bounce_enemy = false
   ent.wall_sliding = false
   ent.stun_time = 0
   ent.invuln_time = 0
@@ -176,7 +177,7 @@ e.think = function(s, ent, dt)
   end
   
   -- check if the player wants to pogo, but don't let a pogo start on the ground
-  if not ent.on_ground then
+  if not ent.on_ground and not ent.will_pogo then
     ent.will_pogo = ent.command.down
   end
   
@@ -186,6 +187,7 @@ e.think = function(s, ent, dt)
     ent.can_jump = true
     ent.can_double_jump = true
     ent.did_jump = true
+    ent.will_pogo = false
     s.event_cb(s, {type = 'sound', name = 'pogo'})
   -- check for other jumps
   elseif ent.command.jump == true and ent.jump_held == false then
@@ -272,11 +274,11 @@ e.think = function(s, ent, dt)
     ent.dx = 0
   end
   
-  -- stop them if they fall onto something solid
-  if #yCols > 0 and yCols[1].other.type == 'enemy' and yCols[1].normal.x == 0 and yCols[1].normal.y == -1 then
+  if ent.will_bounce_enemy then
     ent.dy = ent.will_pogo and ent.pogo_jump_height or ent.jump_height
     ent.dy = ent.dy * 0.75
     ent.can_double_jump = true
+    ent.will_bounce_enemy = false
   elseif yCollided and ent.dy > 0 and not ent.will_pogo then
     ent.dy = 0
     if ent.dy >= ent.terminal_velocity * 0.75 then
@@ -297,6 +299,10 @@ e.think = function(s, ent, dt)
 end
 
 e.collide = function(s, ent, col)
+  if ent.will_pogo and col.other.type == 'enemy' and col.normal.x == 0 and col.normal.y == -1 then
+    Entity.hurt(s, col.other, 1, ent)
+    ent.will_bounce_enemy = true
+  end
 end
 
 e.draw = function(s, ent)
