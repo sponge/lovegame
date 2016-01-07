@@ -1,6 +1,6 @@
 local Gamestate = require "gamestate"
 local Console = require 'game/console'
-local gui = require "Quickie"
+local suit = require "SUIT"
 
 local cvars = {
   "p_gravity",
@@ -52,35 +52,33 @@ end
 function scene:draw()
   local width, height = love.graphics.getDimensions()
   
-  gui.group{grow = "down", pos = {width-400, 0}, size={390,30}, function()
-    for _, v in ipairs(cvars) do
-      v = debug_vars[v]
-      gui.group{grow = "right", function()
-        gui.Label{text = v.name, size={160}}
-        gui.Label{text = v.value, size={30}}
-        if gui.Slider{info = sliders[v.name], size={200}} then
-          local info = sliders[v.name]
-          Console:setcvar(v.name, math.floor(info.value*(1/info.step)) / math.floor(1/info.step) )
-        end
+  suit.layout:reset(width-400,0)
 
-      end}
-    
+  for _, v in ipairs(cvars) do
+    v = debug_vars[v]
+    suit.layout:push(suit.layout:row(400, 30))
+    suit.Label(v.name, {align = "left"}, suit.layout:col(175,30))
+    if suit.Slider(sliders[v.name], suit.layout:col(150)) then
+      local info = sliders[v.name]
+      Console:setcvar(v.name, math.floor(info.value*(1/info.step)) / math.floor(1/info.step) )
     end
+    suit.Label(v.value, {align = "center"}, suit.layout:col(75))
 
-    if gui.Button{text = "Write to terminal"} then
-      local io = require 'io'
-      io.write('\n')
-      for _, v in pairs(debug_vars) do
-        io.write('{"'.. v.name .. '", '.. v.value .. '},\n')
-      end
+    suit.layout:pop()
+  end
+
+  if suit.Button("Write to Terminal", suit.layout:row()).hit then
+    local io = require 'io'
+    io.write('\n')
+    for _, v in pairs(debug_vars) do
+      io.write('{"'.. v.name .. '", '.. v.value .. '},\n')
     end
-  end}
-
+  end
   self.from:draw()
   love.graphics.setColor(0,0,0,200)
   love.graphics.rectangle("fill", width - 410, 0, 410, height)
   love.graphics.setColor(255,255,255,255)
-  gui.core.draw()
+  suit.draw()
 end
 
 return scene
