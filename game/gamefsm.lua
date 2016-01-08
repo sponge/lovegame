@@ -186,5 +186,31 @@ local function spawnPlayer(state)
   return ent.number
 end
 
+local function mergeState(gs, ns)
+  for k, v in pairs(ns) do
+    if type(gs.s[k]) ~= 'table' then
+      gs.s[k] = v
+    end
+  end
+  
+  if ns.red_coins ~= nil then
+    gs.s.red_coins = ns.red_coins
+  end
+  
+  if ns.entities ~= nil then
+    for ent_number, new_ent in ipairs(ns.entities) do
+      if gs.s.entities[ent_number] == nil then
+        local ent = Entity.new(new_ent.classname, new_ent.x, new_ent.y, new_ent.w, new_ent.h)
+        ent.number = ent_number
+        gs.s.entities[ent.number] = ent
+        if gs.ent_handlers[ent.classname].spawn then gs.ent_handlers[ent.classname].spawn(gs, ent) end
+      end
+      for k,v in pairs(new_ent) do
+        gs.s.entities[ent_number][k] = v
+      end
+    end
+  end
+end
+
 -- the module
-return { init = init, step = step, addCommand = addCommand, spawnPlayer = spawnPlayer }
+return { init = init, step = step, addCommand = addCommand, spawnPlayer = spawnPlayer, mergeState = mergeState }

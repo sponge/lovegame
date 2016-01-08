@@ -1,3 +1,5 @@
+local GNet = require 'gamenet'
+local Smallfolk = require 'smallfolk'
 local Console = require 'game/console'
 local GameState = require 'gamestate'
 local GameFSM = require 'game/gamefsm'
@@ -29,35 +31,29 @@ local canvas = nil
 
 local smoothFunc = Camera.smooth.damped(3)
 
-local event_cb = function(s, ev)
-  if ev.type == 'sound' then
-    love.audio.stop(s.media['snd_'.. ev.name])
-    love.audio.play(s.media['snd_'.. ev.name])
-  elseif ev.type == 'stopsound' then
-    love.audio.stop(s.media['snd_'.. ev.name])
-  elseif ev.type == 'death' then
-    GameState.switch(scene, currmap)
-  elseif ev.type == 'win' then
-    GameState.switch(st_win)
-  elseif ev.type == 'error' then
-    game_err(ev.message)
-  end
-end
-
-function scene:enter(current, mapname)
+function scene:enter(current, mapname, mpdata)
   local err = nil
-  local level_json, _ = love.filesystem.read(mapname)
   
-  currmap = mapname
-  gs = GameFSM.init(level_json, event_cb)
+  if mpdata ~= nil then
+    self.mpdata = mpdata
+    gs = mpdata.gs
+    playerNum = mpdata.ent_number
+  else
+    local level_json, _ = love.filesystem.read(mapname)
   
-  GameState.push(st_levelintro, gs)
+    currmap = mapname
+    gs = GameFSM.init(level_json, require "game/gamefsm_cb")
+    
+    playerNum = GameFSM.spawnPlayer(gs)
+    
+    GameState.push(st_levelintro, gs)
+    
+    for _, v in pairs(gs.cvars) do
+      Console:registercvar(v)
+    end
+  end
   
   currgame = gs -- global for the debugger
-  
-  for _, v in pairs(gs.cvars) do
-    Console:registercvar(v)
-  end
   
   canvas = love.graphics.newCanvas(1920, 1080)
   
@@ -80,8 +76,6 @@ function scene:enter(current, mapname)
     gs.media.bg = love.graphics.newImage(gs.l.properties.background)
     gs.media.bg:setFilter("linear", "nearest")
   end
-  
-  playerNum = GameFSM.spawnPlayer(gs)
   
   gs.cam:lookAt(gs.s.entities[playerNum].x, gs.s.entities[playerNum].y)
   camLockY = gs.cam.y
@@ -106,18 +100,28 @@ end
 
 function scene:update(dt)
   -- add commands before stepping
+  local usercmd = InputManager.getInputs()
+  
   if GameState.current() ~= st_console then
-    local usercmd = InputManager.getInputs()
-    
     if usercmd.menu then
       gs.event_cb(gs, {type = 'error', message = 'Game exited'})
       return
     end
     
-    GameFSM.addCommand(gs, playerNum, usercmd)
+    if not self.mpdata then
+      GameFSM.addCommand(gs, playerNum, usercmd)
+    else
+      self.mpdata.peer:send( string.char(4) .. Smallfolk.dumps(usercmd), 0, "unreliable")
+    end
   end
   
-  GameFSM.step(gs, dt)
+  if self.mpdata then
+    GNet.service(self.mpdata)
+  end
+  
+  --if not self.mpdata then
+    GameFSM.step(gs, dt)
+  --end
 end
 
 function scene:draw()

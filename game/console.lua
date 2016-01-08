@@ -1,13 +1,6 @@
-local Gamestate = require 'gamestate'
 local CVar = require 'game/cvar'
 
 local con = {}
-
-local function con_map(mapname)
-  local st_game = require 'st_game'
-  print("Switching to gameplay scene with map", mapname)
-  Gamestate.switch(st_game, mapname)
-end
 
 local function con_set(name, value)
   local cvar = con:setcvar(name, value)
@@ -53,6 +46,12 @@ local function con_listcmds()
   table.sort(cmdlist)
   for _, v in ipairs(cmdlist) do
     print(v)
+  end
+end
+
+local function con_quit(name)
+  if love.event then
+    love.event.push('quit')
   end
 end
 
@@ -117,13 +116,10 @@ function con:init()
   self:addcommand("get", con_get)
   self:addcommand("map", con_map)
   self:addcommand("clear", con_clear)
+  self:addcommand("quit", con_quit)
   
   print("Console loaded")
   print("listcvars, listcmds for commands and settings")
-  print("pgup/pgdn to scroll back through history")
-  print("alt + pgup/pgdn to jump to top/bottom")
-  print("up arrow and down arrow to go through command history")
-  print("alt+backspace to backspace a full word")
 end
 
 function con:dispatch(cmd, ...)
