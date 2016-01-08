@@ -21,9 +21,21 @@ e.init = function(s)
 end
 
 e.spawn = function(s, ent)
+  ent.on_ground = false
+  ent.y = ent.y + 1
+  ent.h = ent.h - 1
   ent.type = 'enemy'
+  ent.collision = {
+    player = 'cross',
+    enemy = 'touch',
+    world = 'slide',
+  }
+  ent.can_take_damage = true
+  ent.active = true
+  ent.in_shell = false
+  ent.dead_time = nil
   s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
-  ent.dx = -100
+  ent.dx = -20
 end
 
 e.think = function(s, ent, dt)
