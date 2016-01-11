@@ -28,10 +28,14 @@ local playerNum = nil
 local camLockY = nil
 local canvas = nil
 
+local mp_predict = nil
+
 local smoothFunc = Camera.smooth.damped(3)
 
 function scene:enter(current, mapname, mpdata)
   local err = nil
+  
+  mp_predict = Console:addcvar("mp_predict", 0)
   
   if mpdata ~= nil then
     self.mpdata = mpdata
