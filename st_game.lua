@@ -9,7 +9,6 @@ local Easing = require 'game/easing'
 
 local st_console = require 'st_console'
 local st_debug = require 'st_debug'
-local st_win = require 'st_win'
 local st_levelintro = require 'st_levelintro'
 
 local abs = math.abs
@@ -38,6 +37,7 @@ function scene:enter(current, mapname, mpdata)
     self.mpdata = mpdata
     gs = mpdata.gs
     playerNum = mpdata.ent_number
+    assert(playerNum > 0)
   else
     local level_json, _ = love.filesystem.read(mapname)
   
@@ -96,6 +96,12 @@ function scene:leave()
   tileInfo = {}
   canvas = nil
   love.audio.stop()
+  if self.mpdata then
+    self.mpdata.peer:disconnect()
+    GNet.service(self.mpdata)
+    self.mpdata = nil
+  end
+  playerNum = nil
 end
 
 function scene:update(dt)
@@ -119,9 +125,9 @@ function scene:update(dt)
     GNet.service(self.mpdata)
   end
   
-  --if not self.mpdata then
+  if not self.mpdata or mp_predict.int > 0 then
     GameFSM.step(gs, dt)
-  --end
+  end
 end
 
 function scene:draw()
