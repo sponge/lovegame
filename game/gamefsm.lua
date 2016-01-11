@@ -48,7 +48,9 @@ local c = function(state, ent, side, tile, x, y, dx, dy)
   return tile.solid
 end
 
-local function init(str_level, event_cb)
+local mod = {}
+
+mod.init = function(str_level, event_cb)
   local err
   
   assert(type(event_cb) == 'function', "No callback passed into GameFSM.init")
@@ -152,7 +154,7 @@ local function init(str_level, event_cb)
   return state
 end
 
-local function step(state, dt) 
+mod.step = function(state, dt) 
   for k,v in pairs(state.removedEnts) do state.removedEnts[k]=nil end
   
   state.dt = dt
@@ -170,11 +172,11 @@ local function step(state, dt)
   end
 end
 
-local function addCommand(state, num, command)
+mod.addCommand = function(state, num, command)
   state.s.entities[num].command = command
 end
 
-local function spawnPlayer(state)
+mod.spawnPlayer = function(state)
   local spawnPoint = nil
   for _, ent in ipairs(state.s.entities) do
     if ent.classname == "player_start" then
@@ -193,7 +195,23 @@ local function spawnPlayer(state)
   return ent.number
 end
 
-local function mergeState(gs, ns)
+mod.removeEntity = function(gs, num)
+  local ent = gs.s.entities[num]
+  -- FIXME: this maybe shouldnt even be getting called?
+  if ent == nil then
+    return
+  end
+  
+  if gs.bump:hasItem(ent) then
+    gs.bump:remove(ent)
+  end
+  gs.s.entities[ent.number] = nil
+  gs.removedEnts[#gs.removedEnts+1] = num
+end
+
+local removeEntity = mod.removeEntity
+
+mod.mergeState = function(gs, ns)
   gs.time = ns.time
   gs.dt = ns.dt
   
@@ -211,8 +229,9 @@ local function mergeState(gs, ns)
     for ent_number = 1, 1024 do -- FIXME: hardcoded value
       local new_ent = ns.entities[ent_number]
       if new_ent == nil then
-        -- FIXME: needs to actually despawn so bump will get killed off right, make sure its in the old gs first though
-        gs.s.entities[ent_number] = nil
+        if gs.s.entities[ent_number] ~= nil then
+          removeEntity(gs, ent_number)
+        end
       else
         if gs.s.entities[ent_number] == nil then
           local ent = Entity.new(new_ent.classname, new_ent.x, new_ent.y, new_ent.w, new_ent.h)
@@ -228,19 +247,5 @@ local function mergeState(gs, ns)
   end
 end
 
-local function removeEntity(gs, num)
-  local ent = gs.s.entities[num]
-  -- FIXME: this maybe shouldnt even be getting called?
-  if ent == nil then
-    return
-  end
-  
-  if gs.bump:hasItem(ent) then
-    gs.bump:remove(ent)
-  end
-  gs.s.entities[ent.number] = nil
-  gs.removedEnts[#gs.removedEnts+1] = num
-end
-
 -- the module
-return { init = init, step = step, addCommand = addCommand, spawnPlayer = spawnPlayer, mergeState = mergeState, removeEntity = removeEntity }
+return mod

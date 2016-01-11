@@ -18,7 +18,6 @@ local max = math.max
 local min = math.min
 
 local gs = {}
-local currmap = nil
 
 local spritebatches = {}
 local tileInfo = {}
@@ -45,8 +44,8 @@ function scene:enter(current, mapname, mpdata)
   else
     local level_json, _ = love.filesystem.read(mapname)
   
-    currmap = mapname
     gs = GameFSM.init(level_json, require "game/gamefsm_cb")
+    gs.currmap = mapname
     
     playerNum = GameFSM.spawnPlayer(gs)
     

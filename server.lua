@@ -36,6 +36,7 @@ local function con_map(mapname)
 end
 
 function love.load(arg)
+  -- FIXME: can i spin off into a thread and just loop io.read() on the main? 
   require("lovebird").port = 8888
   require("lovebird").update()
   
