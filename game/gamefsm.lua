@@ -37,7 +37,7 @@ end
 -- tilecollider functions
 local g = function(state, x, y)
   if y <= 0 then y = 1 end
-  return state.tileinfo[ state.s.worldLayer.data[(y-1)*state.l.width+x] ]
+  return state.tileinfo[ state.worldLayer.data[(y-1)*state.l.width+x] ]
 end
 
 local c = function(state, ent, side, tile, x, y, dx, dy)
@@ -54,8 +54,9 @@ local function init(str_level, event_cb)
   assert(type(event_cb) == 'function', "No callback passed into GameFSM.init")
 
   local state = {
-    s = {entities = {}, worldLayer = nil, red_coins = {found = 0, sum = 0}}, -- serializable state (network?)
+    s = {entities = {}, red_coins = {found = 0, sum = 0}}, -- serializable state (network?)
     removedEnts = {}, 
+    worldLayer = nil,
     tileinfo = {},
     camera = nil,
     l = nil, -- level
@@ -117,7 +118,7 @@ local function init(str_level, event_cb)
   
   for _, layer in ipairs(state.l.layers) do
     if layer.name == "world" and layer.type == "tilelayer" then
-      state.s.worldLayer = layer
+      state.worldLayer = layer
     end
     
     if layer.type == "objectgroup" then
@@ -131,10 +132,10 @@ local function init(str_level, event_cb)
   end
   
   -- spawn tile entities and take them out of the map
-  for i,v in ipairs(state.s.worldLayer.data) do
+  for i,v in ipairs(state.worldLayer.data) do
     if state.tileinfo[v] then
       if state.tileinfo[v].tile_entity ~= nil then
-        state.s.worldLayer.data[i] = 0
+        state.worldLayer.data[i] = 0
         local classname = state.tileinfo[v].tile_entity        
         local ent = Entity.new(state.tileinfo[v].tile_entity, ((i-1)%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
         ent.number = #state.s.entities+1        
@@ -151,9 +152,14 @@ local function init(str_level, event_cb)
   return state
 end
 
-local function step(state, dt)
+local function step(state, dt) 
+  for k,v in pairs(state.removedEnts) do state.removedEnts[k]=nil end
+  
   state.dt = dt
   state.time = state.time + dt
+  
+  state.s.dt = state.dt
+  state.s.time = state.time
   
   local ent = nil
   for i = 1, 1024 do --FIXME: hardcoded value
@@ -188,6 +194,9 @@ local function spawnPlayer(state)
 end
 
 local function mergeState(gs, ns)
+  gs.time = ns.time
+  gs.dt = ns.dt
+  
   for k, v in pairs(ns) do
     if type(gs.s[k]) ~= 'table' then
       gs.s[k] = v
@@ -199,15 +208,21 @@ local function mergeState(gs, ns)
   end
   
   if ns.entities ~= nil then
-    for ent_number, new_ent in ipairs(ns.entities) do
-      if gs.s.entities[ent_number] == nil then
-        local ent = Entity.new(new_ent.classname, new_ent.x, new_ent.y, new_ent.w, new_ent.h)
-        ent.number = ent_number
-        gs.s.entities[ent.number] = ent
-        if gs.ent_handlers[ent.classname].spawn then gs.ent_handlers[ent.classname].spawn(gs, ent) end
-      end
-      for k,v in pairs(new_ent) do
-        gs.s.entities[ent_number][k] = v
+    for ent_number = 1, 1024 do -- FIXME: hardcoded value
+      local new_ent = ns.entities[ent_number]
+      if new_ent == nil then
+        -- FIXME: needs to actually despawn so bump will get killed off right, make sure its in the old gs first though
+        gs.s.entities[ent_number] = nil
+      else
+        if gs.s.entities[ent_number] == nil then
+          local ent = Entity.new(new_ent.classname, new_ent.x, new_ent.y, new_ent.w, new_ent.h)
+          ent.number = ent_number
+          gs.s.entities[ent.number] = ent
+          if gs.ent_handlers[ent.classname].spawn then gs.ent_handlers[ent.classname].spawn(gs, ent) end
+        end
+        for k,v in pairs(new_ent) do
+          gs.s.entities[ent_number][k] = v
+        end
       end
     end
   end
@@ -228,4 +243,4 @@ local function removeEntity(gs, num)
 end
 
 -- the module
-return { init = init, step = step, addCommand = addCommand, spawnPlayer = spawnPlayer, mergeState = mergeState }return { init = init, step = step, addCommand = addCommand, spawnPlayer = spawnPlayer, mergeState = mergeState, removeEntity = removeEntity }
+return { init = init, step = step, addCommand = addCommand, spawnPlayer = spawnPlayer, mergeState = mergeState, removeEntity = removeEntity }

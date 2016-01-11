@@ -16,6 +16,7 @@ mod.service = function(mpdata)
         assert(mpdata.gs ~= nil)
         local new_gs = Smallfolk.loads(msg, 1000000)
         GameFSM.mergeState(mpdata.gs, new_gs)
+        assert(#mpdata.gs.s.entities > 0)
         return
       elseif eType == 3 then
         mpdata.ent_number = tonumber(msg)
