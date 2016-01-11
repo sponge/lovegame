@@ -1,6 +1,6 @@
 rmdir /S /Q dist
 mkdir dist
-"c:\Program Files\7-Zip\7z.exe" a -tzip dist/game.love ./*.lua base/* game/* Quickie/*
+"c:\Program Files\7-Zip\7z.exe" a -tzip dist/game.love ./*.lua base/* game/* SUIT/*
 xcopy "c:\Program Files\LOVE\*.dll" dist
 copy /b "c:\Program Files\LOVE\love.exe"+dist\game.love dist\game.exe
 move dist\game.love c:\dropbox\game.love
