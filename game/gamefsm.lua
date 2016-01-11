@@ -55,6 +55,7 @@ local function init(str_level, event_cb)
 
   local state = {
     s = {entities = {}, worldLayer = nil, red_coins = {found = 0, sum = 0}}, -- serializable state (network?)
+    removedEnts = {}, 
     tileinfo = {},
     camera = nil,
     l = nil, -- level
@@ -212,5 +213,19 @@ local function mergeState(gs, ns)
   end
 end
 
+local function removeEntity(gs, num)
+  local ent = gs.s.entities[num]
+  -- FIXME: this maybe shouldnt even be getting called?
+  if ent == nil then
+    return
+  end
+  
+  if gs.bump:hasItem(ent) then
+    gs.bump:remove(ent)
+  end
+  gs.s.entities[ent.number] = nil
+  gs.removedEnts[#gs.removedEnts+1] = num
+end
+
 -- the module
-return { init = init, step = step, addCommand = addCommand, spawnPlayer = spawnPlayer, mergeState = mergeState }
+return { init = init, step = step, addCommand = addCommand, spawnPlayer = spawnPlayer, mergeState = mergeState }return { init = init, step = step, addCommand = addCommand, spawnPlayer = spawnPlayer, mergeState = mergeState, removeEntity = removeEntity }

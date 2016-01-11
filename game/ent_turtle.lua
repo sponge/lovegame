@@ -53,6 +53,8 @@ e.draw = function(s, ent)
 end
 
 e.collide = function(s, ent, col)
+  local GameFSM = require 'game/gamefsm'
+  
   if col.item.classname ~= 'player' then
     ent.dx = ent.dx * -1
     return
@@ -60,8 +62,7 @@ e.collide = function(s, ent, col)
   
   --s.event_cb(s, {type = 'sound', name = 'turtle'})
   
-  s.bump:remove(ent)
-  s.s.entities[ent.number] = nil
+  GameFSM.removeEntity(s, ent.number)
 end
 
 return e

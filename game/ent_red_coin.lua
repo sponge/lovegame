@@ -38,6 +38,8 @@ e.draw = function(s, ent)
 end
 
 e.collide = function(s, ent, col)
+  local GameFSM = require 'game/gamefsm'
+  
   if col.item.classname ~= 'player' then
     return
   end
@@ -46,8 +48,7 @@ e.collide = function(s, ent, col)
   
   s.s.red_coins.found = s.s.red_coins.found + 1
   
-  s.bump:remove(ent)
-  s.s.entities[ent.number] = nil
+  GameFSM.removeEntity(s, ent.number)
 end
 
 return e
