@@ -1,5 +1,5 @@
 local GameFSM = require 'game/gamefsm'
-local Smallfolk = require "smallfolk"
+local Binser = require "binser"
 
 local mod = {}
 
@@ -14,7 +14,7 @@ mod.service = function(mpdata)
         mpdata.status = "level_loaded"
       elseif eType == 2 then
         assert(mpdata.gs ~= nil)
-        local new_gs = Smallfolk.loads(msg, 1000000)
+        local new_gs = Binser.d(msg, 1000000)
         GameFSM.mergeState(mpdata.gs, new_gs)
         assert(#mpdata.gs.s.entities > 0)
         return

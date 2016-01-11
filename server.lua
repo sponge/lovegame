@@ -2,7 +2,7 @@
 require "enet"
 local Console = require 'game/console'
 local GameFSM = require 'game/gamefsm'
-local Smallfolk = require 'smallfolk'
+local Binser = require 'binser'
 
 _ = nil
 
@@ -60,7 +60,7 @@ function love.update(dt)
     if event.type == "receive" then
       if event.data == "spawn" then
         local playerNum = GameFSM.spawnPlayer(gs)
-        event.peer:send( string.char(2) .. Smallfolk.dumps(gs.s), 0, "reliable")
+        event.peer:send( string.char(2) .. Binser.s(gs.s), 0, "reliable")
         event.peer:send( string.char(3) .. tostring(playerNum), 0, "reliable")
         clients[event.peer].entity = playerNum
         clients[event.peer].state = "active"
@@ -68,7 +68,7 @@ function love.update(dt)
         local eType = event.data:byte(1)
         local msg = string.sub(event.data, 2)
         if eType == 4 then
-          local usercmd = Smallfolk.loads(msg)
+          local usercmd = Binser.d(msg)
           gs.s.entities[clients[event.peer].entity].command = usercmd
         end
       end
@@ -98,7 +98,7 @@ function love.update(dt)
   end
   
   if send_update then
-    local msg = Smallfolk.dumps(gs.s)
+    local msg = Binser.s(gs.s)
     for peer, client in pairs(clients) do
       if client.state == 'active' then
         peer:send( string.char(2) .. msg, 0, "unreliable")

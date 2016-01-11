@@ -1,5 +1,5 @@
 local GNet = require 'gamenet'
-local Smallfolk = require 'smallfolk'
+local Binser = require 'binser'
 local Console = require 'game/console'
 local GameState = require 'gamestate'
 local GameFSM = require 'game/gamefsm'
@@ -121,7 +121,7 @@ function scene:update(dt)
     if not self.mpdata then
       GameFSM.addCommand(gs, playerNum, usercmd)
     else
-      self.mpdata.peer:send( string.char(4) .. Smallfolk.dumps(usercmd), 0, "unreliable")
+      self.mpdata.peer:send( string.char(4) .. Binser.s(usercmd), 0, "unreliable")
     end
   end
   
