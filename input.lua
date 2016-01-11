@@ -44,7 +44,7 @@ local function isKeyboardDown(action)
 end
 
 local function getInputs()
-  local usercmd = { left = 0, right = 0, up = 0, down = 0, jump = false, attack = false, menu = false }
+  local usercmd = { left = false, right = false, up = false, down = false, jump = false, attack = false, menu = false }
   for i, v in pairs(usercmd) do
     usercmd[i] = isKeyboardDown(i) or isGamepadDown(i)
   end
