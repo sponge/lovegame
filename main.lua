@@ -4,6 +4,8 @@ else
   require("mobdebug").start()
 end
 
+require("errhand")
+
 -- globals
 _, game_err, socket, currgame, con, is_server = nil
 
