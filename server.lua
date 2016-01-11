@@ -32,21 +32,23 @@ local function con_map(mapname)
   for _, v in pairs(gs.cvars) do
     Console:registercvar(v)
   end
-  host = enet.host_create("localhost:6789")
+  host = enet.host_create("0.0.0.0:6789")
 end
 
 function love.load(arg)
+  require("lovebird").port = 8888
   require("lovebird").update()
   
   Console:init()
   Console:addcommand("map", con_map)
   
-  print("Navigate to http://localhost:8000 to access console, use con:command()")
+  print("Navigate to http://localhost:8888 to access console, use con:command()")
   con:command('map base/maps/smw.json')
   
 end
 
 function love.update(dt)
+  collectgarbage("step")
   require("lovebird").update()
   
   if host == nil then
@@ -81,6 +83,7 @@ function love.update(dt)
       event.peer:send( string.char(1) .. level_json, 0, "reliable")
     elseif event.type == "disconnect" then
       print("a player disconnected")
+      gs.s.entities[clients[event.peer].entity] = nil
       clients[event.peer] = nil
     end
     event = host:service()
@@ -88,17 +91,17 @@ function love.update(dt)
   
   accum = accum + dt
   local send_update = false
-  while accum >= 1/200 do
+  while accum >= 1/60 do
     send_update = true
-    GameFSM.step(gs, 1/200)
-    accum = accum - 1/200
+    GameFSM.step(gs, 1/60)
+    accum = accum - 1/60
   end
   
   if send_update then
     local msg = Smallfolk.dumps(gs.s)
     for peer, client in pairs(clients) do
       if client.state == 'active' then
-        peer:send( string.char(2) .. Smallfolk.dumps(gs.s), 0, "unreliable")
+        peer:send( string.char(2) .. msg, 0, "unreliable")
       end
     end
   end
