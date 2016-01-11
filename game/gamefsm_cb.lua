@@ -1,3 +1,6 @@
+local GameState = require 'gamestate'
+local st_win = require 'st_win'
+
 return function(s, ev)
   if ev.type == 'sound' then
     love.audio.stop(s.media['snd_'.. ev.name])
