@@ -17,9 +17,11 @@ local event_cb = function(s, ev)
     print('player died')
   elseif ev.type == 'win' then
     print('player won')
+    -- FIXME: doesn't work yet
+    --Console:command("map base/maps/smw.json")
   elseif ev.type == 'error' then
     print(ev.message)
-    Console:dispatch("quit")
+    Console:command("quit")
   end
 end
 
@@ -59,16 +61,17 @@ function love.update(dt)
   local event = host:service()
   while event do
     if event.type == "receive" then
-      if event.data == "spawn" then
+      if event.data == "ready" then
+        clients[event.peer].state = "active"
+      elseif event.data == "spawn" then
         local playerNum = GameFSM.spawnPlayer(gs)
         event.peer:send( string.char(2) .. Binser.s(gs.s), 0, "reliable")
         event.peer:send( string.char(3) .. tostring(playerNum), 0, "reliable")
         clients[event.peer].entity = playerNum
-        clients[event.peer].state = "active"
       else
         local eType = event.data:byte(1)
         local msg = string.sub(event.data, 2)
-        if eType == 4 then
+        if eType == 4 and clients[event.peer].entity > 0 then
           local usercmd = Binser.d(msg)
           gs.s.entities[clients[event.peer].entity].command = usercmd
         end

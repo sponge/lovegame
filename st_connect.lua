@@ -10,22 +10,21 @@ local scene = {}
 
 function scene:enter(from, address)
   collectgarbage("collect")
-  self.mp = {
+  self.mpdata = {
     address = address,
     host = nil,
     server = nil,
     peer = nil,
     gs = nil,
-    ent_number = 0,
     status = 'connecting'
   }
-  self.mp.host = enet.host_create()
-  self.mp.server = self.mp.host:connect(address)
+  self.mpdata.host = enet.host_create()
+  self.mpdata.server = self.mpdata.host:connect(address)
 
 end
 
 function scene:leave()
-  self.mp = nil
+  self.mpdata = nil
 end
 
 function scene:keypressed(key, code, isrepeat)
@@ -43,12 +42,9 @@ function scene:gamepadpressed(pad, button)
 end
 
 function scene:update(dt)
-  GNet.service(self.mp)
-  if self.mp.status == "level_loaded" then
-    self.mp.peer:send("spawn")
-    self.mp.status = "spawn_wait"
-  elseif self.mp.status == "ready" then
-    Gamestate.switch(st_game, nil, self.mp)
+  GNet.service(self.mpdata)
+  if self.mpdata.status == "level_loaded" then
+    Gamestate.switch(st_game, nil, self.mpdata)
   end
 end
 

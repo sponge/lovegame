@@ -23,7 +23,6 @@ local spritebatches = {}
 local tileInfo = {}
 
 local scene = {}
-local playerNum = nil
 local camLockY = nil
 local canvas = nil
 
@@ -37,24 +36,22 @@ function scene:enter(current, mapname, mpdata)
   mp_predict = Console:addcvar("mp_predict", 0)
   
   if mpdata ~= nil then
-    self.mpdata = mpdata
     gs = mpdata.gs
-    playerNum = mpdata.ent_number
-    assert(playerNum > 0)
+    gs.mpdata = mpdata
   else
     local level_json, _ = love.filesystem.read(mapname)
   
     gs = GameFSM.init(level_json, require "game/gamefsm_cb")
     gs.currmap = mapname
     
-    playerNum = GameFSM.spawnPlayer(gs)
-    
-    GameState.push(st_levelintro, gs)
+    gs.playerNum = GameFSM.spawnPlayer(gs)
     
     for _, v in pairs(gs.cvars) do
       Console:registercvar(v)
     end
   end
+  
+  GameState.push(st_levelintro, gs)
   
   currgame = gs -- global for the debugger
   
@@ -80,8 +77,12 @@ function scene:enter(current, mapname, mpdata)
     gs.media.bg:setFilter("linear", "nearest")
   end
   
-  gs.cam:lookAt(gs.s.entities[playerNum].x, gs.s.entities[playerNum].y)
+  if gs.s.entities[gs.playerNum] ~= nil then
+    gs.cam:lookAt(gs.s.entities[gs.playerNum].x, gs.s.entities[gs.playerNum].y)
+  end
+  
   camLockY = gs.cam.y
+  
 end
 
 function scene:leave()
@@ -94,17 +95,16 @@ function scene:leave()
   end
   
   spritebatches = {}
-  gs = {}
   currgame = {}
   tileInfo = {}
   canvas = nil
   love.audio.stop()
-  if self.mpdata then
-    self.mpdata.peer:disconnect()
-    GNet.service(self.mpdata)
-    self.mpdata = nil
+  if gs.mpdata then
+    gs.mpdata.peer:disconnect()
+    GNet.service(gs.mpdata)
+    gs.mpdata = nil
   end
-  playerNum = nil
+  gs = {}
 end
 
 function scene:update(dt)
@@ -117,18 +117,23 @@ function scene:update(dt)
       return
     end
     
-    if not self.mpdata then
-      GameFSM.addCommand(gs, playerNum, usercmd)
+    if not gs.mpdata then
+      GameFSM.addCommand(gs, gs.playerNum, usercmd)
     else
-      self.mpdata.peer:send( string.char(4) .. Binser.s(usercmd), 0, "unreliable")
+      gs.mpdata.peer:send( string.char(4) .. Binser.s(usercmd), 0, "unreliable")
     end
   end
   
-  if self.mpdata then
-    GNet.service(self.mpdata)
+  
+  if gs.mpdata then
+    local err = GNet.service(gs.mpdata)
+    if err ~= nil then
+      game_err(err)
+      return
+    end
   end
   
-  if not self.mpdata or mp_predict.int > 0 then
+  if not gs.mpdata or mp_predict.int > 0 then
     GameFSM.step(gs, dt)
   end
 end
@@ -139,7 +144,9 @@ function scene:draw()
   love.graphics.setCanvas(canvas)
   love.graphics.clear(gs.l.backgroundcolor)
   
-  local player = gs.s.entities[playerNum]
+  local player = gs.s.entities[gs.playerNum]
+  assert(gs.playerNum ~= nil, "playerNum is nil!")
+  assert(player, "player ent is nil!")
   
   if math.abs(player.last_ground_y - camLockY) > 48 then
     camLockY = player.last_ground_y

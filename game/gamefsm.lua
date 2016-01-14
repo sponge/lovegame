@@ -57,6 +57,7 @@ mod.init = function(str_level, event_cb)
 
   local state = {
     s = {entities = {}, red_coins = {found = 0, sum = 0}}, -- serializable state (network?)
+    playerNum = nil,
     removedEnts = {}, 
     worldLayer = nil,
     tileinfo = {},

@@ -1,3 +1,4 @@
+local GNet = require 'gamenet'
 local Gamestate = require "gamestate"
 local InputManager = require "input"
 
@@ -16,22 +17,57 @@ end
 function scene:keypressed(key, code, isrepeat)
   local inputs = InputManager.getInputs()
   if inputs.jump then
-    Gamestate.pop()
+    if self.gs.mpdata then
+      if self.gs.mpdata.status ~= "spawn_wait" then
+        self.gs.mpdata.peer:send("spawn")
+        self.gs.mpdata.status = "spawn_wait"
+      end
+    else
+      Gamestate.pop()
+    end
   end
 end
 
 function scene:gamepadpressed(pad, button)
   local inputs = InputManager.getInputs()
   if inputs.jump then
-    Gamestate.pop()
+    if self.gs.mpdata then
+      if self.gs.mpdata.status ~= "spawn_wait" then
+        self.gs.mpdata.peer:send("spawn")
+        self.gs.mpdata.status = "spawn_wait"
+      end
+    else
+      Gamestate.pop()
+    end
   end
 end
 
 function scene:update(dt)
+  if self.gs.mpdata ~= nil then
+    local err = GNet.service(self.gs.mpdata)
+    if err ~= nil then
+      game_err(err)
+      return
+    end
+    
+    if self.gs.mpdata.status == "ready" then
+      assert(self.gs.playerNum ~= nil, "playerNum is nil even though we're ready!")
+      Gamestate.pop()
+      return
+    end
+  end
+    
   self.time_in_scene = self.time_in_scene + dt
   if self.time_in_scene > 5 then
-    Gamestate.pop()
-    return
+    if self.gs.mpdata then
+      if self.gs.mpdata.status ~= "spawn_wait" then
+        self.gs.mpdata.peer:send("spawn")
+        self.gs.mpdata.status = "spawn_wait"
+      end
+    else
+      Gamestate.pop()
+      return
+    end
   end
 end
 

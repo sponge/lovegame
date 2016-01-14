@@ -12,6 +12,7 @@ mod.service = function(mpdata)
       if eType == 1 then
         mpdata.gs = GameFSM.init(msg, require "game/gamefsm_cb")
         mpdata.status = "level_loaded"
+        mpdata.peer:send("ready")
       elseif eType == 2 then
         assert(mpdata.gs ~= nil)
         local new_gs = Binser.d(msg, 1000000)
@@ -19,19 +20,23 @@ mod.service = function(mpdata)
         assert(#mpdata.gs.s.entities > 0)
         return
       elseif eType == 3 then
-        mpdata.ent_number = tonumber(msg)
-        mpdata.status = 'ready'
+        mpdata.gs.playerNum = tonumber(msg)
+        mpdata.status = "ready"
       end
       
     elseif event.type == "connect" then
       mpdata.peer = event.peer
+      local limit, min, max = mpdata.peer:timeout()
+      mpdata.peer:timeout(limit, min, 5000)
       print("connected.")
       
     elseif event.type == "disconnect" then
-      print("disconnected.")
+      return "Disconnected from server."
     end
     event = mpdata.host:service()
   end
+  
+  return nil
 end
 
 return mod
