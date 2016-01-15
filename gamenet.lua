@@ -3,6 +3,36 @@ local Binser = require "binser"
 
 local mod = {}
 
+mod.connect = function(address)
+  local mpdata = {
+    address = address,
+    host = nil,
+    server = nil,
+    peer = nil,
+    gs = nil,
+    status = 'connecting'
+  }
+  mpdata.host = enet.host_create()
+  local success, err = pcall(function() mpdata.server = mpdata.host:connect(address) end)
+  if not success then
+    return nil, err
+  end
+  
+  return mpdata
+end
+
+mod.destroy = function(mpdata)
+  mpdata.gs = nil
+  if mpdata.server then
+    mpdata.server:disconnect()
+    mpdata.host:service()
+  end
+  
+  if mpdata.host then
+    mpdata.host:destroy()
+  end
+end
+
 mod.service = function(mpdata)
   local event = mpdata.host:service()
   while event do
@@ -18,7 +48,6 @@ mod.service = function(mpdata)
         local new_gs = Binser.d(msg, 1000000)
         GameFSM.mergeState(mpdata.gs, new_gs)
         assert(#mpdata.gs.s.entities > 0)
-        return
       elseif eType == 3 then
         mpdata.gs.playerNum = tonumber(msg)
         mpdata.status = "ready"
@@ -36,12 +65,12 @@ mod.service = function(mpdata)
       print("connected.")
       
     elseif event.type == "disconnect" then
-      return "Disconnected from server."
+      return false, "Disconnected from server."
     end
     event = mpdata.host:service()
   end
   
-  return nil
+  return true
 end
 
 return mod

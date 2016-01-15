@@ -103,8 +103,7 @@ function scene:leave()
   canvas = nil
   love.audio.stop()
   if gs.mpdata then
-    gs.mpdata.peer:disconnect()
-    GNet.service(gs.mpdata)
+    GNet.destroy(gs.mpdata)
     gs.mpdata = nil
   end
   gs = {}
@@ -112,9 +111,9 @@ end
 
 function scene:update(dt)
   if gs.mpdata then
-    local err = GNet.service(gs.mpdata)
-    if err ~= nil then
-      game_err(err)
+    local success, msg = GNet.service(gs.mpdata)
+    if not success then
+      game_err(msg)
       return
     end
   end

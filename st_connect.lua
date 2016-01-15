@@ -10,17 +10,11 @@ local scene = {}
 
 function scene:enter(from, address)
   collectgarbage("collect")
-  self.mpdata = {
-    address = address,
-    host = nil,
-    server = nil,
-    peer = nil,
-    gs = nil,
-    status = 'connecting'
-  }
-  self.mpdata.host = enet.host_create()
-  self.mpdata.server = self.mpdata.host:connect(address)
-
+  local err
+  self.mpdata, err = GNet.connect(address)
+  if self.mpdata == nil then
+    game_err(err)
+  end
 end
 
 function scene:leave()
@@ -30,14 +24,16 @@ end
 function scene:keypressed(key, code, isrepeat)
   local inputs = InputManager.getInputs()
   if inputs.menu then
-    -- FIXME: quit
+    GNet.destroy(self.mpdata)
+    game_err()
   end
 end
 
 function scene:gamepadpressed(pad, button)
   local inputs = InputManager.getInputs()
   if inputs.menu then
-    -- FIXME: quit
+    GNet.destroy(self.mpdata)
+    game_err()
   end
 end
 

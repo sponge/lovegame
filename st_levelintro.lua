@@ -44,9 +44,9 @@ end
 
 function scene:update(dt)
   if self.gs.mpdata ~= nil then
-    local err = GNet.service(self.gs.mpdata)
-    if err ~= nil then
-      game_err(err)
+    local success, msg = GNet.service(self.gs.mpdata)
+    if not success then
+      game_err(msg)
       return
     end
     
