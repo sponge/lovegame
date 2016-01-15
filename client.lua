@@ -122,7 +122,6 @@ function love.run()
 	if love.timer then love.timer.step() end
  
 	local dt = 0
-  local tickrate = 1/200
  
 	-- Main loop time.
 	while true do
@@ -145,20 +144,16 @@ function love.run()
       measure('end', 'events')
 		end
  
-		-- Update dt, as we'll be passing it to update
+    -- Update dt, as we'll be passing it to update
 		if love.timer then
 			love.timer.step()
-			dt = dt + love.timer.getDelta()
-      -- Call update and draw
-      while dt > tickrate do
-        measure('start', 'update')
-        if love.update then love.update(tickrate) end -- will pass 0 if love.timer is disabled
-        measure('end', 'update')
-        dt = dt - tickrate
-      end
-    else
-      if love.update then love.update(0) end
+			dt = love.timer.getDelta()
 		end
+ 
+		-- Call update and draw
+    measure('start', 'update')
+		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
+    measure('end', 'update')
  
 		if love.graphics and love.graphics.isActive() then
       measure('start', 'draw')

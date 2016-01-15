@@ -17,6 +17,9 @@ local ceil = math.ceil
 local max = math.max
 local min = math.min
 
+local tickrate = 1/200
+local update_accum = 0
+
 local gs = {}
 
 local spritebatches = {}
@@ -41,7 +44,7 @@ function scene:enter(current, mapname, mpdata)
   else
     local level_json, _ = love.filesystem.read(mapname)
   
-    gs = GameFSM.init(level_json, require "game/gamefsm_cb")
+    gs = GameFSM.init(level_json, require "gamefsm_cb")
     gs.currmap = mapname
     
     gs.playerNum = GameFSM.spawnPlayer(gs)
@@ -108,23 +111,6 @@ function scene:leave()
 end
 
 function scene:update(dt)
-  -- add commands before stepping
-  local usercmd = InputManager.getInputs()
-  
-  if GameState.current() ~= st_console then
-    if usercmd.menu then
-      gs.event_cb(gs, {type = 'error', message = 'Game exited'})
-      return
-    end
-    
-    if not gs.mpdata then
-      GameFSM.addCommand(gs, gs.playerNum, usercmd)
-    else
-      gs.mpdata.peer:send( string.char(4) .. Binser.s(usercmd), 0, "unreliable")
-    end
-  end
-  
-  
   if gs.mpdata then
     local err = GNet.service(gs.mpdata)
     if err ~= nil then
@@ -133,8 +119,30 @@ function scene:update(dt)
     end
   end
   
-  if not gs.mpdata or mp_predict.int > 0 then
-    GameFSM.step(gs, dt)
+  update_accum = update_accum + dt
+  
+  while update_accum >= tickrate do
+    -- add commands before stepping
+    local usercmd = InputManager.getInputs()
+    
+    if GameState.current() ~= st_console then
+      if usercmd.menu then
+        gs.event_cb(gs, {type = 'error', message = 'Game exited'})
+        return
+      end
+      
+      if not gs.mpdata then
+        GameFSM.addCommand(gs, gs.playerNum, usercmd)
+      else
+        gs.mpdata.peer:send( string.char(4) .. Binser.s(usercmd), 0, "unreliable")
+      end
+    end
+    
+    if not gs.mpdata or mp_predict.int > 0 then
+      GameFSM.step(gs, tickrate)
+    end
+    
+    update_accum = update_accum - tickrate
   end
 end
 

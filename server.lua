@@ -23,6 +23,13 @@ local event_cb = function(s, ev)
     print(ev.message)
     Console:command("quit")
   end
+  
+  local msg = Binser.s(ev)
+  for peer, client in pairs(clients) do
+    if client.state == 'active' then
+      peer:send( string.char(4) .. msg )
+    end
+  end
 end
 
 local function con_map(mapname)

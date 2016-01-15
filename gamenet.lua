@@ -22,6 +22,11 @@ mod.service = function(mpdata)
       elseif eType == 3 then
         mpdata.gs.playerNum = tonumber(msg)
         mpdata.status = "ready"
+      elseif eType == 4 then
+        local ev = Binser.d(msg, 1000)
+        mpdata.gs.event_cb(mpdata.gs, ev)
+      else
+        print("unknown packet type", eType)
       end
       
     elseif event.type == "connect" then
