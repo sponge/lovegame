@@ -67,6 +67,10 @@ function love.load(arg)
       appending = false
     elseif appending then
       con_line = con_line .. ' ' .. arg[i]
+      if i == #arg then
+        con:command(con_line)
+        appending = false
+      end
     end
   end
   
