@@ -82,7 +82,6 @@ function love.load(arg)
 
   local width, height, flags = love.window.getMode()
   
-  Console:init()
   print("pgup/pgdn to scroll back through history")
   print("alt + pgup/pgdn to jump to top/bottom")
   print("up arrow and down arrow to go through command history")

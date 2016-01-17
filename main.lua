@@ -7,9 +7,9 @@ end
 require("errhand")
 
 -- globals
-_, game_err, socket, currgame, con, is_server = nil
+_, game_err, socket, currgame, con = nil
 
-is_server = false
+local is_server = false
 for i, v in ipairs(arg) do
   if v == '-server' then
     is_server = true
@@ -18,7 +18,9 @@ for i, v in ipairs(arg) do
 end
 
 local Console = require 'game/console'
-con = Console
+con = Console -- global for lovebird
+
+Console:init()
 
 local write = io.write
 local origprint = print

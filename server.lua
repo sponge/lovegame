@@ -49,11 +49,26 @@ function love.load(arg)
   require("lovebird").port = 8888
   require("lovebird").update()
   
-  Console:init()
   Console:addcommand("map", con_map)
   
   print("Navigate to http://localhost:8888 to access console, use con:command()")
-  con:command('map base/maps/smw.json')
+  
+  local con_line = ''
+  local appending = false
+  for i = 1, #arg do
+    if string.sub(arg[i], 1, 1) == '+' then
+      if appending then
+        con:command(con_line)
+      end
+      con_line = string.sub(arg[i], 2)
+      appending = true
+    elseif string.sub(arg[i], 1, 1) == '-' and appending then
+      con:command(con_line)
+      appending = false
+    elseif appending then
+      con_line = con_line .. ' ' .. arg[i]
+    end
+  end
   
 end
 
