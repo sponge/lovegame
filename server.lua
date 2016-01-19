@@ -91,7 +91,9 @@ function love.update(dt)
         clients[event.peer].state = "active"
       elseif event.data == "spawn" then
         local playerNum = GameFSM.spawnPlayer(gs)
-        event.peer:send( string.char(2) .. Binser.s(gs.s), 0, "reliable")
+        local compressedData = love.math.compress(Binser.s(gs.s), "lz4", 9)
+        local s_gs = compressedData:getString()
+        event.peer:send( string.char(2) .. s_gs, 0, "reliable")
         event.peer:send( string.char(3) .. tostring(playerNum), 0, "reliable")
         clients[event.peer].entity = playerNum
       else
@@ -128,7 +130,9 @@ function love.update(dt)
   end
   
   if send_update then
-    local msg = Binser.s(gs.s)
+    local uncompressed_state = Binser.s(gs.s)
+    local compressedData = love.math.compress(uncompressed_state, "lz4", 9)
+    local msg = compressedData:getString()
     for peer, client in pairs(clients) do
       if client.state == 'active' then
         peer:send( string.char(2) .. msg, 0, "unreliable")

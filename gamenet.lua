@@ -45,7 +45,7 @@ mod.service = function(mpdata)
         mpdata.peer:send("ready")
       elseif eType == 2 then
         assert(mpdata.gs ~= nil)
-        local new_gs = Binser.d(msg, 1000000)
+        local new_gs = Binser.d(love.math.decompress(msg, "lz4"), 1000000)
         GameFSM.mergeState(mpdata.gs, new_gs)
         assert(#mpdata.gs.s.entities > 0)
       elseif eType == 3 then
