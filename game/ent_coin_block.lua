@@ -49,7 +49,7 @@ e.collide = function(s, ent, col)
   
   s.event_cb(s, {type = 'sound', name = 'coin'})
   
-  col.item.coins = col.item.coins + 1
+  col.item.edata.coins = col.item.edata.coins + 1
   
   ent.active = false
   ent.hit_time = s.time

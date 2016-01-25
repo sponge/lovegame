@@ -108,8 +108,6 @@ mod.init = function(str_level, event_cb)
     s.event_cb(s, {type = 'error', message = 'Error while loading map JSON'})
     return
   end
-    
-  state.ent_handlers.player.init(state)
   
   state.l.backgroundcolor = parse_color(state.l.backgroundcolor)
   

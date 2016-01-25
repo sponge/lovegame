@@ -21,7 +21,9 @@ e.new = function(classname, x, y, w, h)
       type = nil,
       collision = nil,
       can_take_damage = false,
-      command = {}
+      health = 0,
+      command = {},
+      edata = nil,
     }, entity)
 end
 
