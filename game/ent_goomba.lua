@@ -1,6 +1,7 @@
 local ffi = require('ffi')
 
 local Entity = require 'game/entity'
+
 ffi.cdef [[
   typedef struct {
     bool on_ground;

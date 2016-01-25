@@ -1,4 +1,15 @@
+local ffi = require('ffi')
+
 local Entity = require 'game/entity'
+
+ffi.cdef [[
+  typedef struct {
+    bool on_ground;
+    bool active;
+    bool in_shell;
+    float dead_time;
+  } ent_turtle_t;
+]]
 
 local e = {}
 
@@ -21,7 +32,14 @@ e.init = function(s)
 end
 
 e.spawn = function(s, ent)
-  ent.on_ground = false
+  ent.edata = ffi.new("ent_turtle_t")
+  local ed = ent.edata
+  
+  ed.on_ground = false
+  ed.active = true
+  ed.in_shell = false
+  ed.dead_time = nil
+  
   ent.y = ent.y + 1
   ent.h = ent.h - 1
   ent.type = 'enemy'
@@ -31,14 +49,13 @@ e.spawn = function(s, ent)
     world = 'slide',
   }
   ent.can_take_damage = true
-  ent.active = true
-  ent.in_shell = false
-  ent.dead_time = nil
+  
   s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
   ent.dx = -20
 end
 
 e.think = function(s, ent, dt)
+  local ed = ent.edata
   local xCollided, yCollided = Entity.move(s, ent)
   
   -- walls always stop momentum
@@ -48,11 +65,13 @@ e.think = function(s, ent, dt)
 end
 
 e.draw = function(s, ent)
+  local ed = ent.edata
   local i = (math.floor(s.time * 8) % 2) + 1
   love.graphics.draw(s.media.turtle, s.media.turtle_frames[i], ent.x, ent.y, 0, 1, 1)
 end
 
 e.collide = function(s, ent, col)
+  local ed = ent.edata
   local GameFSM = require 'game/gamefsm'
   
   if col.item.classname ~= 'player' then
