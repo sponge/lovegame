@@ -8,7 +8,7 @@ local ceil = math.ceil
 local max = math.max
 local min = math.min
 
-ffi.cdef([[   
+ffi.cdef [[
   typedef struct {
     enum {
       BAD = 0,
@@ -45,7 +45,7 @@ ffi.cdef([[
     float accel_type;
     uint16_t coins;
   } ent_player_t;
-]])
+]]
 
 local function setup_physics(s, ent)
   local cv = s.cvars

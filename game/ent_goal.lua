@@ -15,7 +15,6 @@ end
 
 e.spawn = function(s, ent)
   ent.type = "playertrigger"
-  ent.goal_time = 0
   ent.y = ent.y + ent.h + 4 -- FIXME: why???
   
   s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
