@@ -1,5 +1,13 @@
+local ffi = require 'ffi'
 local Entity = require 'game/entity'
 local Easing = require 'game/easing'
+
+ffi.cdef [[
+  typedef struct {
+    bool active;
+    float hit_time;
+  } ent_coin_block_t;
+]]
 
 local e = {}
 
@@ -18,11 +26,13 @@ e.init = function(s)
 end
 
 e.spawn = function(s, ent)
+  local ed = ffi.new("ent_coin_block_t")
+  s.s.edata[ent.number] = ed
+  
   ent.type = 'world'
-  ent.item = 'coin'
-  ent.active = true
-  ent.hit_time = nil
-  s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
+  ed.active = true
+  ed.hit_time = 0
+  s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
 end
 
 e.think = function(s, ent, dt)
@@ -32,14 +42,18 @@ end
 local DURATION = 0.12
 
 e.draw = function(s, ent)
-  local i = ent.active and (math.floor(s.time * 8) % 4) + 1 or 5
-  local y = (ent.hit_time == nil or s.time > ent.hit_time + DURATION) and ent.y or Easing.linear(s.time - ent.hit_time, ent.y-4, 4, DURATION)
+  local ed = s.s.edata[ent.number]
+  
+  local i = ed.active and (math.floor(s.time * 8) % 4) + 1 or 5
+  local y = (ed.hit_time == 0 or s.time > ed.hit_time + DURATION) and ent.y or Easing.linear(s.time - ed.hit_time, ent.y-4, 4, DURATION)
   
   love.graphics.draw(s.media.coin_block, s.media.coin_block_frames[i], ent.x, y, 0, 1, 1)
 end
 
 e.collide = function(s, ent, col)
-  if col.item.classname ~= 'player' or not ent.active then
+  local ed = s.s.edata[ent.number]
+  
+  if col.item.classname ~= 'player' or not ed.active then
     return
   end
   
@@ -49,10 +63,10 @@ e.collide = function(s, ent, col)
   
   s.event_cb(s, {type = 'sound', name = 'coin'})
   
-  col.item.edata.coins = col.item.edata.coins + 1
+  s.s.edata[col.item.number].coins = s.s.edata[col.item.number].coins + 1
   
-  ent.active = false
-  ent.hit_time = s.time
+  ed.active = false
+  ed.hit_time = s.time
 end
 
 return e

@@ -1,30 +1,65 @@
-local entity = {}
-entity.__index = entity
-entity.__tostring = function(ent) return "Entity: " .. ent.classname end
+local ffi = require "ffi"
+ffi.cdef [[
+  typedef struct {
+    const char *world;
+    const char *player;
+    const char *playertrigger;
+    const char *enemy;
+  } collisionmap_t;
+  
+  typedef struct {
+    bool left, right, up, down, jump, attack, menu;
+  } entcommand_t;
+  
+  typedef struct {
+    uint16_t number;
+    const char *classname_str;
+    float x, y, dx, dy;
+    int w, h, drawx, drawy;
+    const char *type;
+    bool can_take_damage;
+    uint16_t health;
+    collisionmap_t collision;
+    entcommand_t *command;
+  } entity_t;
+]]
+
+local ent_mt = {
+  __index = function(table, key)
+    if key == "classname" then
+      return ffi.string(table.classname_str)
+    end
+  end,
+  
+  __tostring = function(ent) return "Entity: " .. ent.classname end  
+}
+ffi.metatype("entity_t", ent_mt)
+
+local keys = {'left','right','up','down','jump','attack','menu'}
+local entcommand_mt = {
+  __pairs = function(t)
+    return pairs(keys)
+  end,
+  
+  __ipairs = function(t)
+    return ipairs(keys)
+  end,
+}
+ffi.metatype("entcommand_t", entcommand_mt)
 
 local e = {}
 
 e.new = function(classname, x, y, w, h)
   assert(classname and x and y and w and h, "Invalid entity")
-
-	return setmetatable({
-      number = nil,
-      classname = classname,
-      x = x,
-      y = y,
-      dx = 0,
-      dy = 0,
-      w = w,
-      h = h,
-      drawx = 0,
-      drawy = 0,
-      type = nil,
-      collision = nil,
-      can_take_damage = false,
-      health = 0,
-      command = {},
-      edata = nil,
-    }, entity)
+  
+  local ent = ffi.new("entity_t")
+  ent.classname_str = classname
+  ent.x = x
+  ent.y = y
+  ent.w = w
+  ent.h = h
+  
+  return ent
 end
 
 e.isTouchingSolid = function(s, ent, side)
@@ -49,7 +84,7 @@ e.isTouchingSolid = function(s, ent, side)
   
   if not touching then
     local bumpx, bumpy
-    bumpx, bumpy, cols = s.bump:check(ent, ent.x+x, ent.y+y, s.bumpfilter)
+    bumpx, bumpy, cols = s.bump:check(ent.number, ent.x+x, ent.y+y, s.bumpfilter)
     touching = ((side == 'left' or side == 'right') and bumpx == ent.x) or ((side == 'up' or side == 'down') and bumpy == ent.y)
   end
   return touching, cols
@@ -61,10 +96,14 @@ e.move = function(s, ent)
   local entCol, tileCol = false
   local xCollided, yCollided = false
   
-  moves.x[1], _, xCols, len = s.bump:check(ent, ent.x + (ent.dx*s.dt), ent.y, s.bumpfilter)
+  moves.x[1], _, xCols, len = s.bump:check(ent.number, ent.x + (ent.dx*s.dt), ent.y, s.bumpfilter)
   for i=1, len do
-    if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, xCols[i]) end
-    if s.ent_handlers[xCols[i].other.classname].collide then s.ent_handlers[xCols[i].other.classname].collide(s, xCols[i].other, xCols[i]) end
+    local col = xCols[i]
+    local other = s.s.entities[col.other]
+    col.item = ent
+    col.other = other
+    if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, col) end
+    if s.ent_handlers[other.classname].collide then s.ent_handlers[other.classname].collide(s, other, col) end
     entCol = ent.x == moves.x[1]
   end
     
@@ -88,17 +127,21 @@ e.move = function(s, ent)
     xCollided = true
   end
   
-  s.bump:update(ent, ent.x, ent.y)
+  s.bump:update(ent.number, ent.x, ent.y)
   
   -- check y next
   entCol = false
   tileCol = false
   
-  _, moves.y[1], yCols, len = s.bump:check(ent, ent.x, ent.y + (ent.dy*s.dt), s.bumpfilter)
+  _, moves.y[1], yCols, len = s.bump:check(ent.number, ent.x, ent.y + (ent.dy*s.dt), s.bumpfilter)
   for i=1, len do
-    if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, yCols[i]) end
-    if s.ent_handlers[yCols[i].other.classname].collide then s.ent_handlers[yCols[i].other.classname].collide(s, yCols[i].other, yCols[i]) end
-    entCol = ent.y == moves.y[1]
+    local col = yCols[i]
+    local other = s.s.entities[col.other]
+    col.item = ent
+    col.other = other
+    if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, col) end
+    if s.ent_handlers[other.classname].collide then s.ent_handlers[other.classname].collide(s, other, col) end
+    entCol = ent.x == moves.x[1]
   end
   
   if ent.dy > 0 then
@@ -111,7 +154,7 @@ e.move = function(s, ent)
   
   yCollided = entCol or tileCol
 
-  s.bump:update(ent, ent.x, ent.y)
+  s.bump:update(ent.number, ent.x, ent.y)
   
   return xCollided, yCollided, xCols, yCols
 end

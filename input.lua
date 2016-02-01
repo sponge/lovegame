@@ -1,3 +1,5 @@
+local ffi = require "ffi"
+
 local pad = nil
 
 local kbmappings = {
@@ -44,9 +46,9 @@ local function isKeyboardDown(action)
 end
 
 local function getInputs()
-  local usercmd = { left = false, right = false, up = false, down = false, jump = false, attack = false, menu = false }
-  for i, v in pairs(usercmd) do
-    usercmd[i] = isKeyboardDown(i) or isGamepadDown(i)
+  local usercmd = ffi.new("entcommand_t")
+  for i, v in ipairs(usercmd) do
+    usercmd[v] = isKeyboardDown(v) or isGamepadDown(v)
   end
   
   return usercmd

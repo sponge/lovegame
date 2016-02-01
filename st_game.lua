@@ -1,3 +1,5 @@
+local ffi = require 'ffi'
+
 local GNet = require 'gamenet'
 local Binser = require 'binser'
 local Console = require 'game/console'
@@ -152,11 +154,13 @@ function scene:draw()
   love.graphics.clear(gs.l.backgroundcolor)
   
   local player = gs.s.entities[gs.playerNum]
+  local player_edata = gs.s.edata[gs.playerNum]
+  
   assert(gs.playerNum ~= nil, "playerNum is nil!")
   assert(player, "player ent is nil!")
   
-  if math.abs(player.edata.last_ground_y - camLockY) > 48 then
-    camLockY = player.edata.last_ground_y
+  if math.abs(player_edata.last_ground_y - camLockY) > 48 then
+    camLockY = player_edata.last_ground_y
   end
   
   gs.cam:lockX(player.x + math.floor(player.dx/2), smoothFunc)
@@ -261,7 +265,7 @@ function scene:draw()
   love.graphics.printf("COINS", 200, winh - 50, 100, "center")
   love.graphics.printf("RED COINS", 300, winh - 50, 100, "center")
   love.graphics.printf(player.health, 100, winh - 25, 100, "center")
-  love.graphics.printf(player.edata.coins, 200, winh - 25, 100, "center")
+  love.graphics.printf(player_edata.coins, 200, winh - 25, 100, "center")
   love.graphics.printf(gs.s.red_coins.found ..' / '.. gs.s.red_coins.sum, 300, winh - 25, 100, "center")
 
 end

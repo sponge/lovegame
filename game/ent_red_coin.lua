@@ -24,7 +24,7 @@ e.spawn = function(s, ent)
   ent.type = 'playertrigger'
   ent.w = 12
   ent.x = ent.x + 2
-  s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
+  s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
   s.s.red_coins.sum = s.s.red_coins.sum + 1
 end
 

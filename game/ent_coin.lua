@@ -24,7 +24,7 @@ e.spawn = function(s, ent)
   ent.type = 'playertrigger'
   ent.w = 12
   ent.x = ent.x + 2
-  s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
+  s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
 end
 
 e.think = function(s, ent, dt)
@@ -45,7 +45,7 @@ e.collide = function(s, ent, col)
   
   s.event_cb(s, {type = 'sound', name = 'coin'})
   
-  col.item.edata.coins = col.item.edata.coins + 1
+  s.s.edata[col.item.number].coins = s.s.edata[col.item.number].coins + 1
   
   GameFSM.removeEntity(s, ent.number)
 end

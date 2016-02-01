@@ -1,3 +1,5 @@
+local ffi = require "ffi"
+
 local CVar = require "game/cvar"
 local JSON = require "game/dkjson"
 local Camera = require "game/camera"
@@ -27,13 +29,6 @@ local function parse_color(col)
     return rgb
 end
 
--- (item|other).collision can be playertrigger, player, world, enemy
-local filter = function(item, other)
-  if item.collision == nil then return nil end
-  if item.collision[other.type] == nil then return nil end
-  return item.collision[other.type]
-end
-
 -- tilecollider functions
 local g = function(state, x, y)
   if y <= 0 then y = 1 end
@@ -48,6 +43,18 @@ local c = function(state, ent, side, tile, x, y, dx, dy)
   return tile.solid
 end
 
+function newBumpFilter(state)
+  local gs = state
+  return function(item, other)
+    item = gs.s.entities[item]
+    other = gs.s.entities[other]
+    local other_type = ffi.string(other.type)
+    if item.collision == nil then return nil end
+    if item.collision[other_type] == nil then return nil end
+    return ffi.string(item.collision[other_type])
+  end
+end
+
 local mod = {}
 
 mod.init = function(str_level, event_cb)
@@ -56,7 +63,7 @@ mod.init = function(str_level, event_cb)
   assert(type(event_cb) == 'function', "No callback passed into GameFSM.init")
 
   local state = {
-    s = {entities = {}, red_coins = {found = 0, sum = 0}}, -- serializable state (network?)
+    s = {entities = {}, edata = {}, red_coins = {found = 0, sum = 0}}, -- serializable state (network?)
     playerNum = nil,
     removedEnts = {}, 
     worldLayer = nil,
@@ -70,9 +77,10 @@ mod.init = function(str_level, event_cb)
     media = {},
     cvars = {},
     event_cb = event_cb,
-    bumpfilter = filter,
     ent_handlers = EntHandlers,
-  }
+  }  
+  
+  state.bumpfilter = newBumpFilter(state)
   
   local cvar_table = {
     {"p_gravity", 625},
@@ -98,14 +106,16 @@ mod.init = function(str_level, event_cb)
     state.cvars[cvar.name] = cvar
   end
 
+  require('mobdebug').off()
   state.l, _, err = JSON.decode(str_level, 1, nil)
+  require('mobdebug').on()
   state.cam = Camera(0, 0, 1920/(state.l.tilewidth*24)) -- FIXME:  pass in width?
   
   state.col = TileCollider(g, state.l.tilewidth, state.l.tileheight, c, nil, false)
   state.bump = Bump.newWorld(64)
   
   if err ~= nil then
-    s.event_cb(s, {type = 'error', message = 'Error while loading map JSON'})
+    state.event_cb(state, {type = 'error', message = 'Error while loading map JSON'})
     return
   end
   
@@ -127,7 +137,7 @@ mod.init = function(str_level, event_cb)
         local ent = Entity.new(obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
         ent.number = #state.s.entities+1
         state.s.entities[ent.number] = ent
-        if state.ent_handlers[ent.classname].spawn then state.ent_handlers[ent.classname].spawn(state, ent) end
+        if state.ent_handlers[obj.type].spawn then state.ent_handlers[obj.type].spawn(state, ent) end
       end
     end
   end
@@ -141,7 +151,7 @@ mod.init = function(str_level, event_cb)
         local ent = Entity.new(state.tileinfo[v].tile_entity, ((i-1)%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
         ent.number = #state.s.entities+1        
         state.s.entities[ent.number] = ent
-        if state.ent_handlers[ent.classname].spawn then state.ent_handlers[ent.classname].spawn(state, ent) end
+        if state.ent_handlers[classname].spawn then state.ent_handlers[classname].spawn(state, ent) end
       end
     end
   end
@@ -201,8 +211,8 @@ mod.removeEntity = function(gs, num)
     return
   end
   
-  if gs.bump:hasItem(ent) then
-    gs.bump:remove(ent)
+  if gs.bump:hasItem(num) then
+    gs.bump:remove(num)
   end
   gs.s.entities[ent.number] = nil
   gs.removedEnts[#gs.removedEnts+1] = num

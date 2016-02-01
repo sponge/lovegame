@@ -31,8 +31,8 @@ e.init = function(s)
 end
 
 e.spawn = function(s, ent)
-  ent.edata = ffi.new("ent_goomba_t")
-  local ed = ent.edata
+  local ed = ffi.new("ent_goomba_t")
+  s.s.edata[ent.number] = ed
   
   ed.on_ground = false
   ed.active = true
@@ -48,12 +48,12 @@ e.spawn = function(s, ent)
   }
   ent.can_take_damage = true
   
-  s.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
+  s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
   ent.dx = -20
 end
 
 e.think = function(s, ent, dt)  
-  local ed = ent.edata
+  local ed = s.s.edata[ent.number]
   
   if not ed.active then
     if s.time > ed.dead_time then
@@ -75,14 +75,14 @@ e.think = function(s, ent, dt)
 end
 
 e.draw = function(s, ent)
-  local ed = ent.edata
+  local ed = s.s.edata[ent.number]
   
   local i = ed.active and (math.floor(s.time * 8) % 2) + 1 or 3
   love.graphics.draw(s.media.goomba, s.media.goomba_frames[i], ent.x, ent.y, 0, 1, 1)
 end
 
 e.collide = function(s, ent, col)
-  local ed = ent.edata
+  local ed = s.s.edata[ent.number]
   
   if col.item.type ~= 'player' or not ed.active then
     return
@@ -92,9 +92,9 @@ e.collide = function(s, ent, col)
 end
 
 e.take_damage = function(s, ent, dmg)
-  local ed = ent.edata
+  local ed = s.s.edata[ent.number]
   
-  s.bump:remove(ent)
+  s.bump:remove(ent.number)
   ed.active = false
   ed.dead_time = s.time + 1
   --s.event_cb(s, {type = 'sound', name = 'goomba_squish'})  

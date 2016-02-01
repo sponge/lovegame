@@ -26,7 +26,7 @@ function love.conf(t)
     t.modules.window = false             -- Enable the window module (boolean)
     t.modules.thread = true             -- Enable the thread module (boolean)
   else
-    t.console = true
+    t.console = false
     t.window.width = 1280
     t.window.height = 720
     t.window.vsync = true

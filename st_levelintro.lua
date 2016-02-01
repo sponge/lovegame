@@ -5,7 +5,7 @@ local InputManager = require "input"
 local scene = {}
 
 function scene:enter(from, gs)
-  collectgarbage("collect")
+  --collectgarbage("collect")
   self.time_in_scene = 0
   self.gs = gs
 end
