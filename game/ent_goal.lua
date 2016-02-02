@@ -21,11 +21,11 @@ e.spawn = function(s, ent)
 end
 
 e.think = function(s, ent, dt)
-  if s.s.goal_time == nil then
+  if s.goal_time == nil then
     return
   end
   
-  if s.time >= s.s.goal_time and s.time - s.dt < s.s.goal_time then
+  if s.time >= s.goal_time and s.time - s.dt < s.goal_time then
     local GameFSM = require 'game/gamefsm'
     GameFSM.addEvent(s, {type = 'win'})
   end
@@ -42,11 +42,11 @@ e.collide = function(s, ent, col)
     return
   end
   
-  if s.s.goal_time ~= nil then
+  if s.goal_time ~= nil then
     return
   end
   
-  s.s.goal_time = s.time + 10
+  s.goal_time = s.time + 10
   col.item.can_take_damage = false
   GameFSM.addEvent(s, {type = 'sound', name = 'goal'})
 end

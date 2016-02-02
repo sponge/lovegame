@@ -45,7 +45,7 @@ e.collide = function(s, ent, col)
   
   GameFSM.addEvent(s, {type = 'sound', name = 'coin'})
   
-  s.s.edata[col.item.number].coins = s.s.edata[col.item.number].coins + 1
+  s.edata[col.item.number].coins = s.edata[col.item.number].coins + 1
   
   GameFSM.removeEntity(s, ent.number)
 end

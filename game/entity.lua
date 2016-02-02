@@ -99,7 +99,7 @@ e.move = function(s, ent)
   moves.x[1], _, xCols, len = s.bump:check(ent.number, ent.x + (ent.dx*s.dt), ent.y, s.bumpfilter)
   for i=1, len do
     local col = xCols[i]
-    local other = s.s.entities[col.other]
+    local other = s.entities[col.other]
     col.item = ent
     col.other = other
     if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, col) end
@@ -136,7 +136,7 @@ e.move = function(s, ent)
   _, moves.y[1], yCols, len = s.bump:check(ent.number, ent.x, ent.y + (ent.dy*s.dt), s.bumpfilter)
   for i=1, len do
     local col = yCols[i]
-    local other = s.s.entities[col.other]
+    local other = s.entities[col.other]
     col.item = ent
     col.other = other
     if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, col) end

@@ -98,7 +98,7 @@ function love.update(dt)
         local msg = string.sub(event.data, 2)
         if eType == 4 and clients[event.peer].entity > 0 then
           local usercmd = Binser.d(msg)
-          gs.s.entities[clients[event.peer].entity].command = usercmd
+          gs.entities[clients[event.peer].entity].command = usercmd
         end
       end
     elseif event.type == "connect" then
@@ -112,7 +112,7 @@ function love.update(dt)
       event.peer:send( string.char(1) .. level_json, 0, "reliable")
     elseif event.type == "disconnect" then
       print("a player disconnected")
-      gs.s.entities[clients[event.peer].entity] = nil
+      gs.entities[clients[event.peer].entity] = nil
       clients[event.peer] = nil
     end
     event = host:service()

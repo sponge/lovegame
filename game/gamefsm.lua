@@ -46,8 +46,8 @@ end
 function newBumpFilter(state)
   local gs = state
   return function(item, other)
-    item = gs.s.entities[item]
-    other = gs.s.entities[other]
+    item = gs.entities[item]
+    other = gs.entities[other]
     local other_type = ffi.string(other.type)
     if item.collision == nil then return nil end
     if item.collision[other_type] == nil then return nil end
@@ -61,13 +61,16 @@ mod.init = function(str_level)
   local err
   
   local state = {
-    s = {entities = {}, edata = {}, red_coins = {found = 0, sum = 0}}, -- serializable state (network?)
+    entities = {},
+    edata = {},
+    red_coins = {found = 0, sum = 0},
     events = {},
     playerNum = nil,
     removedEnts = {}, 
     worldLayer = nil,
     tileinfo = {},
     camera = nil,
+    goal_time = nil,
     l = nil, -- level
     col = nil, -- tilecollider
     bump = nil, -- bump
@@ -130,8 +133,8 @@ mod.init = function(str_level)
     if layer.type == "objectgroup" then
       for _, obj in ipairs(layer.objects) do
         local ent = Entity.new(obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
-        ent.number = #state.s.entities+1
-        state.s.entities[ent.number] = ent
+        ent.number = #state.entities+1
+        state.entities[ent.number] = ent
         if state.ent_handlers[obj.type].spawn then state.ent_handlers[obj.type].spawn(state, ent) end
       end
     end
@@ -144,8 +147,8 @@ mod.init = function(str_level)
         state.worldLayer.data[i] = 0
         local classname = state.tileinfo[v].tile_entity        
         local ent = Entity.new(state.tileinfo[v].tile_entity, ((i-1)%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
-        ent.number = #state.s.entities+1        
-        state.s.entities[ent.number] = ent
+        ent.number = #state.entities+1        
+        state.entities[ent.number] = ent
         if state.ent_handlers[classname].spawn then state.ent_handlers[classname].spawn(state, ent) end
       end
     end
@@ -165,12 +168,9 @@ mod.step = function(state, dt)
   state.dt = dt
   state.time = state.time + dt
   
-  state.s.dt = state.dt
-  state.s.time = state.time
-  
   local ent = nil
   for i = 1, 1024 do --FIXME: hardcoded value
-    ent = state.s.entities[i]
+    ent = state.entities[i]
     if ent ~= nil and state.ent_handlers[ent.classname].think ~= nil then
       state.ent_handlers[ent.classname].think(state, ent, dt)
     end
@@ -178,7 +178,7 @@ mod.step = function(state, dt)
 end
 
 mod.addCommand = function(state, num, command)
-  state.s.entities[num].command = command
+  state.entities[num].command = command
 end
 
 mod.addEvent = function(state, event)
@@ -187,7 +187,7 @@ end
 
 mod.spawnPlayer = function(state)
   local spawnPoint = nil
-  for _, ent in ipairs(state.s.entities) do
+  for _, ent in ipairs(state.entities) do
     if ent.classname == "player_start" then
       spawnPoint = ent
       break
@@ -195,8 +195,8 @@ mod.spawnPlayer = function(state)
   end
   
   local ent = Entity.new("player", spawnPoint.x, spawnPoint.y, 8, 22)
-  ent.number = #state.s.entities+1
-  state.s.entities[ent.number] = ent
+  ent.number = #state.entities+1
+  state.entities[ent.number] = ent
   if state.ent_handlers[ent.classname].spawn then state.ent_handlers[ent.classname].spawn(state, ent) end
   
   state.cam:lookAt(spawnPoint.x, spawnPoint.y)  
@@ -205,7 +205,7 @@ mod.spawnPlayer = function(state)
 end
 
 mod.removeEntity = function(gs, num)
-  local ent = gs.s.entities[num]
+  local ent = gs.entities[num]
   -- FIXME: this maybe shouldnt even be getting called?
   if ent == nil then
     return
@@ -214,7 +214,7 @@ mod.removeEntity = function(gs, num)
   if gs.bump:hasItem(num) then
     gs.bump:remove(num)
   end
-  gs.s.entities[ent.number] = nil
+  gs.entities[ent.number] = nil
   gs.removedEnts[#gs.removedEnts+1] = num
 end
 
@@ -231,25 +231,25 @@ mod.mergeState = function(gs, ns)
   end
   
   if ns.red_coins ~= nil then
-    gs.s.red_coins = ns.red_coins
+    gs.red_coins = ns.red_coins
   end
   
   if ns.entities ~= nil then
     for ent_number = 1, 1024 do -- FIXME: hardcoded value
       local new_ent = ns.entities[ent_number]
       if new_ent == nil then
-        if gs.s.entities[ent_number] ~= nil then
+        if gs.entities[ent_number] ~= nil then
           removeEntity(gs, ent_number)
         end
       else
-        if gs.s.entities[ent_number] == nil then
+        if gs.entities[ent_number] == nil then
           local ent = Entity.new(new_ent.classname, new_ent.x, new_ent.y, new_ent.w, new_ent.h)
           ent.number = ent_number
-          gs.s.entities[ent.number] = ent
+          gs.entities[ent.number] = ent
           if gs.ent_handlers[ent.classname].spawn then gs.ent_handlers[ent.classname].spawn(gs, ent) end
         end
         for k,v in pairs(new_ent) do
-          gs.s.entities[ent_number][k] = v
+          gs.entities[ent_number][k] = v
         end
       end
     end

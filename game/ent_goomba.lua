@@ -32,7 +32,7 @@ end
 
 e.spawn = function(s, ent)
   local ed = ffi.new("ent_goomba_t")
-  s.s.edata[ent.number] = ed
+  s.edata[ent.number] = ed
   
   ed.on_ground = false
   ed.active = true
@@ -53,11 +53,11 @@ e.spawn = function(s, ent)
 end
 
 e.think = function(s, ent, dt)  
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
   
   if not ed.active then
     if s.time > ed.dead_time then
-      s.s.entities[ent.number] = nil
+      s.entities[ent.number] = nil
     end
     return
   end
@@ -75,14 +75,14 @@ e.think = function(s, ent, dt)
 end
 
 e.draw = function(s, ent)
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
   
   local i = ed.active and (math.floor(s.time * 8) % 2) + 1 or 3
   love.graphics.draw(s.media.goomba, s.media.goomba_frames[i], ent.x, ent.y, 0, 1, 1)
 end
 
 e.collide = function(s, ent, col)
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
   
   if col.item.type ~= 'player' or not ed.active then
     return
@@ -94,7 +94,7 @@ end
 e.take_damage = function(s, ent, dmg)
   local GameFSM = require 'game/gamefsm'
   
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
   
   s.bump:remove(ent.number)
   ed.active = false

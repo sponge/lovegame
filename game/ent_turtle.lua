@@ -33,7 +33,7 @@ end
 
 e.spawn = function(s, ent)
   local ed = ffi.new("ent_turtle_t")
-  s.s.edata[ent.number] = ed
+  s.edata[ent.number] = ed
   
   ed.on_ground = false
   ed.active = true
@@ -55,7 +55,7 @@ e.spawn = function(s, ent)
 end
 
 e.think = function(s, ent, dt)
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
   local xCollided, yCollided = Entity.move(s, ent)
   
   -- walls always stop momentum
@@ -65,13 +65,13 @@ e.think = function(s, ent, dt)
 end
 
 e.draw = function(s, ent)
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
   local i = (math.floor(s.time * 8) % 2) + 1
   love.graphics.draw(s.media.turtle, s.media.turtle_frames[i], ent.x, ent.y, 0, 1, 1)
 end
 
 e.collide = function(s, ent, col)
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
   local GameFSM = require 'game/gamefsm'
   
   if col.item.classname ~= 'player' then

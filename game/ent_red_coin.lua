@@ -25,7 +25,7 @@ e.spawn = function(s, ent)
   ent.w = 12
   ent.x = ent.x + 2
   s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
-  s.s.red_coins.sum = s.s.red_coins.sum + 1
+  s.red_coins.sum = s.red_coins.sum + 1
 end
 
 e.think = function(s, ent, dt)
@@ -46,7 +46,7 @@ e.collide = function(s, ent, col)
   
   GameFSM.addEvent(s, {type = 'sound', name = 'red_coin'})
   
-  s.s.red_coins.found = s.s.red_coins.found + 1
+  s.red_coins.found = s.red_coins.found + 1
   
   GameFSM.removeEntity(s, ent.number)
 end

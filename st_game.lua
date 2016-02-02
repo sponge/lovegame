@@ -89,8 +89,8 @@ function scene:enter(current, mapname, mpdata)
     gs.media.bg:setFilter("linear", "nearest")
   end
   
-  if gs.s.entities[gs.playerNum] ~= nil then
-    gs.cam:lookAt(gs.s.entities[gs.playerNum].x, gs.s.entities[gs.playerNum].y)
+  if gs.entities[gs.playerNum] ~= nil then
+    gs.cam:lookAt(gs.entities[gs.playerNum].x, gs.entities[gs.playerNum].y)
   end
   
   camLockY = gs.cam.y
@@ -178,8 +178,8 @@ function scene:draw()
   love.graphics.setCanvas(canvas)
   love.graphics.clear(gs.l.backgroundcolor)
   
-  local player = gs.s.entities[gs.playerNum]
-  local player_edata = gs.s.edata[gs.playerNum]
+  local player = gs.entities[gs.playerNum]
+  local player_edata = gs.edata[gs.playerNum]
   
   assert(gs.playerNum ~= nil, "playerNum is nil!")
   assert(player, "player ent is nil!")
@@ -250,7 +250,7 @@ function scene:draw()
   
   local ent = nil
   for i = 1, 1024 do --FIXME: hardcoded value
-    ent = gs.s.entities[i]
+    ent = gs.entities[i]
     if ent ~= nil and gs.ent_handlers[ent.classname].draw ~= nil then
       gs.ent_handlers[ent.classname].draw(gs, ent)
       if ent.dbg then
@@ -276,8 +276,8 @@ function scene:draw()
   end
   
   local y = winh/2
-  if gs.s.goal_time ~= nil and gs.time + 1.5 >= gs.s.goal_time then
-    y = Easing.inBack(gs.time - gs.s.goal_time + 1.5, winh/2, winh/2, 0.6)
+  if gs.goal_time ~= nil and gs.time + 1.5 >= gs.goal_time then
+    y = Easing.inBack(gs.time - gs.goal_time + 1.5, winh/2, winh/2, 0.6)
   end
   
   love.graphics.draw(canvas, x, y, 0, sf, sf, xoff, height/2)
@@ -291,7 +291,7 @@ function scene:draw()
   love.graphics.printf("RED COINS", 300, winh - 50, 100, "center")
   love.graphics.printf(player.health, 100, winh - 25, 100, "center")
   love.graphics.printf(player_edata.coins, 200, winh - 25, 100, "center")
-  love.graphics.printf(gs.s.red_coins.found ..' / '.. gs.s.red_coins.sum, 300, winh - 25, 100, "center")
+  love.graphics.printf(gs.red_coins.found ..' / '.. gs.red_coins.sum, 300, winh - 25, 100, "center")
 
 end
 

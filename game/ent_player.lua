@@ -91,7 +91,7 @@ local function setup_physics(s, ed)
 end
 
 local function getAccel(s, ent, dir)
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
   
   if s.time < ed.stun_time then
     return 0
@@ -148,7 +148,7 @@ end
 
 e.spawn = function(s, ent)
   local ed = ffi.new("ent_player_t")
-  s.s.edata[ent.number] = ed
+  s.edata[ent.number] = ed
     
   ed.anim_frame = ed.STAND
   ed.anim_mirror = false
@@ -186,7 +186,7 @@ end
 e.think = function(s, ent, dt)
   local GameFSM = require 'game/gamefsm'
 
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
 
   -- used to test if we're losing edata
   --assert(ed.attack_length == 0.25, "attack length is wrong")
@@ -204,7 +204,7 @@ e.think = function(s, ent, dt)
     ent.dy = ent.dy + (ed.gravity*dt)
   end
   
-  if s.s.goal_time ~= nil then
+  if s.goal_time ~= nil then
     for _, v in ipairs(ent.command) do
       ent.command[v] = false
     end
@@ -357,7 +357,7 @@ e.think = function(s, ent, dt)
   if s.time < ed.attack_time then
     local hits, len = s.bump:queryRect(ed.anim_mirror and ent.x - 13 or ent.x + ent.w, ent.y + ent.drawy + 11, 13, 5)
     for i=1, len do
-      local hit_ent = s.s.entities[hits[i]]
+      local hit_ent = s.entities[hits[i]]
       Entity.hurt(s, hit_ent, 1, ent)
     end
   end
@@ -365,7 +365,7 @@ e.think = function(s, ent, dt)
 end
 
 e.collide = function(s, ent, col)
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
   if ed.will_pogo and col.other.type == 'enemy' and col.normal.x == 0 and col.normal.y == -1 then
     Entity.hurt(s, col.other, 1, ent)
     ed.will_bounce_enemy = true
@@ -373,7 +373,7 @@ e.collide = function(s, ent, col)
 end
 
 e.draw = function(s, ent)
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
   local x = nil
   local sx = 1
   
@@ -425,7 +425,7 @@ end
 
 e.take_damage = function(s, ent, amount)
   local GameFSM = require 'game/gamefsm'
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
   
   if s.time < ed.invuln_time then
     return

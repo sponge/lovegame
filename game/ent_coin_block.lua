@@ -27,7 +27,7 @@ end
 
 e.spawn = function(s, ent)
   local ed = ffi.new("ent_coin_block_t")
-  s.s.edata[ent.number] = ed
+  s.edata[ent.number] = ed
   
   ent.type = 'world'
   ed.active = true
@@ -42,7 +42,7 @@ end
 local DURATION = 0.12
 
 e.draw = function(s, ent)
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
   
   local i = ed.active and (math.floor(s.time * 8) % 4) + 1 or 5
   local y = (ed.hit_time == 0 or s.time > ed.hit_time + DURATION) and ent.y or Easing.linear(s.time - ed.hit_time, ent.y-4, 4, DURATION)
@@ -52,7 +52,7 @@ end
 
 e.collide = function(s, ent, col)
   local GameFSM = require 'game/gamefsm'
-  local ed = s.s.edata[ent.number]
+  local ed = s.edata[ent.number]
   
   if col.item.classname ~= 'player' or not ed.active then
     return
@@ -64,7 +64,7 @@ e.collide = function(s, ent, col)
   
   GameFSM.addEvent(s, {type = 'sound', name = 'coin'})
   
-  s.s.edata[col.item.number].coins = s.s.edata[col.item.number].coins + 1
+  s.edata[col.item.number].coins = s.edata[col.item.number].coins + 1
   
   ed.active = false
   ed.hit_time = s.time
