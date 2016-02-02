@@ -8,6 +8,7 @@ local GameFSM = require 'game/gamefsm'
 local Camera = require 'game/camera'
 local InputManager = require 'input'
 local Easing = require 'game/easing'
+local Entity = require 'game/entity'
 
 local st_console = require 'st_console'
 local st_debug = require 'st_debug'
@@ -249,9 +250,8 @@ function scene:draw()
   end
   
   local ent = nil
-  for i = 1, 1024 do --FIXME: hardcoded value
-    ent = gs.entities[i]
-    if ent ~= nil and gs.ent_handlers[ent.classname].draw ~= nil then
+  for i, ent in Entity.iterActive(gs.entities) do
+    if gs.ent_handlers[ent.classname].draw ~= nil then
       gs.ent_handlers[ent.classname].draw(gs, ent)
       if ent.dbg then
         love.graphics.setColor(255,0,0,255)

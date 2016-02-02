@@ -57,7 +57,7 @@ e.think = function(s, ent, dt)
   
   if not ed.active then
     if s.time > ed.dead_time then
-      s.entities[ent.number] = nil
+      s.entities[ent.number].in_use = false
     end
     return
   end

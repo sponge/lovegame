@@ -61,7 +61,7 @@ mod.init = function(str_level)
   local err
   
   local state = {
-    entities = {},
+    entities = nil,
     edata = {},
     red_coins = {found = 0, sum = 0},
     events = {},
@@ -82,6 +82,7 @@ mod.init = function(str_level)
   }  
   
   state.bumpfilter = newBumpFilter(state)
+  state.entities = ffi.new("entity_t[1024]")
   
   local cvar_table = {
     {"p_gravity", 625},
@@ -132,9 +133,7 @@ mod.init = function(str_level)
     
     if layer.type == "objectgroup" then
       for _, obj in ipairs(layer.objects) do
-        local ent = Entity.new(obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
-        ent.number = #state.entities+1
-        state.entities[ent.number] = ent
+        local ent = Entity.new(state, obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
         if state.ent_handlers[obj.type].spawn then state.ent_handlers[obj.type].spawn(state, ent) end
       end
     end
@@ -146,9 +145,7 @@ mod.init = function(str_level)
       if state.tileinfo[v].tile_entity ~= nil then
         state.worldLayer.data[i] = 0
         local classname = state.tileinfo[v].tile_entity        
-        local ent = Entity.new(state.tileinfo[v].tile_entity, ((i-1)%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
-        ent.number = #state.entities+1        
-        state.entities[ent.number] = ent
+        local ent = Entity.new(state, state.tileinfo[v].tile_entity, ((i-1)%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
         if state.ent_handlers[classname].spawn then state.ent_handlers[classname].spawn(state, ent) end
       end
     end
@@ -169,9 +166,8 @@ mod.step = function(state, dt)
   state.time = state.time + dt
   
   local ent = nil
-  for i = 1, 1024 do --FIXME: hardcoded value
-    ent = state.entities[i]
-    if ent ~= nil and state.ent_handlers[ent.classname].think ~= nil then
+  for i, ent in Entity.iterActive(state.entities) do
+    if state.ent_handlers[ent.classname].think ~= nil then
       state.ent_handlers[ent.classname].think(state, ent, dt)
     end
   end
@@ -187,16 +183,14 @@ end
 
 mod.spawnPlayer = function(state)
   local spawnPoint = nil
-  for _, ent in ipairs(state.entities) do
+  for i, ent in Entity.iterActive(state.entities) do
     if ent.classname == "player_start" then
       spawnPoint = ent
       break
     end
   end
   
-  local ent = Entity.new("player", spawnPoint.x, spawnPoint.y, 8, 22)
-  ent.number = #state.entities+1
-  state.entities[ent.number] = ent
+  local ent = Entity.new(state, "player", spawnPoint.x, spawnPoint.y, 8, 22)
   if state.ent_handlers[ent.classname].spawn then state.ent_handlers[ent.classname].spawn(state, ent) end
   
   state.cam:lookAt(spawnPoint.x, spawnPoint.y)  
@@ -214,7 +208,7 @@ mod.removeEntity = function(gs, num)
   if gs.bump:hasItem(num) then
     gs.bump:remove(num)
   end
-  gs.entities[ent.number] = nil
+  gs.entities[ent.number].in_use = false
   gs.removedEnts[#gs.removedEnts+1] = num
 end
 
@@ -235,7 +229,7 @@ mod.mergeState = function(gs, ns)
   end
   
   if ns.entities ~= nil then
-    for ent_number = 1, 1024 do -- FIXME: hardcoded value
+    for ent_number = 1, 1023 do -- FIXME: hardcoded value
       local new_ent = ns.entities[ent_number]
       if new_ent == nil then
         if gs.entities[ent_number] ~= nil then
@@ -243,9 +237,7 @@ mod.mergeState = function(gs, ns)
         end
       else
         if gs.entities[ent_number] == nil then
-          local ent = Entity.new(new_ent.classname, new_ent.x, new_ent.y, new_ent.w, new_ent.h)
-          ent.number = ent_number
-          gs.entities[ent.number] = ent
+          local ent = Entity.new(gs, new_ent.classname, new_ent.x, new_ent.y, new_ent.w, new_ent.h)
           if gs.ent_handlers[ent.classname].spawn then gs.ent_handlers[ent.classname].spawn(gs, ent) end
         end
         for k,v in pairs(new_ent) do

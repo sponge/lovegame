@@ -13,6 +13,7 @@ ffi.cdef [[
   
   typedef struct {
     uint16_t number;
+    bool in_use;
     const char *classname_str;
     float x, y, dx, dy;
     int w, h, drawx, drawy;
@@ -27,11 +28,15 @@ ffi.cdef [[
 local ent_mt = {
   __index = function(table, key)
     if key == "classname" then
-      return ffi.string(table.classname_str)
+      if table.in_use == false then
+        return "Unused"
+      else
+        return ffi.string(table.classname_str)
+      end
     end
   end,
   
-  __tostring = function(ent) return "Entity: " .. ent.classname end  
+  __tostring = function(ent) return "Entity: " .. ent.classname end
 }
 ffi.metatype("entity_t", ent_mt)
 
@@ -49,17 +54,24 @@ ffi.metatype("entcommand_t", entcommand_mt)
 
 local e = {}
 
-e.new = function(classname, x, y, w, h)
+e.new = function(s, classname, x, y, w, h)
   assert(classname and x and y and w and h, "Invalid entity")
   
-  local ent = ffi.new("entity_t")
-  ent.classname_str = classname
-  ent.x = x
-  ent.y = y
-  ent.w = w
-  ent.h = h
+  for i = 0, 1023 do -- FIXME: hardcoded
+    local ent = s.entities[i]
+    if ent.in_use == false then
+      ent.in_use = true
+      ent.classname_str = classname
+      ent.number = i
+      ent.x = x
+      ent.y = y
+      ent.w = w
+      ent.h = h
+      return ent
+    end
+  end
   
-  return ent
+  assert(false, "Ran out of entities")
 end
 
 e.isTouchingSolid = function(s, ent, side)
@@ -169,6 +181,19 @@ e.hurt = function(s, ent, amt, inflictor)
   end
   
   s.ent_handlers[ent.classname].take_damage(s, ent, amt, inflictor)
+end
+
+e.iterActive = function(t)
+  local i = -1
+  return function()
+    repeat
+      i = i + 1
+    until t[i].in_use == true or i > 1023
+    
+    if i < 1024 then
+      return i, t[i]
+    end
+  end
 end
 
 -- the module
