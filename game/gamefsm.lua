@@ -158,7 +158,7 @@ mod.init = function(str_level)
   return state
 end
 
-mod.step = function(state, dt) 
+mod.step = function(state, dt)
   for k,v in pairs(state.removedEnts) do state.removedEnts[k]=nil end
   state.events = {}
   

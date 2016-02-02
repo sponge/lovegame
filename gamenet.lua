@@ -40,7 +40,7 @@ mod.service = function(mpdata)
       local eType = event.data:byte(1)
       local msg = string.sub(event.data, 2)
       if eType == 1 then
-        mpdata.gs = GameFSM.init(msg, require "gamefsm_cb")
+        mpdata.gs = GameFSM.init(msg)
         mpdata.status = "level_loaded"
         mpdata.peer:send("ready")
       elseif eType == 2 then

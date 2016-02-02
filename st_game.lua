@@ -137,7 +137,7 @@ function scene:update(dt)
     
     if GameState.current() ~= st_console then
       if usercmd.menu then
-        error('Game Exited')
+        game_err('Game Exited')
         return
       end
       
