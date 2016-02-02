@@ -48,7 +48,7 @@ function scene:enter(current, mapname, mpdata)
     local err
     local level_json, _ = love.filesystem.read(mapname)
   
-    gs, err = GameFSM.init(level_json, require "gamefsm_cb")
+    gs, err = GameFSM.init(level_json)
     if err ~= nil then
       game_err(err)
       return
