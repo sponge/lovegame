@@ -51,6 +51,7 @@ e.draw = function(s, ent)
 end
 
 e.collide = function(s, ent, col)
+  local GameFSM = require 'game/gamefsm'
   local ed = s.s.edata[ent.number]
   
   if col.item.classname ~= 'player' or not ed.active then
@@ -61,7 +62,7 @@ e.collide = function(s, ent, col)
     return
   end
   
-  s.event_cb(s, {type = 'sound', name = 'coin'})
+  GameFSM.addEvent(s, {type = 'sound', name = 'coin'})
   
   s.s.edata[col.item.number].coins = s.s.edata[col.item.number].coins + 1
   

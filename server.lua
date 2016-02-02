@@ -19,9 +19,6 @@ local event_cb = function(s, ev)
     print('player won')
     -- FIXME: doesn't work yet
     --Console:command("map base/maps/smw.json")
-  elseif ev.type == 'error' then
-    print(ev.message)
-    Console:command("quit")
   end
   
   local msg = Binser.s(ev)

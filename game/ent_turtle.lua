@@ -79,7 +79,7 @@ e.collide = function(s, ent, col)
     return
   end
   
-  --s.event_cb(s, {type = 'sound', name = 'turtle'})
+  --GameFSM.addEvent(s, {type = 'sound', name = 'turtle'})
   
   GameFSM.removeEntity(s, ent.number)
 end

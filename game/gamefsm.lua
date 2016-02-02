@@ -57,13 +57,12 @@ end
 
 local mod = {}
 
-mod.init = function(str_level, event_cb)
+mod.init = function(str_level)
   local err
   
-  assert(type(event_cb) == 'function', "No callback passed into GameFSM.init")
-
   local state = {
     s = {entities = {}, edata = {}, red_coins = {found = 0, sum = 0}}, -- serializable state (network?)
+    events = {},
     playerNum = nil,
     removedEnts = {}, 
     worldLayer = nil,
@@ -76,7 +75,6 @@ mod.init = function(str_level, event_cb)
     time = 0,
     media = {},
     cvars = {},
-    event_cb = event_cb,
     ent_handlers = EntHandlers,
   }  
   
@@ -106,17 +104,14 @@ mod.init = function(str_level, event_cb)
     state.cvars[cvar.name] = cvar
   end
 
-  require('mobdebug').off()
   state.l, _, err = JSON.decode(str_level, 1, nil)
-  require('mobdebug').on()
   state.cam = Camera(0, 0, 1920/(state.l.tilewidth*24)) -- FIXME:  pass in width?
   
   state.col = TileCollider(g, state.l.tilewidth, state.l.tileheight, c, nil, false)
   state.bump = Bump.newWorld(64)
   
   if err ~= nil then
-    state.event_cb(state, {type = 'error', message = 'Error while loading map JSON'})
-    return
+    return nil, 'Could not parse map JSON'
   end
   
   state.l.backgroundcolor = parse_color(state.l.backgroundcolor)
@@ -165,6 +160,7 @@ end
 
 mod.step = function(state, dt) 
   for k,v in pairs(state.removedEnts) do state.removedEnts[k]=nil end
+  state.events = {}
   
   state.dt = dt
   state.time = state.time + dt
@@ -183,6 +179,10 @@ end
 
 mod.addCommand = function(state, num, command)
   state.s.entities[num].command = command
+end
+
+mod.addEvent = function(state, event)
+  state.events[#state.events+1] = event
 end
 
 mod.spawnPlayer = function(state)

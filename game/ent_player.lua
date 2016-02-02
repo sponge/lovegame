@@ -1,4 +1,4 @@
-local ffi = require("ffi")
+local ffi = require 'ffi'
 
 local Entity = require 'game/entity'
 
@@ -184,6 +184,8 @@ e.spawn = function(s, ent)
 end
 
 e.think = function(s, ent, dt)
+  local GameFSM = require 'game/gamefsm'
+
   local ed = s.s.edata[ent.number]
 
   -- used to test if we're losing edata
@@ -220,9 +222,9 @@ e.think = function(s, ent, dt)
   end
   
   if not wasSlide and ed.wall_sliding then
-    s.event_cb(s, {type = 'sound', name = 'wallslide'})
+    GameFSM.addEvent(s, {type = 'sound', name = 'wallslide'})
   elseif wasSlide and not ed.wall_sliding then
-    s.event_cb(s, {type = 'stopsound', name = 'wallslide'})
+    GameFSM.addEvent(s, {type = 'stopsound', name = 'wallslide'})
   end
     
   -- apply wall sliding
@@ -252,7 +254,7 @@ e.think = function(s, ent, dt)
     ed.can_double_jump = true
     ed.did_jump = true
     ed.will_pogo = false
-    s.event_cb(s, {type = 'sound', name = 'pogo'})
+    GameFSM.addEvent(s, {type = 'sound', name = 'pogo'})
   -- check for other jumps
   elseif ent.command.jump == true and ed.jump_held == false then
     -- check for walljump
@@ -262,21 +264,21 @@ e.think = function(s, ent, dt)
       ed.stun_time = s.time + 1/10
       ed.jump_held = true
       ed.did_jump = true
-      s.event_cb(s, {type = 'sound', name = 'jump'})
+      GameFSM.addEvent(s, {type = 'sound', name = 'jump'})
     -- check for first jump
     elseif ed.on_ground then
       ent.dy = ed.jump_height + (abs(ent.dx) >= ed.max_speed * 0.25 and ed.speed_jump_bonus or 0)
       ed.jump_held = true
       ed.can_double_jump = true
       ed.did_jump = true
-      s.event_cb(s, {type = 'sound', name = 'jump'})
+      GameFSM.addEvent(s, {type = 'sound', name = 'jump'})
     -- check for second jump
     elseif ed.can_double_jump == true then
       ent.dy = ed.double_jump_height
       ed.can_double_jump = false
       ed.jump_held = true
       ed.did_jump = true
-      s.event_cb(s, {type = 'sound', name = 'jump'})
+      GameFSM.addEvent(s, {type = 'sound', name = 'jump'})
     end
   end
   
@@ -317,9 +319,9 @@ e.think = function(s, ent, dt)
   end
   
   if abs(ent.dx) > 60 and last_accel ~= ed.skid_accel and ed.accel_type == ed.skid_accel then
-    s.event_cb(s, {type = 'sound', name = 'skid'})
+    GameFSM.addEvent(s, {type = 'sound', name = 'skid'})
   elseif last_accel == ed.skid_accel and ed.accel_type ~= ed.skid_accel then
-    s.event_cb(s, {type = 'stopsound', name = 'skid'})
+    GameFSM.addEvent(s, {type = 'stopsound', name = 'skid'})
   end
   
   -- cap intended x/y speed
@@ -345,11 +347,11 @@ e.think = function(s, ent, dt)
   elseif yCollided and ent.dy > 0 and not ed.will_pogo then
     ent.dy = 0
     if ent.dy >= ed.terminal_velocity * 0.75 then
-      s.event_cb(s, {type = 'sound', name = 'bump'})
+      GameFSM.addEvent(s, {type = 'sound', name = 'bump'})
     end  
   elseif yCollided and ent.dy < 0 then
     ent.dy = 0
-    s.event_cb(s, {type = 'sound', name = 'headbump'})
+    GameFSM.addEvent(s, {type = 'sound', name = 'headbump'})
   end
   
   if s.time < ed.attack_time then
@@ -422,6 +424,7 @@ e.draw = function(s, ent)
 end
 
 e.take_damage = function(s, ent, amount)
+  local GameFSM = require 'game/gamefsm'
   local ed = s.s.edata[ent.number]
   
   if s.time < ed.invuln_time then
@@ -432,9 +435,9 @@ e.take_damage = function(s, ent, amount)
   ent.health = ent.health - amount
   
   if ent.health <= 0 then
-    s.event_cb(s, {type = 'death', ent = ent.number})
+    GameFSM.addEvent(s, {type = 'death', ent = ent.number})
   else
-    s.event_cb(s, {type = 'sound', name = 'hurt'})
+    GameFSM.addEvent(s, {type = 'sound', name = 'hurt'})
   end
 end
 

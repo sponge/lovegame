@@ -92,12 +92,14 @@ e.collide = function(s, ent, col)
 end
 
 e.take_damage = function(s, ent, dmg)
+  local GameFSM = require 'game/gamefsm'
+  
   local ed = s.s.edata[ent.number]
   
   s.bump:remove(ent.number)
   ed.active = false
   ed.dead_time = s.time + 1
-  --s.event_cb(s, {type = 'sound', name = 'goomba_squish'})  
+  --GameFSM.addEvent(s, {type = 'sound', name = 'goomba_squish'})  
 end
 
 return e

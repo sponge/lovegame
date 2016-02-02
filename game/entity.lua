@@ -141,7 +141,7 @@ e.move = function(s, ent)
     col.other = other
     if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, col) end
     if s.ent_handlers[other.classname].collide then s.ent_handlers[other.classname].collide(s, other, col) end
-    entCol = ent.x == moves.x[1]
+    entCol = ent.y == moves.y[1]
   end
   
   if ent.dy > 0 then

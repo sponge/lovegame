@@ -52,8 +52,9 @@ mod.service = function(mpdata)
         mpdata.gs.playerNum = tonumber(msg)
         mpdata.status = "ready"
       elseif eType == 4 then
-        local ev = Binser.d(msg, 1000)
-        mpdata.gs.event_cb(mpdata.gs, ev)
+        -- FIXME: needs to not use callbacks and insert into the gs events table
+        --local ev = Binser.d(msg, 1000)
+        --mpdata.gGameFSM.addEvent(mpdata.gs, ev)
       else
         print("unknown packet type", eType)
       end

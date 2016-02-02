@@ -12,6 +12,7 @@ local Easing = require 'game/easing'
 local st_console = require 'st_console'
 local st_debug = require 'st_debug'
 local st_levelintro = require 'st_levelintro'
+local st_win = require 'st_win'
 
 local abs = math.abs
 local floor = math.floor
@@ -44,9 +45,15 @@ function scene:enter(current, mapname, mpdata)
     gs = mpdata.gs
     gs.mpdata = mpdata
   else
+    local err
     local level_json, _ = love.filesystem.read(mapname)
   
-    gs = GameFSM.init(level_json, require "gamefsm_cb")
+    gs, err = GameFSM.init(level_json, require "gamefsm_cb")
+    if err ~= nil then
+      game_err(err)
+      return
+    end
+    
     gs.currmap = mapname
     
     gs.playerNum = GameFSM.spawnPlayer(gs)
@@ -95,8 +102,10 @@ function scene:leave()
     spritebatches[i] = nil
   end
   
-  for i, v in pairs(gs.media) do
-    gs.media[i] = nil
+  if gs ~= nil then
+    for i, v in pairs(gs.media) do
+      gs.media[i] = nil
+    end
   end
   
   spritebatches = {}
@@ -104,7 +113,7 @@ function scene:leave()
   tileInfo = {}
   canvas = nil
   love.audio.stop()
-  if gs.mpdata then
+  if gs and gs.mpdata then
     GNet.destroy(gs.mpdata)
     gs.mpdata = nil
   end
@@ -128,19 +137,35 @@ function scene:update(dt)
     
     if GameState.current() ~= st_console then
       if usercmd.menu then
-        gs.event_cb(gs, {type = 'error', message = 'Game exited'})
+        error('Game Exited')
         return
       end
       
-      if not gs.mpdata then
-        GameFSM.addCommand(gs, gs.playerNum, usercmd)
-      else
-        gs.mpdata.peer:send( string.char(4) .. Binser.s(usercmd), 0, "unreliable")
+      if gs then
+        if not gs.mpdata then
+          GameFSM.addCommand(gs, gs.playerNum, usercmd)
+        else
+          gs.mpdata.peer:send( string.char(4) .. Binser.s(usercmd), 0, "unreliable")
+        end
       end
     end
     
     if not gs.mpdata or mp_predict.int > 0 then
       GameFSM.step(gs, tickrate)
+    end
+    
+    for _, ev in ipairs(gs.events) do
+      if ev.type == 'sound' then
+        love.audio.stop(gs.media['snd_'.. ev.name])
+        love.audio.play(gs.media['snd_'.. ev.name])
+      elseif ev.type == 'stopsound' then
+        love.audio.stop(gs.media['snd_'.. ev.name])
+      elseif ev.type == 'death' then
+        GameState.switch(scene, gs.currmap)
+      elseif ev.type == 'win' then
+        GameState.switch(st_win)
+        return
+      end
     end
     
     update_accum = update_accum - tickrate

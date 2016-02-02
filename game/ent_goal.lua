@@ -26,7 +26,8 @@ e.think = function(s, ent, dt)
   end
   
   if s.time >= s.s.goal_time and s.time - s.dt < s.s.goal_time then
-    s.event_cb(s, {type = 'win'})
+    local GameFSM = require 'game/gamefsm'
+    GameFSM.addEvent(s, {type = 'win'})
   end
 end
 
@@ -34,7 +35,9 @@ e.draw = function(s, ent)
   love.graphics.draw(s.media.goal, ent.x, ent.y)
 end
 
-e.collide = function(s, ent, col) 
+e.collide = function(s, ent, col)
+  local GameFSM = require 'game/gamefsm'
+
   if col.item.classname ~= 'player' then
     return
   end
@@ -45,7 +48,7 @@ e.collide = function(s, ent, col)
   
   s.s.goal_time = s.time + 10
   col.item.can_take_damage = false
-  s.event_cb(s, {type = 'sound', name = 'goal'})
+  GameFSM.addEvent(s, {type = 'sound', name = 'goal'})
 end
 
 e.take_damage = function(s, ent, dmg)

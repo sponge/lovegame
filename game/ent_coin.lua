@@ -43,7 +43,7 @@ e.collide = function(s, ent, col)
     return
   end
   
-  s.event_cb(s, {type = 'sound', name = 'coin'})
+  GameFSM.addEvent(s, {type = 'sound', name = 'coin'})
   
   s.s.edata[col.item.number].coins = s.s.edata[col.item.number].coins + 1
   
