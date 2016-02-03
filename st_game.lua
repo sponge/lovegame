@@ -94,8 +94,6 @@ function scene:enter(current, mapname, mpdata)
     gs.cam:lookAt(gs.entities[gs.playerNum].x, gs.entities[gs.playerNum].y)
   end
   
-  camLockY = gs.cam.y
-  
 end
 
 function scene:leave()
@@ -185,7 +183,7 @@ function scene:draw()
   assert(gs.playerNum ~= nil, "playerNum is nil!")
   assert(player, "player ent is nil!")
   
-  if math.abs(player_edata.last_ground_y - camLockY) > 48 then
+  if camLockY == nil or math.abs(player_edata.last_ground_y - camLockY) > 48 then
     camLockY = player_edata.last_ground_y
   end
   
