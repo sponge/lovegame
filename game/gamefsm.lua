@@ -29,14 +29,14 @@ local function parse_color(col)
 end
 
 -- tilecollider functions
-local g = function(state, x, y)
+local g = function(gs, x, y)
   if y <= 0 then y = 1 end
-  return state.tileinfo[ state.worldLayer.data[(y-1)*state.l.width+x] ]
+  return gs.tileinfo[ gs.worldLayer.data[(y-1)*gs.l.width+x] ]
 end
 
-local c = function(state, ent, side, tile, x, y, dx, dy)
+local c = function(gs, ent, side, tile, x, y, dx, dy)
   if tile.platform then
-    return side == 'bottom' and ent.y+ent.h <= (y-1)*state.l.tileheight and ent.y+ent.h+dy > (y-1)*state.l.tileheight
+    return side == 'bottom' and ent.y+ent.h <= (y-1)*gs.l.tileheight and ent.y+ent.h+dy > (y-1)*gs.l.tileheight
   end
   
   return tile.solid
@@ -59,7 +59,7 @@ local mod = {}
 mod.init = function(str_level)
   local err
   
-  local state = {
+  local gs = {
     entities = nil,
     edata = {},
     red_coins = {found = 0, sum = 0},
@@ -80,8 +80,8 @@ mod.init = function(str_level)
     ent_handlers = EntHandlers,
   }  
   
-  state.bumpfilter = newBumpFilter(state)
-  state.entities = ffi.new("entity_t[1024]")
+  gs.bumpfilter = newBumpFilter(gs)
+  gs.entities = ffi.new("entity_t[1024]")
   
   local cvar_table = {
     {"p_gravity", 625},
@@ -104,20 +104,20 @@ mod.init = function(str_level)
   
   for _, v in ipairs(cvar_table) do
     local cvar = CVar.new(v[1], v[2])
-    state.cvars[cvar.name] = cvar
+    gs.cvars[cvar.name] = cvar
   end
 
-  state.l, _, err = JSON.decode(str_level, 1, nil)
-  state.cam = Camera(0, 0, 1920/(state.l.tilewidth*24)) -- FIXME:  pass in width?
+  gs.l, _, err = JSON.decode(str_level, 1, nil)
+  gs.cam = Camera(0, 0, 1920/(gs.l.tilewidth*24)) -- FIXME:  pass in width?
   
-  state.col = TileCollider(g, state.l.tilewidth, state.l.tileheight, c, nil, false)
-  state.bump = Bump.newWorld(64)
+  gs.col = TileCollider(g, gs.l.tilewidth, gs.l.tileheight, c, nil, false)
+  gs.bump = Bump.newWorld(64)
   
   if err ~= nil then
     return nil, 'Could not parse map JSON'
   end
   
-  state.l.backgroundcolor = parse_color(state.l.backgroundcolor)
+  gs.l.backgroundcolor = parse_color(gs.l.backgroundcolor)
   
   local mt = {
     __index = function (table, key)
@@ -128,9 +128,9 @@ mod.init = function(str_level)
       }
     end
   }
-  setmetatable(state.tileinfo, mt)
+  setmetatable(gs.tileinfo, mt)
   
-  for _, v in ipairs(state.l.tilesets) do
+  for _, v in ipairs(gs.l.tilesets) do
     if v.source ~= nil then
       local firstgid = v.firstgid
       local tsx_json, _ = love.filesystem.read('base/maps/' .. v.source)
@@ -148,77 +148,77 @@ mod.init = function(str_level)
           if tilepropval == 'true' then tile[tilepropkey] = true end
           if tilepropval == 'false' then tile[tilepropkey] = false end
         end
-        state.tileinfo[tile.num] = tile
+        gs.tileinfo[tile.num] = tile
       end
     end
   end
   
-  for _, layer in ipairs(state.l.layers) do
+  for _, layer in ipairs(gs.l.layers) do
     if layer.name == "world" and layer.type == "tilelayer" then
-      state.worldLayer = layer
+      gs.worldLayer = layer
     end
     
     if layer.type == "objectgroup" then
       for _, obj in ipairs(layer.objects) do
-        local ent = Entity.new(state, obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
-        if state.ent_handlers[obj.type].spawn then state.ent_handlers[obj.type].spawn(state, ent) end
+        local ent = Entity.new(gs, obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)
+        if gs.ent_handlers[obj.type].spawn then gs.ent_handlers[obj.type].spawn(gs, ent) end
       end
     end
   end
   
   -- spawn tile entities and take them out of the map
-  for i,v in ipairs(state.worldLayer.data) do
-    if state.tileinfo[v] and state.tileinfo[v].tile_entity ~= nil then
-      state.worldLayer.data[i] = 0
-      local classname = state.tileinfo[v].tile_entity        
-      local ent = Entity.new(state, state.tileinfo[v].tile_entity, ((i-1)%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
-      if state.ent_handlers[classname].spawn then state.ent_handlers[classname].spawn(state, ent) end
+  for i,v in ipairs(gs.worldLayer.data) do
+    if gs.tileinfo[v] and gs.tileinfo[v].tile_entity ~= nil then
+      gs.worldLayer.data[i] = 0
+      local classname = gs.tileinfo[v].tile_entity        
+      local ent = Entity.new(gs, gs.tileinfo[v].tile_entity, ((i-1)%gs.l.width) * gs.l.tilewidth, floor(i/gs.l.width)*gs.l.tileheight, gs.l.tilewidth, gs.l.tileheight)
+      if gs.ent_handlers[classname].spawn then gs.ent_handlers[classname].spawn(gs, ent) end
     end
   end
   
-  for i,v in pairs(state.ent_handlers) do
-    if v.init then v.init(state) end
+  for i,v in pairs(gs.ent_handlers) do
+    if v.init then v.init(gs) end
   end
 
-  return state
+  return gs
 end
 
-mod.step = function(state, dt)
-  for k,v in pairs(state.removedEnts) do state.removedEnts[k]=nil end
-  state.events = {}
+mod.step = function(gs, dt)
+  for k,v in pairs(gs.removedEnts) do gs.removedEnts[k]=nil end
+  gs.events = {}
   
-  state.dt = dt
-  state.time = state.time + dt
+  gs.dt = dt
+  gs.time = gs.time + dt
   
   local ent = nil
-  for i, ent in Entity.iterActive(state.entities) do
-    if state.ent_handlers[ent.classname].think ~= nil then
-      state.ent_handlers[ent.classname].think(state, ent, dt)
+  for i, ent in Entity.iterActive(gs.entities) do
+    if gs.ent_handlers[ent.classname].think ~= nil then
+      gs.ent_handlers[ent.classname].think(gs, ent, dt)
     end
   end
 end
 
-mod.addCommand = function(state, num, command)
-  state.entities[num].command = command
+mod.addCommand = function(gs, num, command)
+  gs.entities[num].command = command
 end
 
-mod.addEvent = function(state, event)
-  state.events[#state.events+1] = event
+mod.addEvent = function(gs, event)
+  gs.events[#gs.events+1] = event
 end
 
-mod.spawnPlayer = function(state)
+mod.spawnPlayer = function(gs)
   local spawnPoint = nil
-  for i, ent in Entity.iterActive(state.entities) do
+  for i, ent in Entity.iterActive(gs.entities) do
     if ent.classname == "player_start" then
       spawnPoint = ent
       break
     end
   end
   
-  local ent = Entity.new(state, "player", spawnPoint.x, spawnPoint.y, 8, 22)
-  if state.ent_handlers[ent.classname].spawn then state.ent_handlers[ent.classname].spawn(state, ent) end
+  local ent = Entity.new(gs, "player", spawnPoint.x, spawnPoint.y, 8, 22)
+  if gs.ent_handlers[ent.classname].spawn then gs.ent_handlers[ent.classname].spawn(gs, ent) end
   
-  state.cam:lookAt(spawnPoint.x, spawnPoint.y)  
+  gs.cam:lookAt(spawnPoint.x, spawnPoint.y)  
   
   return ent.number
 end
