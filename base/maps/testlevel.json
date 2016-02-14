@@ -79,35 +79,11 @@
  "tilesets":[
         {
          "firstgid":1,
-         "image":"base\/keen1.png",
-         "imageheight":752,
-         "imagewidth":208,
-         "margin":0,
-         "name":"keen1",
-         "properties":
-            {
-
-            },
-         "spacing":0,
-         "tilecount":611,
-         "tileheight":16,
-         "tilewidth":16
+         "source":"tilesets\/keen1.json"
         }, 
         {
          "firstgid":612,
-         "image":"base\/keen3.png",
-         "imageheight":768,
-         "imagewidth":208,
-         "margin":0,
-         "name":"keen3",
-         "properties":
-            {
-
-            },
-         "spacing":0,
-         "tilecount":624,
-         "tileheight":16,
-         "tilewidth":16
+         "source":"tilesets\/keen3.json"
         }],
  "tilewidth":16,
  "version":1,

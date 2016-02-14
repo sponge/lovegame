@@ -7,7 +7,6 @@ local TileCollider = require "game/tilecollider"
 local Bump = require "game/bump"
 local Entity = require "game/entity"
 local EntHandlers = require "game/enthandlers"
-local TileTypes = require "game/tiletypes"
 
 local abs = math.abs
 local floor = math.floor
@@ -120,9 +119,37 @@ mod.init = function(str_level)
   
   state.l.backgroundcolor = parse_color(state.l.backgroundcolor)
   
+  local mt = {
+    __index = function (table, key)
+      return {
+        num = key,
+        solid = true,
+        platform = false
+      }
+    end
+  }
+  setmetatable(state.tileinfo, mt)
+  
   for _, v in ipairs(state.l.tilesets) do
-    for i = v.firstgid, v.firstgid + v.tilecount do
-      state.tileinfo[i] = TileTypes[v.name][i-v.firstgid]
+    if v.source ~= nil then
+      local firstgid = v.firstgid
+      local tsx_json, _ = love.filesystem.read('base/maps/' .. v.source)
+      v, _, err = JSON.decode(tsx_json, 1, nil)
+      v.firstgid = firstgid
+    end
+    
+    if v.tileproperties then
+      for k, tile in pairs(v.tileproperties) do
+        tile.num = tonumber(k)
+        if tile.num > 0 then
+          tile.num = tile.num + v.firstgid
+        end
+        for tilepropkey, tilepropval in pairs(tile) do
+          if tilepropval == 'true' then tile[tilepropkey] = true end
+          if tilepropval == 'false' then tile[tilepropkey] = false end
+        end
+        state.tileinfo[tile.num] = tile
+      end
     end
   end
   
@@ -141,13 +168,11 @@ mod.init = function(str_level)
   
   -- spawn tile entities and take them out of the map
   for i,v in ipairs(state.worldLayer.data) do
-    if state.tileinfo[v] then
-      if state.tileinfo[v].tile_entity ~= nil then
-        state.worldLayer.data[i] = 0
-        local classname = state.tileinfo[v].tile_entity        
-        local ent = Entity.new(state, state.tileinfo[v].tile_entity, ((i-1)%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
-        if state.ent_handlers[classname].spawn then state.ent_handlers[classname].spawn(state, ent) end
-      end
+    if state.tileinfo[v] and state.tileinfo[v].tile_entity ~= nil then
+      state.worldLayer.data[i] = 0
+      local classname = state.tileinfo[v].tile_entity        
+      local ent = Entity.new(state, state.tileinfo[v].tile_entity, ((i-1)%state.l.width) * state.l.tilewidth, floor(i/state.l.width)*state.l.tileheight, state.l.tilewidth, state.l.tileheight)
+      if state.ent_handlers[classname].spawn then state.ent_handlers[classname].spawn(state, ent) end
     end
   end
   

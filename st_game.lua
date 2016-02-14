@@ -1,5 +1,6 @@
 local ffi = require 'ffi'
 
+local JSON = require "game/dkjson"
 local GNet = require 'gamenet'
 local Binser = require 'binser'
 local Console = require 'game/console'
@@ -73,7 +74,15 @@ function scene:enter(current, mapname, mpdata)
   -- load all graphics used in the map
   for _, v in ipairs(gs.l.tilesets) do
     local x, y = nil
-    gs.media[v.name] = love.graphics.newImage(v.image)
+
+    if v.source ~= nil then
+      local firstgid = v.firstgid
+      local tsx_json, _ = love.filesystem.read('base/maps/' .. v.source)
+      v, _, err = JSON.decode(tsx_json, 1, nil)
+      v.firstgid = firstgid
+    end
+      
+    gs.media[v.name] = love.graphics.newImage("base/maps/tilesets/" .. v.image)
     gs.media[v.name]:setFilter("linear", "nearest")
     spritebatches[v.name] = love.graphics.newSpriteBatch(gs.media[v.name], 1024)
     local tw = (v.imagewidth - v.margin) / (v.tilewidth + v.spacing)
