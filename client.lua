@@ -1,7 +1,9 @@
 local Gamestate = require "gamestate"
 local InputManager = require 'input'
 local Console = require 'game/console'
+local measure = require 'measure'
 
+local st_null = require "st_null"
 local st_mainmenu = require "st_mainmenu"
 local st_game = require "st_game"
 local st_console = require "st_console"
@@ -10,37 +12,13 @@ local st_debug = require "st_debug"
 local r_drawdebug = nil
 
 function game_err(msg)
-  st_mainmenu.error = msg
-  Gamestate.switch(st_mainmenu)
-end
-
-local timers = {}
-local function measure(mode, metric, time)
-  if mode ~= 'clearall' and timers[metric] == nil then
-    timers[metric] = {0,0,0,0}
+  if sess.client then
+    st_mainmenu.error = msg
+    Gamestate.switch(st_mainmenu)
+  else
+    print(msg)
+    Gamestate.switch(st_null)
   end
-  
-  if mode == 'get' then
-    return string.format("%.1f", timers[metric][2] * 1000)
-  elseif mode == 'getmax' then
-    return string.format("%.1f", timers[metric][3] * 1000)
-  elseif mode == 'getsum' then
-    return string.format("%.1f", timers[metric][4] * 1000)
-  elseif mode == 'getpct' then
-    return string.format("%.1f", timers[metric][4] / timers.frame[4] * 100 )
-  elseif mode == 'clearall' then
-    for i, v in pairs(timers) do
-      timers[i][3] = 0
-      timers[i][4] = 0
-    end
-  elseif mode == 'start' then
-    timers[metric][1] = love.timer.getTime()
-  elseif mode == 'end' then
-    timers[metric][2] = love.timer.getTime() - timers[metric][1]
-    timers[metric][3] = math.max(timers[metric][3], timers[metric][2])
-    timers[metric][4] = timers[metric][4] + timers[metric][2]
-  end
-  
 end
 
 local function addDebugLine(y, ...)
@@ -52,13 +30,17 @@ local function addDebugLine(y, ...)
   return y + 20
 end
 
-local function con_map(mapname)
+local function cb_con_map(mapname)
   local st_game = require 'st_game'
   print("Switching to gameplay scene with map", mapname)
-  Gamestate.switch(st_game, mapname)
+  if not sess.client and sess.server then
+    Gamestate.switch(st_dedicated, mapname)
+  else
+    Gamestate.switch(st_game, mapname)
+  end
 end
 
-local function con_connect(host)
+local function cb_con_connect(host)
   local st_connect = require 'st_connect'
   print("Connecting to", host)
   Gamestate.switch(st_connect, host)
@@ -77,23 +59,30 @@ local function cb_vid_fullscreen(old, cvar)
 end
 
 function love.load(arg)
-  require("lovebird").update()
   io.stdout:setvbuf("no")
 
-  local width, height, flags = love.window.getMode()
+  if sess.client then
+    local width, height, flags = love.window.getMode()
+    
+    print("pgup/pgdn to scroll back through history")
+    print("alt + pgup/pgdn to jump to top/bottom")
+    print("up arrow and down arrow to go through command history")
+    print("alt+backspace to backspace a full word")
+    
+    Console:addcvar("vid_vsync", flags.vsync, cb_vid_vsync)
+    Console:addcvar("vid_fullscreen", flags.fullscreen, cb_vid_fullscreen)
+    Console:addcommand("connect", cb_con_connect)
+    r_drawdebug = Console:addcvar("r_drawdebug", 0)
+  end
   
-  print("pgup/pgdn to scroll back through history")
-  print("alt + pgup/pgdn to jump to top/bottom")
-  print("up arrow and down arrow to go through command history")
-  print("alt+backspace to backspace a full word")
+  if sess.server then
+    require("lovebird").port = 8888
+    print("Navigate to http://localhost:8888 to access console, use con:command()")
+  end
   
-  Console:addcvar("vid_vsync", flags.vsync, cb_vid_vsync)
-  Console:addcvar("vid_fullscreen", flags.fullscreen, cb_vid_fullscreen)
+  require("lovebird").update()
   
-  Console:addcommand("map", con_map)
-  Console:addcommand("connect", con_connect)
-  
-  r_drawdebug = Console:addcvar("r_drawdebug", 0)
+  Console:addcommand("map", cb_con_map)
   
   -- we'll handle draw ourselves so we can draw debug stuff
   local callbacks = { 'errhand', 'update' }
@@ -101,8 +90,34 @@ function love.load(arg)
     callbacks[#callbacks+1] = k
   end
   Gamestate.registerEvents(callbacks)
+  Gamestate.switch(st_null)
   
-  Gamestate.switch(st_mainmenu)
+  -- parse command line
+  local con_line = ''
+  local appending = false
+  for i = 1, #arg do
+    if string.sub(arg[i], 1, 1) == '+' then
+      if appending then
+        con:command(con_line)
+      end
+      con_line = string.sub(arg[i], 2)
+      appending = true
+    elseif string.sub(arg[i], 1, 1) == '-' and appending then
+      con:command(con_line)
+      appending = false
+    elseif appending then
+      con_line = con_line .. ' ' .. arg[i]
+      if i == #arg then
+        con:command(con_line)
+        appending = false
+      end
+    end
+  end
+  
+  if sess.client and Gamestate.current() == st_null then
+    Gamestate.switch(st_mainmenu)
+  end
+  
 end
 
 function love.joystickadded( gamepad )

@@ -5,14 +5,16 @@ local Console = require 'game/console'
 local scene = {from = nil}
 
 local input = ''
-local font = love.graphics.newFont(12)
+local font
 
 function scene:enter(from)
+  font = love.graphics.newFont(12)
   self.from = from
   love.keyboard.setKeyRepeat(true)
 end
 
 function scene:leave()
+  font = nil
   love.keyboard.setKeyRepeat(false)
 end
 

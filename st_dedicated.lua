@@ -1,79 +1,55 @@
--- server.lua
 require "enet"
+local Gamestate = require "gamestate"
 local Console = require 'game/console'
 local GameFSM = require 'game/gamefsm'
 local Binser = require 'binser'
 
-_ = nil
+local gs = {}
 
-host = nil
-gs = nil
-accum = 0
-clients = {}
-level_json = nil
+--host = nil
+--gs = nil
+--accum = 0
+--clients = {}
+--level_json = nil
 
-local event_cb = function(s, ev)
-  if ev.type == 'death' then
-    print('player died')
-  elseif ev.type == 'win' then
-    print('player won')
-    -- FIXME: doesn't work yet
-    --Console:command("map base/maps/smw.json")
-  end
+--local event_cb = function(s, ev)
+--  if ev.type == 'death' then
+--    print('player died')
+--  elseif ev.type == 'win' then
+--    print('player won')
+--    -- FIXME: doesn't work yet
+--    --Console:command("map base/maps/smw.json")
+--  end
   
-  local msg = Binser.s(ev)
-  for peer, client in pairs(clients) do
-    if client.state == 'active' then
-      peer:send( string.char(4) .. msg )
-    end
-  end
+--  local msg = Binser.s(ev)
+--  for peer, client in pairs(clients) do
+--    if client.state == 'active' then
+--      peer:send( string.char(4) .. msg )
+--    end
+--  end
+--end
+
+--local function con_map(mapname)
+--  print("Loading", mapname)
+  
+--  level_json, _ = love.filesystem.read(mapname)
+--  gs = GameFSM.init(level_json, event_cb)
+  
+--  for _, v in pairs(gs.cvars) do
+--    Console:registercvar(v)
+--  end
+--  host = enet.host_create("0.0.0.0:6789")
+--end
+
+function gs:enter()
+  collectgarbage("collect")
 end
 
-local function con_map(mapname)
-  print("Loading", mapname)
-  
-  level_json, _ = love.filesystem.read(mapname)
-  gs = GameFSM.init(level_json, event_cb)
-  
-  for _, v in pairs(gs.cvars) do
-    Console:registercvar(v)
-  end
-  host = enet.host_create("0.0.0.0:6789")
+function gs:leave()
+
 end
 
-function love.load(arg)
-  -- FIXME: can i spin off into a thread and just loop io.read() on the main? 
-  require("lovebird").port = 8888
-  require("lovebird").update()
-  
-  Console:addcommand("map", con_map)
-  
-  print("Navigate to http://localhost:8888 to access console, use con:command()")
-  
-  local con_line = ''
-  local appending = false
-  for i = 1, #arg do
-    if string.sub(arg[i], 1, 1) == '+' then
-      if appending then
-        con:command(con_line)
-      end
-      con_line = string.sub(arg[i], 2)
-      appending = true
-    elseif string.sub(arg[i], 1, 1) == '-' and appending then
-      con:command(con_line)
-      appending = false
-    elseif appending then
-      con_line = con_line .. ' ' .. arg[i]
-      if i == #arg then
-        con:command(con_line)
-        appending = false
-      end
-    end
-  end
-  
-end
-
-function love.update(dt)
+function gs:update()   
   collectgarbage("step")
   require("lovebird").update()
   
@@ -137,3 +113,5 @@ function love.update(dt)
     end
   end
 end
+
+return gs

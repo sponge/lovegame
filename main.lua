@@ -1,18 +1,23 @@
+require("errhand")
+
 if arg and arg[#arg] ~= "-debug" then
   local Strictness = require "game/strictness"
 else
   require("mobdebug").start()
 end
 
-require("errhand")
-
 -- globals
-_, game_err, socket, currgame, con = nil
+_, game_err, socket, currgame, con, sess = nil
 
-local is_server = false
+sess = {
+  client = true,
+  server = false,
+}
+
 for i, v in ipairs(arg) do
   if v == '-server' then
-    is_server = true
+    sess.server = true
+    sess.client = false
     break
   end
 end
@@ -30,12 +35,8 @@ print = function(...)
    Console:addline(...)
 end
 
-if is_server then
-  require "server"
-else
-  --require("mobdebug").off()
-  if Strictness then
-    Strictness.strict(_G)
-  end
-  require "client"
+if Strictness then
+  Strictness.strict(_G)
 end
+
+require "client"
