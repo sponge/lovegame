@@ -2,11 +2,11 @@ local ffi = require "ffi"
 
 local CVar = require "game/cvar"
 local JSON = require "game/dkjson"
-local Camera = require "game/camera"
 local TileCollider = require "game/tilecollider"
 local Bump = require "game/bump"
 local Entity = require "game/entity"
 local EntHandlers = require "game/enthandlers"
+local Tiny = require "game/tiny"
 
 local abs = math.abs
 local floor = math.floor
@@ -108,13 +108,12 @@ mod.init = function(str_level)
   end
 
   gs.l, _, err = JSON.decode(str_level, 1, nil)
-  gs.cam = Camera(0, 0, 1920/(gs.l.tilewidth*24)) -- FIXME:  pass in width?
   
   gs.col = TileCollider(g, gs.l.tilewidth, gs.l.tileheight, c, nil, false)
   gs.bump = Bump.newWorld(64)
   
   if err ~= nil then
-    return nil, 'Could not parse map JSON'
+    return nil, nil, 'Could not parse map JSON'
   end
   
   gs.l.backgroundcolor = parse_color(gs.l.backgroundcolor)
@@ -179,23 +178,21 @@ mod.init = function(str_level)
   for i,v in pairs(gs.ent_handlers) do
     if v.init then v.init(gs) end
   end
-
-  return gs
-end
-
-mod.step = function(gs, dt)
-  for k,v in pairs(gs.removedEnts) do gs.removedEnts[k]=nil end
-  gs.events = {}
   
-  gs.dt = dt
-  gs.time = gs.time + dt
+  local world = Tiny.world()
+  world.gs = gs
   
-  local ent = nil
-  for i, ent in Entity.iterActive(gs.entities) do
-    if gs.ent_handlers[ent.classname].think ~= nil then
-      gs.ent_handlers[ent.classname].think(gs, ent, dt)
-    end
-  end
+  world:add(
+    require('game/sys_updateents')(gs),
+    require('game/sys_clientevents')(gs),
+    require('game/sys_drawcam')(gs),
+    require('game/sys_drawbg')(gs),
+    require('game/sys_drawmap')(gs),
+    require('game/sys_drawent')(gs),
+    require('game/sys_drawhud')(gs)
+  )
+
+  return gs, world
 end
 
 mod.addCommand = function(gs, num, command)
