@@ -1,5 +1,5 @@
 local ffi = require "ffi"
-ffi.cdef [[
+ffi.cdef [[  
   typedef enum {
     ET_WORLD = 0,
     ET_PLAYER,
@@ -22,7 +22,7 @@ ffi.cdef [[
   typedef struct {
     uint16_t number;
     bool in_use;
-    const char *classname_str;
+    uint8_t class;
     float x, y, dx, dy;
     int w, h, drawx, drawy;
     etype_t type;
@@ -33,13 +33,30 @@ ffi.cdef [[
   } entity_t;
 ]]
 
+name_lookup = {
+  [0] = 'bad',
+  'coin',
+  'coin_block',
+  'goal',
+  'goomba',
+  'player',
+  'player_start',
+  'red_coin',
+  'turtle',
+}
+
+class_lookup = {}
+for i, v in pairs(name_lookup) do
+  class_lookup[v] = i
+end
+
 local ent_mt = {
   __index = function(table, key)
     if key == "classname" then
       if table.in_use == false then
-        return "Unused"
+        return "ent_bad"
       else
-        return ffi.string(table.classname_str)
+        return name_lookup[table.class]
       end
     end
   end,
@@ -64,12 +81,13 @@ local e = {}
 
 e.new = function(s, classname, x, y, w, h)
   assert(classname and x and y and w and h, "Invalid entity")
+  assert(class_lookup[classname], "Couldn't find ent id for entity name ".. classname)
   
   for i = 0, 1023 do -- FIXME: hardcoded
     local ent = s.entities[i]
     if ent.in_use == false then
       ent.in_use = true
-      ent.classname_str = classname
+      ent.class = class_lookup[classname]
       ent.number = i
       ent.x = x
       ent.y = y
