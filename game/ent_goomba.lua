@@ -40,12 +40,9 @@ e.spawn = function(s, ent)
   
   ent.y = ent.y + 1
   ent.h = ent.h - 1
-  ent.type = 'enemy'
-  ent.collision = {
-    player = 'cross',
-    enemy = 'touch',
-    world = 'slide',
-  }
+  ent.type = ffi.C.ET_ENEMY
+  ent.collision[ffi.C.ET_ENEMY] = ffi.C.CT_TOUCH
+  ent.collision[ffi.C.ET_WORLD] = ffi.C.CT_SLIDE
   ent.can_take_damage = true
   
   s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
@@ -84,7 +81,7 @@ end
 e.collide = function(s, ent, col)
   local ed = s.edata[ent.number]
   
-  if col.item.type ~= 'player' or not ed.active then
+  if col.item.type ~= ffi.C.ET_PLAYER or not ed.active then
     return
   end
   

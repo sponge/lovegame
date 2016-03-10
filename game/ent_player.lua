@@ -171,12 +171,8 @@ e.spawn = function(s, ent)
   
   ent.drawx = 5
   ent.drawy = -2
-  ent.type = 'player'
-  ent.collision = {
-    enemy = 'cross',
-    playertrigger = 'cross',
-    world = 'slide',
-  }
+  ent.type = ffi.C.ET_PLAYER
+  ent.collision[ffi.C.ET_WORLD] = ffi.C.CT_SLIDE
   ent.can_take_damage = true
   ent.health = 6
   
@@ -366,7 +362,7 @@ end
 
 e.collide = function(s, ent, col)
   local ed = s.edata[ent.number]
-  if ed.will_pogo and col.other.type == 'enemy' and col.normal.x == 0 and col.normal.y == -1 then
+  if ed.will_pogo and col.other.type == ffi.C.ET_ENEMY and col.normal.x == 0 and col.normal.y == -1 then
     Entity.hurt(s, col.other, 1, ent)
     ed.will_bounce_enemy = true
   end

@@ -1,11 +1,19 @@
 local ffi = require "ffi"
 ffi.cdef [[
-  typedef struct {
-    const char *world;
-    const char *player;
-    const char *playertrigger;
-    const char *enemy;
-  } collisionmap_t;
+  typedef enum {
+    ET_WORLD = 0,
+    ET_PLAYER,
+    ET_PLAYER_TRIGGER,
+    ET_ENEMY,
+    ET_MAX,
+  } etype_t;
+  
+  typedef enum {
+    CT_CROSS = 0,
+    CT_TOUCH,
+    CT_SLIDE,
+    CT_BOUNCE
+  } collisiontype_t;
   
   typedef struct {
     bool left, right, up, down, jump, attack, menu;
@@ -17,10 +25,10 @@ ffi.cdef [[
     const char *classname_str;
     float x, y, dx, dy;
     int w, h, drawx, drawy;
-    const char *type;
+    etype_t type;
     bool can_take_damage;
     uint16_t health;
-    collisionmap_t collision;
+    collisiontype_t collision[ET_MAX];
     entcommand_t *command;
   } entity_t;
 ]]

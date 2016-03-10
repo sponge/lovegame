@@ -43,14 +43,18 @@ local c = function(gs, ent, side, tile, x, y, dx, dy)
 end
 
 function newBumpFilter(state)
+  local col_types = {}
+  col_types[0] = 'cross'
+  col_types[1] = 'touch'
+  col_types[2] = 'slide'
+  col_types[3] = 'bounce'
+  
   local gs = state
   return function(item, other)
     item = gs.entities[item]
     other = gs.entities[other]
-    local other_type = ffi.string(other.type)
-    if item.collision == nil then return nil end
-    if item.collision[other_type] == nil then return nil end
-    return ffi.string(item.collision[other_type])
+    if item.collision == ffi.C.ET_WORLD and item.collision[other.type] == ffi.C.ET_WORLD then return nil end
+    return col_types[ tonumber(item.collision[other.type]) ]
   end
 end
 

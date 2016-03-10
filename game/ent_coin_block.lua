@@ -29,7 +29,6 @@ e.spawn = function(s, ent)
   local ed = ffi.new("ent_coin_block_t")
   s.edata[ent.number] = ed
   
-  ent.type = 'world'
   ed.active = true
   ed.hit_time = 0
   s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)

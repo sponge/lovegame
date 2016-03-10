@@ -1,3 +1,5 @@
+local ffi = require 'ffi'
+
 local Entity = require 'game/entity'
 
 local e = {}
@@ -14,7 +16,7 @@ e.init = function(s)
 end
 
 e.spawn = function(s, ent)
-  ent.type = "playertrigger"
+  ent.type = ffi.C.ET_PLAYER_TRIGGER
   ent.y = ent.y + ent.h + 4 -- FIXME: why???
   
   s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
