@@ -22,7 +22,7 @@ function UpdateEnts:think(dt)
   gs.time = gs.time + dt
   
   local ent = nil
-  for i, ent in Entity.iterActive(gs.entities) do
+  for i, ent in Entity.iterActive(gs.edata) do
     if gs.ent_handlers[ent.classname].think ~= nil then
       gs.ent_handlers[ent.classname].think(gs, ent, dt)
     end

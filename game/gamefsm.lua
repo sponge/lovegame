@@ -51,8 +51,8 @@ function newBumpFilter(state)
   
   local gs = state
   return function(item, other)
-    item = gs.entities[item]
-    other = gs.entities[other]
+    item = gs.edata[item]
+    other = gs.edata[other]
     if item.collision == ffi.C.ET_WORLD and item.collision[other.type] == ffi.C.ET_WORLD then return nil end
     return col_types[ tonumber(item.collision[other.type]) ]
   end
@@ -64,7 +64,6 @@ mod.init = function(str_level)
   local err
   
   local gs = {
-    entities = nil,
     edata = {},
     red_coins = {found = 0, sum = 0},
     events = {},
@@ -85,7 +84,6 @@ mod.init = function(str_level)
   }  
   
   gs.bumpfilter = newBumpFilter(gs)
-  gs.entities = ffi.new("entity_t[1024]")
   
   local cvar_table = {
     {"p_gravity", 625},
@@ -200,7 +198,7 @@ mod.init = function(str_level)
 end
 
 mod.addCommand = function(gs, num, command)
-  gs.entities[num].command = command
+  gs.edata[num].command = command
 end
 
 mod.addEvent = function(gs, event)
@@ -209,7 +207,7 @@ end
 
 mod.spawnPlayer = function(gs)
   local spawnPoint = nil
-  for i, ent in Entity.iterActive(gs.entities) do
+  for i, ent in Entity.iterActive(gs.edata) do
     if ent.classname == "player_start" then
       spawnPoint = ent
       break
@@ -225,7 +223,7 @@ mod.spawnPlayer = function(gs)
 end
 
 mod.removeEntity = function(gs, num)
-  local ent = gs.entities[num]
+  local ent = gs.edata[num]
   -- FIXME: this maybe shouldnt even be getting called?
   if ent == nil then
     return
@@ -234,7 +232,7 @@ mod.removeEntity = function(gs, num)
   if gs.bump:hasItem(num) then
     gs.bump:remove(num)
   end
-  gs.entities[ent.number].in_use = false
+  gs.edata[ent.number].in_use = false
   gs.removedEnts[#gs.removedEnts+1] = num
 end
 
@@ -258,16 +256,16 @@ mod.mergeState = function(gs, ns)
     for ent_number = 1, 1023 do -- FIXME: hardcoded value
       local new_ent = ns.entities[ent_number]
       if new_ent == nil then
-        if gs.entities[ent_number] ~= nil then
+        if gs.edata[ent_number] ~= nil then
           removeEntity(gs, ent_number)
         end
       else
-        if gs.entities[ent_number] == nil then
+        if gs.edata[ent_number] == nil then
           local ent = Entity.new(gs, new_ent.classname, new_ent.x, new_ent.y, new_ent.w, new_ent.h)
           if gs.ent_handlers[ent.classname].spawn then gs.ent_handlers[ent.classname].spawn(gs, ent) end
         end
         for k,v in pairs(new_ent) do
-          gs.entities[ent_number][k] = v
+          gs.edata[ent_number][k] = v
         end
       end
     end

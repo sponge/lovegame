@@ -19,7 +19,7 @@ end
 
 function DrawCam:draw()
   local gs = self.world.gs
-  local player = gs.entities[gs.playerNum]
+  local player = gs.edata[gs.playerNum]
   local player_edata = gs.edata[gs.playerNum]
   local width, height = 1920, 1080
   

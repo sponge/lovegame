@@ -18,19 +18,6 @@ ffi.cdef [[
   typedef struct {
     bool left, right, up, down, jump, attack, menu;
   } entcommand_t;
-  
-  typedef struct {
-    uint16_t number;
-    bool in_use;
-    uint8_t class;
-    float x, y, dx, dy;
-    int w, h, drawx, drawy;
-    etype_t type;
-    bool can_take_damage;
-    uint16_t health;
-    collisiontype_t collision[ET_MAX];
-    entcommand_t *command;
-  } entity_t;
 ]]
 
 name_lookup = {
@@ -63,7 +50,6 @@ local ent_mt = {
   
   __tostring = function(ent) return "Entity: " .. ent.classname end
 }
-ffi.metatype("entity_t", ent_mt)
 
 local keys = {'left','right','up','down','jump','attack','menu'}
 local entcommand_mt = {
@@ -83,21 +69,20 @@ e.new = function(s, classname, x, y, w, h)
   assert(classname and x and y and w and h, "Invalid entity")
   assert(class_lookup[classname], "Couldn't find ent id for entity name ".. classname)
   
-  for i = 0, 1023 do -- FIXME: hardcoded
-    local ent = s.entities[i]
-    if ent.in_use == false then
-      ent.in_use = true
-      ent.class = class_lookup[classname]
-      ent.number = i
-      ent.x = x
-      ent.y = y
-      ent.w = w
-      ent.h = h
-      return ent
-    end
-  end
+  local ent = ffi.new('ent_'.. classname ..'_t')
+  pcall(ffi.metatype, 'ent_'.. classname ..'_t', ent_mt)
+
+  ent.in_use = true
+  ent.class = class_lookup[classname]
+  ent.number = #s.edata+1
+  lastentnum = #s.edata+1
+  ent.x = x
+  ent.y = y
+  ent.w = w
+  ent.h = h
   
-  assert(false, "Ran out of entities")
+  s.edata[#s.edata+1] = ent
+  return ent
 end
 
 e.isTouchingSolid = function(s, ent, side)
@@ -137,7 +122,7 @@ e.move = function(s, ent)
   moves.x[1], _, xCols, len = s.bump:check(ent.number, ent.x + (ent.dx*s.dt), ent.y, s.bumpfilter)
   for i=1, len do
     local col = xCols[i]
-    local other = s.entities[col.other]
+    local other = s.edata[col.other]
     col.item = ent
     col.other = other
     if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, col) end
@@ -174,7 +159,7 @@ e.move = function(s, ent)
   _, moves.y[1], yCols, len = s.bump:check(ent.number, ent.x, ent.y + (ent.dy*s.dt), s.bumpfilter)
   for i=1, len do
     local col = yCols[i]
-    local other = s.entities[col.other]
+    local other = s.edata[col.other]
     col.item = ent
     col.other = other
     if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, col) end
@@ -210,10 +195,13 @@ e.hurt = function(s, ent, amt, inflictor)
 end
 
 e.iterActive = function(t)
-  local i = -1
+  local i = 0
   return function()
     repeat
       i = i + 1
+      if t == nil or t[i] == nil then
+        return nil
+      end
     until t[i].in_use == true or i > 1023
     
     if i < 1024 then
@@ -221,7 +209,6 @@ e.iterActive = function(t)
     end
   end
 end
-
 -- the module
 return setmetatable(e,
 	{__call = function(_, ...) return new(...) end})

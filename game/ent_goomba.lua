@@ -4,6 +4,15 @@ local Entity = require 'game/entity'
 
 ffi.cdef [[
   typedef struct {
+    uint16_t number;
+    bool in_use;
+    uint8_t class;
+    float x, y, dx, dy;
+    int w, h, drawx, drawy;
+    etype_t type;
+    bool can_take_damage;
+    uint16_t health;
+    collisiontype_t collision[ET_MAX];
     bool on_ground;
     bool active;
     float dead_time;
@@ -30,13 +39,10 @@ e.init = function(s)
   end
 end
 
-e.spawn = function(s, ent)
-  local ed = ffi.new("ent_goomba_t")
-  s.edata[ent.number] = ed
-  
-  ed.on_ground = false
-  ed.active = true
-  ed.dead_time = 0
+e.spawn = function(s, ent)  
+  ent.on_ground = false
+  ent.active = true
+  ent.dead_time = 0
   
   ent.y = ent.y + 1
   ent.h = ent.h - 1
@@ -50,18 +56,16 @@ e.spawn = function(s, ent)
 end
 
 e.think = function(s, ent, dt)  
-  local ed = s.edata[ent.number]
-  
-  if not ed.active then
-    if s.time > ed.dead_time then
-      s.entities[ent.number].in_use = false
+  if not ent.active then
+    if s.time > ent.dead_time then
+      s.edata[ent.number].in_use = false
     end
     return
   end
   
-  ed.on_ground = ent.dy >= 0 and Entity.isTouchingSolid(s, ent, 'down')
+  ent.on_ground = ent.dy >= 0 and Entity.isTouchingSolid(s, ent, 'down')
   
-  ent.dy = not ed.on_ground and 150 or 0
+  ent.dy = not ent.on_ground and 150 or 0
 
   local touching, cols = Entity.isTouchingSolid(s, ent, ent.dx > 0 and 'right' or 'left')
   if touching then
@@ -72,16 +76,12 @@ e.think = function(s, ent, dt)
 end
 
 e.draw = function(s, ent)
-  local ed = s.edata[ent.number]
-  
-  local i = ed.active and (math.floor(s.time * 8) % 2) + 1 or 3
+  local i = ent.active and (math.floor(s.time * 8) % 2) + 1 or 3
   love.graphics.draw(s.media.goomba, s.media.goomba_frames[i], ent.x, ent.y, 0, 1, 1)
 end
 
 e.collide = function(s, ent, col)
-  local ed = s.edata[ent.number]
-  
-  if col.item.type ~= ffi.C.ET_PLAYER or not ed.active then
+  if col.item.type ~= ffi.C.ET_PLAYER or not ent.active then
     return
   end
   
@@ -91,11 +91,9 @@ end
 e.take_damage = function(s, ent, dmg)
   local GameFSM = require 'game/gamefsm'
   
-  local ed = s.edata[ent.number]
-  
   s.bump:remove(ent.number)
-  ed.active = false
-  ed.dead_time = s.time + 1
+  ent.active = false
+  ent.dead_time = s.time + 1
   --GameFSM.addEvent(s, {type = 'sound', name = 'goomba_squish'})  
 end
 

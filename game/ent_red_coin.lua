@@ -2,6 +2,17 @@ local ffi = require 'ffi'
 
 local Entity = require 'game/entity'
 
+ffi.cdef [[
+  typedef struct {
+    uint16_t number;
+    bool in_use;
+    uint8_t class;
+    float x, y;
+    int w, h, drawx, drawy;
+    etype_t type;
+  } ent_red_coin_t;
+]]
+
 local e = {}
 
 e.init = function(s)

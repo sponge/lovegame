@@ -62,8 +62,8 @@ function scene:enter(current, mapname, mpdata)
   
   canvas = love.graphics.newCanvas(1920, 1080)
   
-  if gs.entities[gs.playerNum] ~= nil then
-    gs.cam:lookAt(gs.entities[gs.playerNum].x, gs.entities[gs.playerNum].y)
+  if gs.edata[gs.playerNum] ~= nil then
+    gs.cam:lookAt(gs.edata[gs.playerNum].x, gs.edata[gs.playerNum].y)
   end
   
 end

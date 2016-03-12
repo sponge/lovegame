@@ -31,10 +31,7 @@ e.init = function(s)
   end
 end
 
-e.spawn = function(s, ent)
-  local ed = ffi.new("ent_turtle_t")
-  s.edata[ent.number] = ed
-  
+e.spawn = function(s, ent)  
   ed.on_ground = false
   ed.active = true
   ed.in_shell = false

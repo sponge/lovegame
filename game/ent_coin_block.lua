@@ -4,6 +4,12 @@ local Easing = require 'game/easing'
 
 ffi.cdef [[
   typedef struct {
+    uint16_t number;
+    bool in_use;
+    uint8_t class;
+    float x, y;
+    int w, h, drawx, drawy;
+    etype_t type;
     bool active;
     float hit_time;
   } ent_coin_block_t;
@@ -25,12 +31,9 @@ e.init = function(s)
   end  
 end
 
-e.spawn = function(s, ent)
-  local ed = ffi.new("ent_coin_block_t")
-  s.edata[ent.number] = ed
-  
-  ed.active = true
-  ed.hit_time = 0
+e.spawn = function(s, ent)  
+  ent.active = true
+  ent.hit_time = 0
   s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
 end
 
@@ -40,20 +43,17 @@ end
 
 local DURATION = 0.12
 
-e.draw = function(s, ent)
-  local ed = s.edata[ent.number]
-  
-  local i = ed.active and (math.floor(s.time * 8) % 4) + 1 or 5
-  local y = (ed.hit_time == 0 or s.time > ed.hit_time + DURATION) and ent.y or Easing.linear(s.time - ed.hit_time, ent.y-4, 4, DURATION)
+e.draw = function(s, ent)  
+  local i = ent.active and (math.floor(s.time * 8) % 4) + 1 or 5
+  local y = (ent.hit_time == 0 or s.time > ent.hit_time + DURATION) and ent.y or Easing.linear(s.time - ent.hit_time, ent.y-4, 4, DURATION)
   
   love.graphics.draw(s.media.coin_block, s.media.coin_block_frames[i], ent.x, y, 0, 1, 1)
 end
 
 e.collide = function(s, ent, col)
   local GameFSM = require 'game/gamefsm'
-  local ed = s.edata[ent.number]
   
-  if col.item.classname ~= 'player' or not ed.active then
+  if col.item.classname ~= 'player' or not ent.active then
     return
   end
   
@@ -65,8 +65,8 @@ e.collide = function(s, ent, col)
   
   s.edata[col.item.number].coins = s.edata[col.item.number].coins + 1
   
-  ed.active = false
-  ed.hit_time = s.time
+  ent.active = false
+  ent.hit_time = s.time
 end
 
 return e

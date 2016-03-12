@@ -15,7 +15,7 @@ function DrawHUD:draw()
   local gs = self.world.gs
   local winw, winh = 1920, 1080
   
-  local player = gs.entities[gs.playerNum]
+  local player = gs.edata[gs.playerNum]
   local player_edata = gs.edata[gs.playerNum]
 
   love.graphics.setColor(0,0,0,100)

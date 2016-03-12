@@ -17,7 +17,7 @@ function DrawEntities:draw()
   gs.cam:attach()
   
   local ent = nil
-  for i, ent in Entity.iterActive(gs.entities) do
+  for i, ent in Entity.iterActive(gs.edata) do
     if gs.ent_handlers[ent.classname].draw ~= nil then
       gs.ent_handlers[ent.classname].draw(gs, ent)
       if ent.dbg then
