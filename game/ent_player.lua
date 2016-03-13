@@ -112,8 +112,6 @@ local function setup_physics(s, ent)
 end
 
 local function getAccel(s, ent, dir)
-  local ed = s.edata[ent.number]
-  
   if s.time < ent.stun_time then
     return 0
   end
@@ -200,12 +198,10 @@ end
 e.think = function(s, ent, dt)
   local GameFSM = require 'game/gamefsm'
 
-  local ed = s.edata[ent.number]
-
   -- used to test if we're losing edata
   --assert(ent.attack_length == 0.25, "attack length is wrong")
  
-  setup_physics(s, ed)
+  setup_physics(s, ent)
   
   ent.on_ground = ent.dy >= 0 and Entity.isTouchingSolid(s, ent, 'down')
   
@@ -371,7 +367,7 @@ e.think = function(s, ent, dt)
   if s.time < ent.attack_time then
     local hits, len = s.bump:queryRect(ent.anim_mirror and ent.x - 13 or ent.x + ent.w, ent.y + ent.drawy + 11, 13, 5)
     for i=1, len do
-      local hit_ent = s.edata[hits[i]]
+      local hit_ent = s.entities[hits[i]]
       Entity.hurt(s, hit_ent, 1, ent)
     end
   end
@@ -379,7 +375,6 @@ e.think = function(s, ent, dt)
 end
 
 e.collide = function(s, ent, col)
-  local ed = s.edata[ent.number]
   if ent.will_pogo and col.other.type == ffi.C.ET_ENEMY and col.normal.x == 0 and col.normal.y == -1 then
     Entity.hurt(s, col.other, 1, ent)
     ent.will_bounce_enemy = true
@@ -387,7 +382,6 @@ e.collide = function(s, ent, col)
 end
 
 e.draw = function(s, ent)
-  local ed = s.edata[ent.number]
   local x = nil
   local sx = 1
   
@@ -405,7 +399,7 @@ e.draw = function(s, ent)
     ent.anim_frame = ent.PREJUMP2
   elseif ent.dx ~= 0 then
     local i = math.floor(s.time * 8) % 3 + 1
-    ent.anim_frame = ed["RUN"..i]
+    ent.anim_frame = ent["RUN"..i]
   end
   
   if ent.anim_mirror then
@@ -439,7 +433,6 @@ end
 
 e.take_damage = function(s, ent, amount)
   local GameFSM = require 'game/gamefsm'
-  local ed = s.edata[ent.number]
   
   if s.time < ent.invuln_time then
     return

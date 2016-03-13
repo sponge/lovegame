@@ -49,7 +49,7 @@ function scene:enter(current, mapname, mpdata)
     
     gs.currmap = mapname
     
-    gs.playerNum = GameFSM.spawnPlayer(gs)
+    gs.player = GameFSM.spawnPlayer(gs)
     
     for _, v in pairs(gs.cvars) do
       Console:registercvar(v)
@@ -62,8 +62,8 @@ function scene:enter(current, mapname, mpdata)
   
   canvas = love.graphics.newCanvas(1920, 1080)
   
-  if gs.edata[gs.playerNum] ~= nil then
-    gs.cam:lookAt(gs.edata[gs.playerNum].x, gs.edata[gs.playerNum].y)
+  if gs.player ~= nil then
+    gs.cam:lookAt(gs.player.x, gs.player.y)
   end
   
 end
@@ -100,7 +100,7 @@ function scene:update(dt)
   
   if gs then
     if not gs.mpdata then
-      GameFSM.addCommand(gs, gs.playerNum, usercmd)
+      GameFSM.addCommand(gs, gs.player, usercmd)
     else
       gs.mpdata.peer:send( string.char(4) .. Binser.s(usercmd), 0, "unreliable")
     end

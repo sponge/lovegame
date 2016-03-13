@@ -19,20 +19,17 @@ end
 
 function DrawCam:draw()
   local gs = self.world.gs
-  local player = gs.edata[gs.playerNum]
-  local player_edata = gs.edata[gs.playerNum]
   local width, height = 1920, 1080
   
-  assert(gs.playerNum ~= nil, "playerNum is nil!")
-  assert(player, "player ent is nil!")
+  assert(gs.player, "player ent is nil!")
   
-  if self.camLockY == nil or math.abs(player_edata.last_ground_y - self.camLockY) > 48 then
-    self.camLockY = player_edata.last_ground_y
+  if self.camLockY == nil or math.abs(gs.player.last_ground_y - self.camLockY) > 48 then
+    self.camLockY = gs.player.last_ground_y
   end
   
-  gs.cam:lockX(player.x + math.floor(player.dx/2), smoothFunc)
+  gs.cam:lockX(gs.player.x + math.floor(gs.player.dx/2), smoothFunc)
   gs.cam:lockY(self.camLockY, smoothFunc)
-  gs.cam:lockWindow(player.x, player.y, width/2 - 100, width/2 + 100, 100, height - 300)
+  gs.cam:lockWindow(gs.player.x, gs.player.y, width/2 - 100, width/2 + 100, 100, height - 300)
   
   local cminx, cminy = gs.cam:worldCoords(0,0)
   local cmaxx, cmaxy = gs.cam:worldCoords(width, height)

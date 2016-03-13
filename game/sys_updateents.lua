@@ -4,28 +4,27 @@ local tiny = require "game/tiny"
 
 local Entity = require "game/entity"
 
-local UpdateEnts = tiny.system(class "UpdateEnts")
+local UpdateEnts = tiny.processingSystem(class "UpdateEnts")
+UpdateEnts.think = true
 
 function UpdateEnts:init(gs)
-  
 end
 
-function UpdateEnts:update(dt)
-  self:think(dt)
-end
-
-function UpdateEnts:think(dt)
+function UpdateEnts:filter(ent)
   local gs = self.world.gs
-  for k,v in pairs(gs.removedEnts) do gs.removedEnts[k]=nil end
+  return gs.ent_handlers[ent.classname].think ~= nil
+end
+
+function UpdateEnts:process(ent, dt)
+  local gs = self.world.gs
+  gs.ent_handlers[ent.classname].think(gs, ent, dt)
+end
+
+function UpdateEnts:think(ent, dt)
+  local gs = self.world.gs
   
-  gs.dt = dt
-  gs.time = gs.time + dt
-  
-  local ent = nil
-  for i, ent in Entity.iterActive(gs.edata) do
-    if gs.ent_handlers[ent.classname].think ~= nil then
-      gs.ent_handlers[ent.classname].think(gs, ent, dt)
-    end
+  if gs.ent_handlers[ent.classname].think ~= nil then
+    gs.ent_handlers[ent.classname].think(gs, ent, dt)
   end
 end
 

@@ -51,8 +51,8 @@ function newBumpFilter(state)
   
   local gs = state
   return function(item, other)
-    item = gs.edata[item]
-    other = gs.edata[other]
+    item = gs.entities[item]
+    other = gs.entities[other]
     if item.collision == ffi.C.ET_WORLD and item.collision[other.type] == ffi.C.ET_WORLD then return nil end
     return col_types[ tonumber(item.collision[other.type]) ]
   end
@@ -64,10 +64,10 @@ mod.init = function(str_level)
   local err
   
   local gs = {
-    edata = {},
+    entities = {},
     red_coins = {found = 0, sum = 0},
     events = {},
-    playerNum = nil,
+    player = nil,
     removedEnts = {}, 
     worldLayer = nil,
     tileinfo = {},
@@ -76,6 +76,7 @@ mod.init = function(str_level)
     l = nil, -- level
     col = nil, -- tilecollider
     bump = nil, -- bump
+    world = nil,
     dt = nil,
     time = 0,
     media = {},
@@ -113,6 +114,11 @@ mod.init = function(str_level)
   
   gs.col = TileCollider(g, gs.l.tilewidth, gs.l.tileheight, c, nil, false)
   gs.bump = Bump.newWorld(64)
+  
+  -- FIXME: circular ref, needs to be handled on exit maybe?
+  local world = Tiny.world()
+  world.gs = gs
+  gs.world = world
   
   if err ~= nil then
     return nil, nil, 'Could not parse map JSON'
@@ -181,10 +187,8 @@ mod.init = function(str_level)
     if v.init then v.init(gs) end
   end
   
-  local world = Tiny.world()
-  world.gs = gs
-  
   world:add(
+    require('game/sys_updatetime')(gs),
     require('game/sys_updateents')(gs),
     require('game/sys_clientevents')(gs),
     require('game/sys_drawcam')(gs),
@@ -197,8 +201,8 @@ mod.init = function(str_level)
   return gs, world
 end
 
-mod.addCommand = function(gs, num, command)
-  gs.edata[num].command = command
+mod.addCommand = function(gs, ent, command)
+  ent.command = command
 end
 
 mod.addEvent = function(gs, event)
@@ -207,7 +211,8 @@ end
 
 mod.spawnPlayer = function(gs)
   local spawnPoint = nil
-  for i, ent in Entity.iterActive(gs.edata) do
+  
+  for ent in pairs(gs.world.entities) do
     if ent.classname == "player_start" then
       spawnPoint = ent
       break
@@ -219,21 +224,18 @@ mod.spawnPlayer = function(gs)
   
   gs.cam:lookAt(spawnPoint.x, spawnPoint.y)  
   
-  return ent.number
+  return ent
 end
 
 mod.removeEntity = function(gs, num)
-  local ent = gs.edata[num]
-  -- FIXME: this maybe shouldnt even be getting called?
-  if ent == nil then
-    return
-  end
+  local ent = gs.entities[num]
+  
+  gs.world.removeEntity(gs.world, ent)
+  gs.entities[num] = nil
   
   if gs.bump:hasItem(num) then
     gs.bump:remove(num)
   end
-  gs.edata[ent.number].in_use = false
-  gs.removedEnts[#gs.removedEnts+1] = num
 end
 
 local removeEntity = mod.removeEntity
@@ -256,16 +258,16 @@ mod.mergeState = function(gs, ns)
     for ent_number = 1, 1023 do -- FIXME: hardcoded value
       local new_ent = ns.entities[ent_number]
       if new_ent == nil then
-        if gs.edata[ent_number] ~= nil then
+        if gs.entities[ent_number] ~= nil then
           removeEntity(gs, ent_number)
         end
       else
-        if gs.edata[ent_number] == nil then
+        if gs.entities[ent_number] == nil then
           local ent = Entity.new(gs, new_ent.classname, new_ent.x, new_ent.y, new_ent.w, new_ent.h)
           if gs.ent_handlers[ent.classname].spawn then gs.ent_handlers[ent.classname].spawn(gs, ent) end
         end
         for k,v in pairs(new_ent) do
-          gs.edata[ent_number][k] = v
+          gs.entities[ent_number][k] = v
         end
       end
     end

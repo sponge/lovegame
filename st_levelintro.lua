@@ -51,7 +51,7 @@ function scene:update(dt)
     end
     
     if self.gs.mpdata.status == "ready" then
-      assert(self.gs.playerNum ~= nil, "playerNum is nil even though we're ready!")
+      assert(self.gs.player ~= nil, "player is nil even though we're ready!")
       Gamestate.pop()
       return
     end

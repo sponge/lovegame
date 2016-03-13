@@ -1,4 +1,6 @@
 local ffi = require "ffi"
+local Tiny = require "game/tiny"
+
 ffi.cdef [[  
   typedef enum {
     ET_WORLD = 0,
@@ -16,6 +18,8 @@ ffi.cdef [[
   } collisiontype_t;
   
   typedef struct {
+    float time;
+    uint16_t playerNum;
     bool left, right, up, down, jump, attack, menu;
   } entcommand_t;
 ]]
@@ -71,17 +75,28 @@ e.new = function(s, classname, x, y, w, h)
   
   local ent = ffi.new('ent_'.. classname ..'_t')
   pcall(ffi.metatype, 'ent_'.. classname ..'_t', ent_mt)
+  
+  local num
+  for i = 1, #s.entities+1 do
+    if s.entities[i] == nil then
+      num = i
+      break
+    end
+  end
 
   ent.in_use = true
   ent.class = class_lookup[classname]
-  ent.number = #s.edata+1
-  lastentnum = #s.edata+1
+  ent.number = num
   ent.x = x
   ent.y = y
   ent.w = w
   ent.h = h
   
-  s.edata[#s.edata+1] = ent
+  Tiny.add(s.world, ent)
+  s.entities[num] = ent
+  
+  Tiny.refresh(s.world)
+
   return ent
 end
 
@@ -122,7 +137,7 @@ e.move = function(s, ent)
   moves.x[1], _, xCols, len = s.bump:check(ent.number, ent.x + (ent.dx*s.dt), ent.y, s.bumpfilter)
   for i=1, len do
     local col = xCols[i]
-    local other = s.edata[col.other]
+    local other = s.entities[col.other]
     col.item = ent
     col.other = other
     if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, col) end
@@ -159,7 +174,7 @@ e.move = function(s, ent)
   _, moves.y[1], yCols, len = s.bump:check(ent.number, ent.x, ent.y + (ent.dy*s.dt), s.bumpfilter)
   for i=1, len do
     local col = yCols[i]
-    local other = s.edata[col.other]
+    local other = s.entities[col.other]
     col.item = ent
     col.other = other
     if s.ent_handlers[ent.classname].collide then s.ent_handlers[ent.classname].collide(s, ent, col) end
@@ -194,21 +209,6 @@ e.hurt = function(s, ent, amt, inflictor)
   s.ent_handlers[ent.classname].take_damage(s, ent, amt, inflictor)
 end
 
-e.iterActive = function(t)
-  local i = 0
-  return function()
-    repeat
-      i = i + 1
-      if t == nil or t[i] == nil then
-        return nil
-      end
-    until t[i].in_use == true or i > 1023
-    
-    if i < 1024 then
-      return i, t[i]
-    end
-  end
-end
 -- the module
 return setmetatable(e,
 	{__call = function(_, ...) return new(...) end})

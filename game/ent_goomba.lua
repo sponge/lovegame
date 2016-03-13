@@ -58,7 +58,8 @@ end
 e.think = function(s, ent, dt)  
   if not ent.active then
     if s.time > ent.dead_time then
-      s.edata[ent.number].in_use = false
+      local GameFSM = require 'game/gamefsm'
+      GameFSM.removeEntity(s, ent.number)
     end
     return
   end

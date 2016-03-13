@@ -47,7 +47,7 @@ mod.service = function(mpdata)
         assert(mpdata.gs ~= nil)
         local new_gs = Binser.d(love.math.decompress(msg, "lz4"), 1000000)
         GameFSM.mergeState(mpdata.gs, new_gs)
-        assert(#mpdata.gs.edata > 0)
+        assert(#mpdata.gs.entities > 0)
       elseif eType == 3 then
         mpdata.gs.playerNum = tonumber(msg)
         mpdata.status = "ready"
