@@ -70,7 +70,7 @@ e.collide = function(s, ent, col)
     return
   end
   
-  --GameFSM.addEvent(s, {type = 'sound', name = 'turtle'})
+  --Tiny.addEntity(s.world, {event = 'sound', name = 'turtle'})
   
   GameFSM.removeEntity(s, ent.number)
 end

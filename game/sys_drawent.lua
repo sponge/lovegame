@@ -11,7 +11,7 @@ end
 
 function DrawEntities:filter(ent)
   local gs = self.world.gs
-  return gs.ent_handlers[ent.classname].draw ~= nil
+  return ent.classname ~= nil and gs.ent_handlers[ent.classname].draw ~= nil
 end
 
 function DrawEntities:process(ent, dt)

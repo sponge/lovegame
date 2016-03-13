@@ -1,6 +1,7 @@
 local ffi = require('ffi')
 
 local Entity = require 'game/entity'
+local Tiny = require 'game/tiny'
 
 ffi.cdef [[
   typedef struct {
@@ -68,12 +69,11 @@ e.think = function(s, ent, dt)
   
   ent.dy = not ent.on_ground and 150 or 0
 
-  local touching, cols = Entity.isTouchingSolid(s, ent, ent.dx > 0 and 'right' or 'left')
-  if touching then
+  local xCollided, yCollided = Entity.move(s, ent)
+  
+  if xCollided then
     ent.dx = ent.dx * -1
   end
-
-  local xCollided, yCollided = Entity.move(s, ent)
 end
 
 e.draw = function(s, ent)
@@ -95,7 +95,7 @@ e.take_damage = function(s, ent, dmg)
   s.bump:remove(ent.number)
   ent.active = false
   ent.dead_time = s.time + 1
-  --GameFSM.addEvent(s, {type = 'sound', name = 'goomba_squish'})  
+  --Tiny.addEntity(s.world, {event = 'sound', name = 'goomba_squish'})  
 end
 
 return e

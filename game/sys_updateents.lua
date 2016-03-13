@@ -12,20 +12,12 @@ end
 
 function UpdateEnts:filter(ent)
   local gs = self.world.gs
-  return gs.ent_handlers[ent.classname].think ~= nil
+  return ent.classname ~= nil and gs.ent_handlers[ent.classname].think ~= nil
 end
 
 function UpdateEnts:process(ent, dt)
   local gs = self.world.gs
   gs.ent_handlers[ent.classname].think(gs, ent, dt)
-end
-
-function UpdateEnts:think(ent, dt)
-  local gs = self.world.gs
-  
-  if gs.ent_handlers[ent.classname].think ~= nil then
-    gs.ent_handlers[ent.classname].think(gs, ent, dt)
-  end
 end
 
 return UpdateEnts

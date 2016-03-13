@@ -1,6 +1,7 @@
 local ffi = require 'ffi'
 
 local Entity = require 'game/entity'
+local Tiny = require 'game/tiny'
 
 ffi.cdef [[
   typedef struct {
@@ -57,7 +58,7 @@ e.collide = function(s, ent, col)
     return
   end
   
-  GameFSM.addEvent(s, {type = 'sound', name = 'red_coin'})
+  Tiny.addEntity(s.world, {event = 'sound', name = 'red_coin'})
   
   s.red_coins.found = s.red_coins.found + 1
   

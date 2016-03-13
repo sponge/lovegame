@@ -40,7 +40,7 @@ e.think = function(s, ent, dt)
   
   if s.time >= s.goal_time and s.time - s.dt < s.goal_time then
     local GameFSM = require 'game/gamefsm'
-    GameFSM.addEvent(s, {type = 'win'})
+    Tiny.addEntity(s.world, {event = 'win'})
   end
 end
 
@@ -61,7 +61,7 @@ e.collide = function(s, ent, col)
   
   s.goal_time = s.time + 10
   col.item.can_take_damage = false
-  GameFSM.addEvent(s, {type = 'sound', name = 'goal'})
+  Tiny.addEntity(s.world, {event = 'sound', name = 'goal'})
 end
 
 e.take_damage = function(s, ent, dmg)

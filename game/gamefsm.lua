@@ -66,7 +66,6 @@ mod.init = function(str_level)
   local gs = {
     entities = {},
     red_coins = {found = 0, sum = 0},
-    events = {},
     player = nil,
     removedEnts = {}, 
     worldLayer = nil,
@@ -203,10 +202,6 @@ end
 
 mod.addCommand = function(gs, ent, command)
   ent.command = command
-end
-
-mod.addEvent = function(gs, event)
-  gs.events[#gs.events+1] = event
 end
 
 mod.spawnPlayer = function(gs)

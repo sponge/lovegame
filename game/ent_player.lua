@@ -1,6 +1,7 @@
 local ffi = require 'ffi'
 
 local Entity = require 'game/entity'
+local Tiny= require 'game/tiny'
 
 local abs = math.abs
 local floor = math.floor
@@ -232,9 +233,9 @@ e.think = function(s, ent, dt)
   end
   
   if not wasSlide and ent.wall_sliding then
-    GameFSM.addEvent(s, {type = 'sound', name = 'wallslide'})
+    Tiny.addEntity(s.world, {event = 'sound', name = 'wallslide'})
   elseif wasSlide and not ent.wall_sliding then
-    GameFSM.addEvent(s, {type = 'stopsound', name = 'wallslide'})
+    Tiny.addEntity(s.world, {event = 'stopsound', name = 'wallslide'})
   end
     
   -- apply wall sliding
@@ -264,7 +265,7 @@ e.think = function(s, ent, dt)
     ent.can_double_jump = true
     ent.did_jump = true
     ent.will_pogo = false
-    GameFSM.addEvent(s, {type = 'sound', name = 'pogo'})
+    Tiny.addEntity(s.world, {event = 'sound', name = 'pogo'})
   -- check for other jumps
   elseif ent.command.jump == true and ent.jump_held == false then
     -- check for walljump
@@ -274,21 +275,21 @@ e.think = function(s, ent, dt)
       ent.stun_time = s.time + 1/10
       ent.jump_held = true
       ent.did_jump = true
-      GameFSM.addEvent(s, {type = 'sound', name = 'jump'})
+      Tiny.addEntity(s.world, {event = 'sound', name = 'jump'})
     -- check for first jump
     elseif ent.on_ground then
       ent.dy = ent.jump_height + (abs(ent.dx) >= ent.max_speed * 0.25 and ent.speed_jump_bonus or 0)
       ent.jump_held = true
       ent.can_double_jump = true
       ent.did_jump = true
-      GameFSM.addEvent(s, {type = 'sound', name = 'jump'})
+      Tiny.addEntity(s.world, {event = 'sound', name = 'jump'})
     -- check for second jump
     elseif ent.can_double_jump == true then
       ent.dy = ent.double_jump_height
       ent.can_double_jump = false
       ent.jump_held = true
       ent.did_jump = true
-      GameFSM.addEvent(s, {type = 'sound', name = 'jump'})
+      Tiny.addEntity(s.world, {event = 'sound', name = 'jump'})
     end
   end
   
@@ -329,9 +330,9 @@ e.think = function(s, ent, dt)
   end
   
   if abs(ent.dx) > 60 and last_accel ~= ent.skid_accel and ent.accel_type == ent.skid_accel then
-    GameFSM.addEvent(s, {type = 'sound', name = 'skid'})
+    Tiny.addEntity(s.world, {event = 'sound', name = 'skid'})
   elseif last_accel == ent.skid_accel and ent.accel_type ~= ent.skid_accel then
-    GameFSM.addEvent(s, {type = 'stopsound', name = 'skid'})
+    Tiny.addEntity(s.world, {event = 'stopsound', name = 'skid'})
   end
   
   -- cap intended x/y speed
@@ -357,11 +358,11 @@ e.think = function(s, ent, dt)
   elseif yCollided and ent.dy > 0 and not ent.will_pogo then
     ent.dy = 0
     if ent.dy >= ent.terminal_velocity * 0.75 then
-      GameFSM.addEvent(s, {type = 'sound', name = 'bump'})
+      Tiny.addEntity(s.world, {event = 'sound', name = 'bump'})
     end  
   elseif yCollided and ent.dy < 0 then
     ent.dy = 0
-    GameFSM.addEvent(s, {type = 'sound', name = 'headbump'})
+    Tiny.addEntity(s.world, {event = 'sound', name = 'headbump'})
   end
   
   if s.time < ent.attack_time then
@@ -442,9 +443,9 @@ e.take_damage = function(s, ent, amount)
   ent.health = ent.health - amount
   
   if ent.health <= 0 then
-    GameFSM.addEvent(s, {type = 'death', ent = ent.number})
+    Tiny.addEntity(s.world, {event = 'death', ent = ent.number})
   else
-    GameFSM.addEvent(s, {type = 'sound', name = 'hurt'})
+    Tiny.addEntity(s.world, {event = 'sound', name = 'hurt'})
   end
 end
 
