@@ -51,18 +51,18 @@ e.draw = function(s, ent)
   love.graphics.draw(s.media.coin, s.media.coin_frames[i], ent.x - 2, ent.y, 0, 1, 1)
 end
 
-e.collide = function(s, ent, col)
+e.collide = function(gs, ent, col)
   local GameFSM = require 'game/gamefsm'
   
   if col.item.classname ~= 'player' then
     return
   end
   
-  Tiny.addEntity(s.world, {event = 'sound', name = 'coin'})
+  Tiny.addEntity(gs.world, {event = 'sound', name = 'coin'})
   
-  s.entities[col.item.number].coins = s.entities[col.item.number].coins + 1
+  gs.entities[col.item.number].coins = gs.entities[col.item.number].coins + 1
   
-  GameFSM.removeEntity(s, ent.number)
+  GameFSM.removeEntity(gs, ent.number)
 end
 
 return e

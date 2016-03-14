@@ -1,6 +1,20 @@
 local class = require "game/30log"
 local tiny = require "game/tiny"
 
+local function parse_color(col)
+    local rgb = {}
+    for pair in string.gmatch(col, "[^#].") do
+        local i = tonumber(pair, 16)
+        if i then
+            table.insert(rgb, i)
+        end
+    end
+    while #rgb < 4 do
+        table.insert(rgb, 255)
+    end
+    return rgb
+end
+
 local DrawBackgroundSystem = tiny.system(class "DrawBackgroundSystem")
 
 function DrawBackgroundSystem:init(gs)
@@ -11,6 +25,8 @@ function DrawBackgroundSystem:init(gs)
       gs.media.bg:setFilter("linear", "nearest")
     end
   end
+  
+  gs.l.backgroundcolor = parse_color(gs.l.backgroundcolor)
 end
 
 function DrawBackgroundSystem:update()

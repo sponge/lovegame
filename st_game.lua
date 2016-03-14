@@ -106,7 +106,7 @@ function scene:update(dt)
     end
   end
   
-  while update_accum >= tickrate do    
+  while update_accum >= tickrate do
     Tiny.update(world, tickrate, filter_update)
     update_accum = update_accum - tickrate
   end

@@ -69,8 +69,9 @@ e.think = function(s, ent, dt)
   
   ent.dy = not ent.on_ground and 150 or 0
 
-  local xCollided, yCollided = Entity.move(s, ent)
-  
+end
+
+e.postcollide = function(s, ent, xCollided, yCollided, xCols, yCols)
   if xCollided then
     ent.dx = ent.dx * -1
   end

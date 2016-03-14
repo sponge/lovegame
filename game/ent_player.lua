@@ -40,7 +40,7 @@ ffi.cdef [[
     uint16_t number;
     bool in_use;
     uint8_t class;
-    float x, y, dx, dy;
+    float x, y, dx, dy, uncapped_dy;
     int w, h, drawx, drawy;
     etype_t type;
     bool can_take_damage;
@@ -336,14 +336,20 @@ e.think = function(s, ent, dt)
   end
   
   -- cap intended x/y speed
-  local uncappeddy = ent.dy
+  ent.uncapped_dy = ent.dy
   ent.dx = max(-ent.max_speed, min(ent.max_speed, ent.dx))
   ent.dy = max(-ent.terminal_velocity, min(ent.terminal_velocity, ent.dy))
-  
-  -- start the actual move
-  local xCollided, yCollided, xCols, yCols = Entity.move(s, ent)
-  
-  ent.dy = uncappeddy
+end
+
+e.collide = function(s, ent, col)
+  if ent.will_pogo and col.other.type == ffi.C.ET_ENEMY and col.normal.x == 0 and col.normal.y == -1 then
+    Entity.hurt(s, col.other, 1, ent)
+    ent.will_bounce_enemy = true
+  end
+end
+
+e.postcollide = function(s, ent, xCollided, yCollided, xCols, yCols)
+  ent.dy = ent.uncapped_dy
   
   -- walls always stop momentum
   if xCollided then
@@ -371,15 +377,7 @@ e.think = function(s, ent, dt)
       local hit_ent = s.entities[hits[i]]
       Entity.hurt(s, hit_ent, 1, ent)
     end
-  end
-
-end
-
-e.collide = function(s, ent, col)
-  if ent.will_pogo and col.other.type == ffi.C.ET_ENEMY and col.normal.x == 0 and col.normal.y == -1 then
-    Entity.hurt(s, col.other, 1, ent)
-    ent.will_bounce_enemy = true
-  end
+  end  
 end
 
 e.draw = function(s, ent)

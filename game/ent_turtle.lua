@@ -49,9 +49,10 @@ e.spawn = function(s, ent)
 end
 
 e.think = function(s, ent, dt)
-  local xCollided, yCollided = Entity.move(s, ent)
-  
-  -- walls always stop momentum
+
+end
+
+e.postcollide = function(s, ent, xCollided, yCollided, xCols, yCols)
   if xCollided then
     ent.dx = ent.dx * -1
   end

@@ -1,6 +1,7 @@
 -- FIXME: hud should filter on entities so we can eventually do boss fights huds and such
 local class = require "game/30log"
 local Tiny = require "game/tiny"
+local Gamestate = require "gamestate"
 
 local ClientEvents = Tiny.processingSystem(class "ClientEvents")
 ClientEvents.draw = true
