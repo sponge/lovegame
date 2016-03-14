@@ -64,8 +64,6 @@ mod.init = function(str_level)
     return nil, nil, 'Could not parse map JSON'
   end
   
-  local sys_collision = 
-  
   world:add(
     require('game/sys_updatetime')(gs),
     require('game/sys_updateents')(gs),
