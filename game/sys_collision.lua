@@ -10,9 +10,6 @@ local Entity = require "game/entity"
 -- tilecollider functions
 local g = function(gs, x, y)
   if y <= 0 then y = 1 end
-  if gs == nil then
-    print("oh no")
-  end
   return gs.tileinfo[ gs.worldLayer.data[(y-1)*gs.l.width+x] ]
 end
 
