@@ -1,16 +1,8 @@
-local ffi = require "ffi"
-
 local CVar = require "game/cvar"
 local JSON = require "game/dkjson"
 local Entity = require "game/entity"
 local EntHandlers = require "game/enthandlers"
 local Tiny = require "game/tiny"
-
-local abs = math.abs
-local floor = math.floor
-local ceil = math.ceil
-local max = math.max
-local min = math.min
 
 local mod = {}
 
@@ -72,7 +64,19 @@ mod.init = function(str_level)
     return nil, nil, 'Could not parse map JSON'
   end
   
-  local sys_collision = require('game/sys_collision')(gs)
+  local sys_collision = 
+  
+  world:add(
+    require('game/sys_updatetime')(gs),
+    require('game/sys_updateents')(gs),
+    require('game/sys_collision')(gs),
+    require('game/sys_clientevents')(gs),
+    require('game/sys_drawcam')(gs),
+    require('game/sys_drawbg')(gs),
+    require('game/sys_drawmap')(gs),
+    require('game/sys_drawent')(gs),
+    require('game/sys_drawhud')(gs)
+  )
   
   for _, layer in ipairs(gs.l.layers) do
     -- find the layer named world, this is the layer where everything happens
@@ -94,27 +98,15 @@ mod.init = function(str_level)
     if gs.tileinfo[v] and gs.tileinfo[v].tile_entity ~= nil then
       gs.worldLayer.data[i] = 0
       local classname = gs.tileinfo[v].tile_entity        
-      local ent = Entity.new(gs, gs.tileinfo[v].tile_entity, ((i-1)%gs.l.width) * gs.l.tilewidth, floor(i/gs.l.width)*gs.l.tileheight, gs.l.tilewidth, gs.l.tileheight)
+      local ent = Entity.new(gs, gs.tileinfo[v].tile_entity, ((i-1)%gs.l.width) * gs.l.tilewidth, math.floor(i/gs.l.width)*gs.l.tileheight, gs.l.tilewidth, gs.l.tileheight)
       if gs.ent_handlers[classname].spawn then gs.ent_handlers[classname].spawn(gs, ent) end
     end
   end
   
   -- load all entities we know about (gfx, etc)
-  for i,v in pairs(gs.ent_handlers) do
+  for _,v in pairs(gs.ent_handlers) do
     if v.init then v.init(gs) end
   end
-  
-  world:add(
-    require('game/sys_updatetime')(gs),
-    require('game/sys_updateents')(gs),
-    sys_collision,
-    require('game/sys_clientevents')(gs),
-    require('game/sys_drawcam')(gs),
-    require('game/sys_drawbg')(gs),
-    require('game/sys_drawmap')(gs),
-    require('game/sys_drawent')(gs),
-    require('game/sys_drawhud')(gs)
-  )
 
   return gs, world
 end
