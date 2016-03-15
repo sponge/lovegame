@@ -16,8 +16,7 @@ ffi.cdef [[
     bool in_use;
     uint8_t class;
     float x, y;
-    int w, h, drawx, drawy;
-    etype_t type;
+    int w, h;
   } ent_player_start_t;
   
   typedef struct {
@@ -192,8 +191,6 @@ e.spawn = function(s, ent)
   ent.collision[ffi.C.ET_WORLD] = ffi.C.CT_SLIDE
   ent.can_take_damage = true
   ent.health = 6
-  
-  s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
 end
 
 e.think = function(s, ent, dt)

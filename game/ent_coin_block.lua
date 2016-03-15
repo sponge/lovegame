@@ -35,7 +35,6 @@ end
 e.spawn = function(s, ent)  
   ent.active = true
   ent.hit_time = 0
-  s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
 end
 
 e.think = function(s, ent, dt)

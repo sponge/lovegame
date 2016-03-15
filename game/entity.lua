@@ -93,7 +93,6 @@ e.new = function(s, classname, x, y, w, h)
   ent.h = h
   
   Tiny.add(s.world, ent)
-  s.entities[num] = ent
   
   Tiny.refresh(s.world)
 

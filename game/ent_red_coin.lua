@@ -38,7 +38,6 @@ e.spawn = function(gs, ent)
   ent.type = ffi.C.ET_PLAYER_TRIGGER
   ent.w = 12
   ent.x = ent.x + 2
-  gs.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
   gs.red_coins.sum = gs.red_coins.sum + 1
 end
 
@@ -62,7 +61,7 @@ e.collide = function(gs, ent, col)
   
   gs.red_coins.found = gs.red_coins.found + 1
   
-  GameFSM.removeEntity(gs, ent.number)
+  Tiny.removeEntity(gs.world, ent)
 end
 
 return e

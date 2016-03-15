@@ -32,6 +32,7 @@ function newBumpFilter(state)
   return function(item, other)
     item = gs.entities[item]
     other = gs.entities[other]
+    if item == nil or other == nil then return nil end -- FIXME: this breaks when removing an ent in sys_numberedent system. should it?
     if item.collision == ffi.C.ET_WORLD and item.collision[other.type] == ffi.C.ET_WORLD then return nil end
     return col_types[ tonumber(item.collision[other.type]) ]
   end
@@ -39,7 +40,7 @@ end
 
 local CollisionSystem = Tiny.processingSystem(class "CollisionSystem")
 CollisionSystem.think = true
-CollisionSystem.filter = Tiny.requireAll('x', 'y', 'dx', 'dy', 'type', 'collision')
+CollisionSystem.filter = Tiny.requireAll('x', 'y')
 
 function CollisionSystem:init(gs)
   gs.col = TileCollider(g, gs.l.tilewidth, gs.l.tileheight, c, nil, false)
@@ -83,6 +84,10 @@ end
 
 function CollisionSystem:process(ent, dt)
   local gs = self.world.gs
+  
+  if not ent.dx or not ent.dy then
+    return
+  end
 
   local xCols, yCols, len = {}, {}, nil
   local moves = {x = {0,0}, y={0,0}}
@@ -90,7 +95,7 @@ function CollisionSystem:process(ent, dt)
   local xCollided, yCollided = false
   
   if not gs.bump:hasItem(ent.number) then
-    return nil
+    return
   end
   
   moves.x[1], _, xCols, len = gs.bump:check(ent.number, ent.x + (ent.dx*gs.dt), ent.y, gs.bumpfilter)
@@ -157,5 +162,19 @@ function CollisionSystem:process(ent, dt)
     gs.ent_handlers[ent.classname].postcollide(gs, ent, xCollided, yCollided, xCols, yCols)
   end
 end
+
+function CollisionSystem:onAdd(ent)
+  if ent.type then
+    self.world.gs.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
+  end
+end
+
+function CollisionSystem:onRemove(ent)
+  Tiny.removeEntity(self.world, ent)
+  
+  if self.world.gs.bump:hasItem(num) then
+    self.world.gs.bump:remove(num)
+  end
+end  
 
 return CollisionSystem

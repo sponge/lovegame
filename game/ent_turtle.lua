@@ -44,7 +44,6 @@ e.spawn = function(s, ent)
   ent.collision[ffi.C.ET_WORLD] = ffi.C.CT_SLIDE
   ent.can_take_damage = true
   
-  s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
   ent.dx = -20
 end
 

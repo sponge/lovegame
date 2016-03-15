@@ -52,15 +52,13 @@ e.spawn = function(s, ent)
   ent.collision[ffi.C.ET_WORLD] = ffi.C.CT_SLIDE
   ent.can_take_damage = true
   
-  s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
   ent.dx = -20
 end
 
 e.think = function(s, ent, dt)  
   if not ent.active then
     if s.time > ent.dead_time then
-      local GameFSM = require 'game/gamefsm'
-      GameFSM.removeEntity(s, ent.number)
+      Tiny.removeEntity(s.world, ent)
     end
     return
   end

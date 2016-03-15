@@ -65,6 +65,7 @@ mod.init = function(str_level)
   end
   
   world:add(
+    require('game/sys_numberedent')(gs),
     require('game/sys_updatetime')(gs),
     require('game/sys_updateents')(gs),
     require('game/sys_collision')(gs),
@@ -130,19 +131,6 @@ mod.spawnPlayer = function(gs)
   
   return ent
 end
-
-mod.removeEntity = function(gs, num)
-  local ent = gs.entities[num]
-  
-  gs.world.removeEntity(gs.world, ent)
-  gs.entities[num] = nil
-  
-  if gs.bump:hasItem(num) then
-    gs.bump:remove(num)
-  end
-end
-
-local removeEntity = mod.removeEntity
 
 mod.mergeState = function(gs, ns)
   gs.time = ns.time

@@ -29,8 +29,6 @@ end
 e.spawn = function(s, ent)
   ent.type = ffi.C.ET_PLAYER_TRIGGER
   ent.y = ent.y + ent.h + 4 -- FIXME: why???
-  
-  s.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
 end
 
 e.think = function(s, ent, dt)
