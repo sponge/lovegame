@@ -120,7 +120,7 @@ function CollisionSystem:process(ent, dt)
     ent.x = 0
     xCollided = true
   elseif ent.x+ent.w > gs.l.width*gs.l.tilewidth then
-    ent.x = gs.l.width*ggs.l.tilewidth - ent.w
+    ent.x = gs.l.width*gs.l.tilewidth - ent.w
     xCollided = true
   end
   
