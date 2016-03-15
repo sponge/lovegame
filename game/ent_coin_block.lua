@@ -50,9 +50,7 @@ e.draw = function(s, ent)
   love.graphics.draw(s.media.coin_block, s.media.coin_block_frames[i], ent.x, y, 0, 1, 1)
 end
 
-e.collide = function(s, ent, col)
-  local GameFSM = require 'game/gamefsm'
-  
+e.collide = function(s, ent, col)  
   if col.item.classname ~= 'player' or not ent.active then
     return
   end

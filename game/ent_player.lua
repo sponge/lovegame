@@ -193,12 +193,7 @@ e.spawn = function(s, ent)
   ent.health = 6
 end
 
-e.think = function(s, ent, dt)
-  local GameFSM = require 'game/gamefsm'
-
-  -- used to test if we're losing edata
-  --assert(ent.attack_length == 0.25, "attack length is wrong")
- 
+e.think = function(s, ent, dt) 
   setup_physics(s, ent)
   
   ent.on_ground = ent.dy >= 0 and Entity.isTouchingSolid(s, ent, 'down')
@@ -427,9 +422,7 @@ e.draw = function(s, ent)
   love.graphics.setColor(255,255,255,255)
 end
 
-e.take_damage = function(s, ent, amount)
-  local GameFSM = require 'game/gamefsm'
-  
+e.take_damage = function(s, ent, amount)  
   if s.time < ent.invuln_time then
     return
   end

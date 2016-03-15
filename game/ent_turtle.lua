@@ -62,9 +62,7 @@ e.draw = function(s, ent)
   love.graphics.draw(s.media.turtle, s.media.turtle_frames[i], ent.x, ent.y, 0, 1, 1)
 end
 
-e.collide = function(s, ent, col)
-  local GameFSM = require 'game/gamefsm'
-  
+e.collide = function(s, ent, col)  
   if col.item.classname ~= 'player' then
     ent.dx = ent.dx * -1
     return
@@ -72,7 +70,7 @@ e.collide = function(s, ent, col)
   
   --Tiny.addEntity(s.world, {event = 'sound', name = 'turtle'})
   
-  GameFSM.removeEntity(s, ent.number)
+  Tiny.removeEntity(s.world, ent)
 end
 
 return e

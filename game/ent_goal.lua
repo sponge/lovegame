@@ -37,7 +37,6 @@ e.think = function(s, ent, dt)
   end
   
   if s.time >= s.goal_time and s.time - s.dt < s.goal_time then
-    local GameFSM = require 'game/gamefsm'
     Tiny.addEntity(s.world, {event = 'win'})
   end
 end
@@ -47,8 +46,6 @@ e.draw = function(s, ent)
 end
 
 e.collide = function(s, ent, col)
-  local GameFSM = require 'game/gamefsm'
-
   if col.item.classname ~= 'player' then
     return
   end
