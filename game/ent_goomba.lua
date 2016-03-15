@@ -15,7 +15,6 @@ ffi.cdef [[
     uint16_t health;
     collisiontype_t collision[ET_MAX];
     bool on_ground;
-    bool active;
     float dead_time;
   } ent_goomba_t;
 ]]
@@ -42,7 +41,6 @@ end
 
 e.spawn = function(s, ent)  
   ent.on_ground = false
-  ent.active = true
   ent.dead_time = 0
   
   ent.y = ent.y + 1
@@ -56,7 +54,7 @@ e.spawn = function(s, ent)
 end
 
 e.think = function(s, ent, dt)  
-  if not ent.active then
+  if ent.dead_time > 0 then
     if s.time > ent.dead_time then
       Tiny.removeEntity(s.world, ent)
     end
@@ -66,7 +64,6 @@ e.think = function(s, ent, dt)
   ent.on_ground = ent.dy >= 0 and Entity.isTouchingSolid(s, ent, 'down')
   
   ent.dy = not ent.on_ground and 150 or 0
-
 end
 
 e.postcollide = function(s, ent, xCollided, yCollided, xCols, yCols)
@@ -76,23 +73,20 @@ e.postcollide = function(s, ent, xCollided, yCollided, xCols, yCols)
 end
 
 e.draw = function(s, ent)
-  local i = ent.active and (math.floor(s.time * 8) % 2) + 1 or 3
+  local i = ent.dead_time == 0 and (math.floor(s.time * 8) % 2) + 1 or 3
   love.graphics.draw(s.media.goomba, s.media.goomba_frames[i], ent.x, ent.y, 0, 1, 1)
 end
 
 e.collide = function(s, ent, col)
-  if col.item.type ~= ffi.C.ET_PLAYER or not ent.active then
+  if col.item.type ~= ffi.C.ET_PLAYER or ent.dead_time > 0 then
     return
   end
   
   Entity.hurt(s, col.item, 1, ent)
 end
 
-e.take_damage = function(s, ent, dmg)
-  local GameFSM = require 'game/gamefsm'
-  
+e.take_damage = function(s, ent, dmg)  
   s.bump:remove(ent.number)
-  ent.active = false
   ent.dead_time = s.time + 1
   --Tiny.addEntity(s.world, {event = 'sound', name = 'goomba_squish'})  
 end
