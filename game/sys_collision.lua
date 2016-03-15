@@ -30,8 +30,6 @@ function newBumpFilter(state)
   
   local gs = state
   return function(item, other)
-    item = gs.entities[item]
-    other = gs.entities[other]
     if item == nil or other == nil then return nil end -- FIXME: this breaks when removing an ent in sys_numberedent system. should it?
     if item.collision == ffi.C.ET_WORLD and item.collision[other.type] == ffi.C.ET_WORLD then return nil end
     return col_types[ tonumber(item.collision[other.type]) ]
@@ -94,18 +92,15 @@ function CollisionSystem:process(ent, dt)
   local entCol, tileCol = false
   local xCollided, yCollided = false
   
-  if not gs.bump:hasItem(ent.number) then
+  if not gs.bump:hasItem(ent) then
     return
   end
   
-  moves.x[1], _, xCols, len = gs.bump:check(ent.number, ent.x + (ent.dx*gs.dt), ent.y, gs.bumpfilter)
+  moves.x[1], _, xCols, len = gs.bump:check(ent, ent.x + (ent.dx*gs.dt), ent.y, gs.bumpfilter)
   for i=1, len do
     local col = xCols[i]
-    local other = gs.entities[col.other]
-    col.item = ent
-    col.other = other
     if gs.ent_handlers[ent.classname].collide then gs.ent_handlers[ent.classname].collide(gs, ent, col) end
-    if gs.ent_handlers[other.classname].collide then gs.ent_handlers[other.classname].collide(gs, other, col) end
+    if gs.ent_handlers[col.other.classname].collide then gs.ent_handlers[col.other.classname].collide(gs, col.other, col) end
     entCol = ent.x == moves.x[1]
   end
     
@@ -129,20 +124,17 @@ function CollisionSystem:process(ent, dt)
     xCollided = true
   end
   
-  gs.bump:update(ent.number, ent.x, ent.y)
+  gs.bump:update(ent, ent.x, ent.y)
   
   -- check y next
   entCol = false
   tileCol = false
   
-  _, moves.y[1], yCols, len = gs.bump:check(ent.number, ent.x, ent.y + (ent.dy*gs.dt), gs.bumpfilter)
+  _, moves.y[1], yCols, len = gs.bump:check(ent, ent.x, ent.y + (ent.dy*gs.dt), gs.bumpfilter)
   for i=1, len do
     local col = yCols[i]
-    local other = gs.entities[col.other]
-    col.item = ent
-    col.other = other
     if gs.ent_handlers[ent.classname].collide then gs.ent_handlers[ent.classname].collide(gs, ent, col) end
-    if gs.ent_handlers[other.classname].collide then gs.ent_handlers[other.classname].collide(gs, other, col) end
+    if gs.ent_handlers[col.other.classname].collide then gs.ent_handlers[col.other.classname].collide(gs, col.other, col) end
     entCol = ent.y == moves.y[1]
   end
   
@@ -156,7 +148,7 @@ function CollisionSystem:process(ent, dt)
   
   yCollided = entCol or tileCol
 
-  gs.bump:update(ent.number, ent.x, ent.y)
+  gs.bump:update(ent, ent.x, ent.y)
 
   if gs.ent_handlers[ent.classname].postcollide ~= nil then
     gs.ent_handlers[ent.classname].postcollide(gs, ent, xCollided, yCollided, xCols, yCols)
@@ -165,15 +157,15 @@ end
 
 function CollisionSystem:onAdd(ent)
   if ent.type then
-    self.world.gs.bump:add(ent.number, ent.x, ent.y, ent.w, ent.h)
+    self.world.gs.bump:add(ent, ent.x, ent.y, ent.w, ent.h)
   end
 end
 
 function CollisionSystem:onRemove(ent)
   Tiny.removeEntity(self.world, ent)
   
-  if self.world.gs.bump:hasItem(num) then
-    self.world.gs.bump:remove(num)
+  if self.world.gs.bump:hasItem(ent) then
+    self.world.gs.bump:remove(ent)
   end
 end  
 

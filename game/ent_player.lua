@@ -366,8 +366,7 @@ e.postcollide = function(s, ent, xCollided, yCollided, xCols, yCols)
   if s.time < ent.attack_time then
     local hits, len = s.bump:queryRect(ent.anim_mirror and ent.x - 13 or ent.x + ent.w, ent.y + ent.drawy + 11, 13, 5)
     for i=1, len do
-      local hit_ent = s.entities[hits[i]]
-      Entity.hurt(s, hit_ent, 1, ent)
+      Entity.hurt(s, hits[i], 1, ent)
     end
   end  
 end

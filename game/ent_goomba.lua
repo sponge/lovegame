@@ -86,7 +86,7 @@ e.collide = function(s, ent, col)
 end
 
 e.take_damage = function(s, ent, dmg)  
-  s.bump:remove(ent.number)
+  s.bump:remove(ent)
   ent.dead_time = s.time + 1
   --Tiny.addEntity(s.world, {event = 'sound', name = 'goomba_squish'})  
 end

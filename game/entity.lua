@@ -121,7 +121,7 @@ e.isTouchingSolid = function(s, ent, side)
   
   if not touching then
     local bumpx, bumpy
-    bumpx, bumpy, cols = s.bump:check(ent.number, ent.x+x, ent.y+y, s.bumpfilter)
+    bumpx, bumpy, cols = s.bump:check(ent, ent.x+x, ent.y+y, s.bumpfilter)
     touching = ((side == 'left' or side == 'right') and bumpx == ent.x) or ((side == 'up' or side == 'down') and bumpy == ent.y)
   end
   return touching, cols
