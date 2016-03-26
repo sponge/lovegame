@@ -19,13 +19,13 @@ ffi.cdef [[
   
   typedef struct {
     float time;
-    uint16_t playerNum;
     bool left, right, up, down, jump, attack, menu;
   } entcommand_t;
 ]]
 
 name_lookup = {
   [0] = 'bad',
+  'worldstate',
   'coin',
   'coin_block',
   'goal',
@@ -70,7 +70,7 @@ ffi.metatype("entcommand_t", entcommand_mt)
 local e = {}
 
 e.new = function(s, classname, x, y, w, h)
-  assert(classname and x and y and w and h, "Invalid entity")
+  assert(classname, "Invalid entity")
   assert(class_lookup[classname], "Couldn't find ent id for entity name ".. classname)
   
   local ent = ffi.new('ent_'.. classname ..'_t')
@@ -87,10 +87,13 @@ e.new = function(s, classname, x, y, w, h)
   ent.in_use = true
   ent.class = class_lookup[classname]
   ent.number = num
-  ent.x = x
-  ent.y = y
-  ent.w = w
-  ent.h = h
+  
+  if ent.x and ent.y and ent.w and ent.h then
+    ent.x = x
+    ent.y = y
+    ent.w = w
+    ent.h = h
+  end
   
   Tiny.add(s.world, ent)
   

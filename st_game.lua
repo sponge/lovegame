@@ -129,8 +129,8 @@ function scene:draw()
   end
   
   local y = winh/2
-  if gs.goal_time ~= nil and gs.time + 1.5 >= gs.goal_time then
-    y = Easing.inBack(gs.time - gs.goal_time + 1.5, winh/2, winh/2, 0.6)
+  if gs.ws.goal_time > 0 and gs.time + 1.5 >= gs.ws.goal_time then
+    y = Easing.inBack(gs.time - gs.ws.goal_time + 1.5, winh/2, winh/2, 0.6)
   end
   
   love.graphics.draw(canvas, x, y, 0, sf, sf, xoff, height/2)

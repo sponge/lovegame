@@ -1,8 +1,20 @@
+local ffi = require "ffi"
+
 local CVar = require "game/cvar"
 local JSON = require "game/dkjson"
 local Entity = require "game/entity"
 local EntHandlers = require "game/enthandlers"
 local Tiny = require "game/tiny"
+
+ffi.cdef [[
+  typedef struct {
+    uint16_t number;
+    bool in_use;
+    uint8_t class;
+    uint8_t red_coins_found, red_coins_sum;
+    float goal_time;
+  } ent_worldstate_t;
+]]
 
 local mod = {}
 
@@ -11,17 +23,16 @@ mod.init = function(str_level)
   
   local gs = {
     entities = {},
-    red_coins = {found = 0, sum = 0},
+    ws = nil,
     player = nil,
     removedEnts = {}, 
     worldLayer = nil,
     tileinfo = {},
     camera = nil,
-    goal_time = nil,
     l = nil, -- level
     col = nil, -- tilecollider
     bump = nil, -- bump
-    world = nil,
+    world = nil, -- ecs
     dt = nil,
     time = 0,
     media = {},
@@ -64,6 +75,13 @@ mod.init = function(str_level)
     return nil, nil, 'Could not parse map JSON'
   end
   
+  for _, layer in ipairs(gs.l.layers) do
+    -- find the layer named world, this is the layer where everything happens
+    if layer.name == "world" and layer.type == "tilelayer" then
+      gs.worldLayer = layer
+    end
+  end
+  
   world:add(
     require('game/sys_numberedent')(gs),
     require('game/sys_updatetime')(gs),
@@ -77,13 +95,11 @@ mod.init = function(str_level)
     require('game/sys_drawhud')(gs)
   )
   
-  for _, layer in ipairs(gs.l.layers) do
-    -- find the layer named world, this is the layer where everything happens
-    if layer.name == "world" and layer.type == "tilelayer" then
-      gs.worldLayer = layer
-    end
+  local ws_ent = Entity.new(gs, 'worldstate')
+  gs.ws = ws_ent
     
-    -- spawn all objectgroup layers into entities
+  -- spawn all objectgroup layers into entities
+  for _, layer in ipairs(gs.l.layers) do
     if layer.type == "objectgroup" then
       for _, obj in ipairs(layer.objects) do
         local ent = Entity.new(gs, obj.type, obj.x, obj.y - obj.height, obj.width, obj.height)

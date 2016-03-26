@@ -38,7 +38,7 @@ end
 
 local CollisionSystem = Tiny.processingSystem(class "CollisionSystem")
 CollisionSystem.think = true
-CollisionSystem.filter = Tiny.requireAll('x', 'y')
+CollisionSystem.filter = Tiny.requireAll('x', 'y', 'w', 'h')
 
 function CollisionSystem:init(gs)
   gs.col = TileCollider(g, gs.l.tilewidth, gs.l.tileheight, c, nil, false)

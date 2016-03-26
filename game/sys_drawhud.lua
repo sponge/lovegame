@@ -24,7 +24,7 @@ function DrawHUD:draw()
   love.graphics.printf("RED COINS", 300, winh - 50, 100, "center")
   love.graphics.printf(gs.player.health, 100, winh - 25, 100, "center")
   love.graphics.printf(gs.player.coins, 200, winh - 25, 100, "center")
-  love.graphics.printf(gs.red_coins.found ..' / '.. gs.red_coins.sum, 300, winh - 25, 100, "center")
+  love.graphics.printf(gs.ws.red_coins_found ..' / '.. gs.ws.red_coins_sum, 300, winh - 25, 100, "center")
 end
 
 return DrawHUD

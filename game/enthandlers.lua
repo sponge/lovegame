@@ -1,4 +1,5 @@
 local ent_funcs = {
+  worldstate = {},
   player_start = {},
   player = require 'game/ent_player',
   coin = require 'game/ent_coin',

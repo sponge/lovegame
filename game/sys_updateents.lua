@@ -8,6 +8,7 @@ local UpdateEnts = tiny.processingSystem(class "UpdateEnts")
 UpdateEnts.think = true
 
 function UpdateEnts:init(gs)
+
 end
 
 function UpdateEnts:filter(ent)

@@ -207,7 +207,7 @@ e.think = function(s, ent, dt)
     ent.dy = ent.dy + (ent.gravity*dt)
   end
   
-  if s.goal_time ~= nil then
+  if s.ws.goal_time > 0 then
     for _, v in ipairs(ent.command) do
       ent.command[v] = false
     end

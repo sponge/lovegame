@@ -38,7 +38,7 @@ e.spawn = function(gs, ent)
   ent.type = ffi.C.ET_PLAYER_TRIGGER
   ent.w = 12
   ent.x = ent.x + 2
-  gs.red_coins.sum = gs.red_coins.sum + 1
+  gs.ws.red_coins_sum = gs.ws.red_coins_sum + 1
 end
 
 e.think = function(gs, ent, dt)
@@ -57,7 +57,7 @@ e.collide = function(gs, ent, col)
   
   Tiny.addEntity(gs.world, {event = 'sound', name = 'red_coin'})
   
-  gs.red_coins.found = gs.red_coins.found + 1
+  gs.ws.red_coins_found = gs.ws.red_coins_found + 1
   
   Tiny.removeEntity(gs.world, ent)
 end

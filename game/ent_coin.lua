@@ -57,7 +57,7 @@ e.collide = function(gs, ent, col)
   
   Tiny.addEntity(gs.world, {event = 'sound', name = 'coin'})
   
-  gs.entities[col.item.number].coins = gs.entities[col.item.number].coins + 1
+  col.item.coins = col.item.coins + 1
   
   Tiny.removeEntity(gs.world, ent)
 end
