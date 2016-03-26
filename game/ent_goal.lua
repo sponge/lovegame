@@ -1,5 +1,8 @@
 local ffi = require 'ffi'
 
+local Tiny = require 'game/tiny'
+local Entity = require 'game/entity'
+
 ffi.cdef [[
   typedef struct {
     uint16_t number;
@@ -10,8 +13,6 @@ ffi.cdef [[
     etype_t type;
   } ent_goal_t;
 ]]
-
-local Entity = require 'game/entity'
 
 local e = {}
 
@@ -32,11 +33,11 @@ e.spawn = function(s, ent)
 end
 
 e.think = function(s, ent, dt)
-  if s.goal_time == nil then
+  if s.ws.goal_time == 0 then
     return
   end
   
-  if s.time >= s.goal_time and s.time - s.dt < s.goal_time then
+  if s.time >= s.ws.goal_time and s.time - s.dt < s.ws.goal_time then
     Tiny.addEntity(s.world, {event = 'win'})
   end
 end
@@ -50,11 +51,11 @@ e.collide = function(s, ent, col)
     return
   end
   
-  if s.goal_time ~= nil then
+  if s.ws.goal_time > 0 then
     return
   end
   
-  s.goal_time = s.time + 10
+  s.ws.goal_time = s.time + 10
   col.item.can_take_damage = false
   Tiny.addEntity(s.world, {event = 'sound', name = 'goal'})
 end
