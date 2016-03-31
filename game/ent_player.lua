@@ -340,7 +340,7 @@ e.collide = function(s, ent, col)
   end
 end
 
-e.postcollide = function(s, ent, xCollided, yCollided, xCols, yCols)
+e.postcollide = function(s, ent, xCollided, yCollided)
   ent.dy = ent.uncapped_dy
   
   -- walls always stop momentum

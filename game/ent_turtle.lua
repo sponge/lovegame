@@ -51,7 +51,7 @@ e.think = function(s, ent, dt)
 
 end
 
-e.postcollide = function(s, ent, xCollided, yCollided, xCols, yCols)
+e.postcollide = function(s, ent, xCollided, yCollided)
   if xCollided then
     ent.dx = ent.dx * -1
   end

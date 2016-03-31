@@ -87,33 +87,43 @@ function CollisionSystem:process(ent, dt)
     return
   end
 
-  local xCols, yCols, len = {}, {}, nil
+  local cols, colLen = {}, 0
+  local newX, newY = ent.x, ent.y
+  local destX, destY = ent.x + (ent.dx*gs.dt), ent.y + (ent.dy*gs.dt)
   local moves = {x = {0,0}, y={0,0}}
-  local entCol, tileCol = false
-  local xCollided, yCollided = false
   
   if not gs.bump:hasItem(ent) then
     return
   end
   
-  moves.x[1], _, xCols, len = gs.bump:check(ent, ent.x + (ent.dx*gs.dt), ent.y, gs.bumpfilter)
-  for i=1, len do
-    local col = xCols[i]
+  moves.x[1], moves.y[1], cols, colLen = gs.bump:check(ent, destX, destY, gs.bumpfilter)
+  for i=1, colLen do
+    local col = cols[i]
     if gs.ent_handlers[ent.classname].collide then gs.ent_handlers[ent.classname].collide(gs, ent, col) end
     if gs.ent_handlers[col.other.classname].collide then gs.ent_handlers[col.other.classname].collide(gs, col.other, col) end
-    entCol = ent.x == moves.x[1]
   end
     
-  -- check x first (slopes eventually?)
   if ent.dx > 0 then
-    moves.x[2], tileCol = gs.col:rightResolve(gs, ent, ent.x + (ent.dx*gs.dt), ent.y, ent.w, ent.h, ent.dx*gs.dt, 0)
-    ent.x = math.min(unpack(moves.x))
+    moves.x[2] = gs.col:rightResolve(gs, ent, destX, ent.y, ent.w, ent.h, ent.dx*gs.dt, 0)
+    newX = math.min(unpack(moves.x))
   elseif ent.dx < 0 then
-    moves.x[2], tileCol, cols, len = gs.col:leftResolve(gs, ent, ent.x + (ent.dx*gs.dt), ent.y, ent.w, ent.h, ent.dx*gs.dt, 0)
-    ent.x = math.max(unpack(moves.x))
+    moves.x[2] = gs.col:leftResolve(gs, ent, destX, ent.y, ent.w, ent.h, ent.dx*gs.dt, 0)
+    newX = math.max(unpack(moves.x))
   end
   
-  xCollided = entCol or tileCol 
+  if ent.dy > 0 then
+    moves.y[2] = gs.col:bottomResolve(gs, ent, ent.x, destY, ent.w, ent.h, 0, ent.dy*gs.dt)
+    newY = math.min(unpack(moves.y))
+  elseif ent.dy < 0 then
+    moves.y[2] = gs.col:topResolve(gs, ent, ent.x, destY, ent.w, ent.h, 0, ent.dy*gs.dt)
+    newY = math.max(unpack(moves.y))
+  end
+  
+  local xCollided = ent.x + (ent.dx*gs.dt) ~= newX
+  local yCollided = ent.y + (ent.dy*gs.dt) ~= newY
+  
+  ent.x = newX
+  ent.y = newY
   
   -- don't let them move offscreen, but also don't treat the edge as walls
   if ent.x < 0 then
@@ -123,35 +133,11 @@ function CollisionSystem:process(ent, dt)
     ent.x = gs.l.width*gs.l.tilewidth - ent.w
     xCollided = true
   end
-  
-  gs.bump:update(ent, ent.x, ent.y)
-  
-  -- check y next
-  entCol = false
-  tileCol = false
-  
-  _, moves.y[1], yCols, len = gs.bump:check(ent, ent.x, ent.y + (ent.dy*gs.dt), gs.bumpfilter)
-  for i=1, len do
-    local col = yCols[i]
-    if gs.ent_handlers[ent.classname].collide then gs.ent_handlers[ent.classname].collide(gs, ent, col) end
-    if gs.ent_handlers[col.other.classname].collide then gs.ent_handlers[col.other.classname].collide(gs, col.other, col) end
-    entCol = ent.y == moves.y[1]
-  end
-  
-  if ent.dy > 0 then
-    moves.y[2], tileCol = gs.col:bottomResolve(gs, ent, ent.x, ent.y + (ent.dy*gs.dt), ent.w, ent.h, 0, ent.dy*gs.dt)
-    ent.y = math.min(unpack(moves.y))
-  elseif ent.dy < 0 then
-    moves.y[2], tileCol = gs.col:topResolve(gs, ent, ent.x, ent.y + (ent.dy*gs.dt), ent.w, ent.h, 0, ent.dy*gs.dt)
-    ent.y = math.max(unpack(moves.y))
-  end
-  
-  yCollided = entCol or tileCol
 
   gs.bump:update(ent, ent.x, ent.y)
 
   if gs.ent_handlers[ent.classname].postcollide ~= nil then
-    gs.ent_handlers[ent.classname].postcollide(gs, ent, xCollided, yCollided, xCols, yCols)
+    gs.ent_handlers[ent.classname].postcollide(gs, ent, xCollided, yCollided)
   end
 end
 
