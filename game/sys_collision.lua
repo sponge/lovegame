@@ -22,15 +22,15 @@ local c = function(gs, ent, side, tile, x, y, dx, dy)
 end
 
 function newBumpFilter(state)
-  local col_types = {}
-  col_types[0] = 'cross'
-  col_types[1] = 'touch'
-  col_types[2] = 'slide'
-  col_types[3] = 'bounce'
+  local col_types = {
+    [0] = 'cross',
+    [1] = 'touch',
+    [2] = 'slide',
+    [3] = 'bounce',
+  }
   
   local gs = state
   return function(item, other)
-    if item == nil or other == nil then return nil end -- FIXME: this breaks when removing an ent in sys_numberedent system. should it?
     if item.collision == ffi.C.ET_WORLD and item.collision[other.type] == ffi.C.ET_WORLD then return nil end
     return col_types[ tonumber(item.collision[other.type]) ]
   end
